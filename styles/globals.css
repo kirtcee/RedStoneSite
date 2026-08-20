@@ -1,0 +1,1128 @@
+/* ===========================
+   Red Stone Pizza - Global Styles
+   Domino’s-inspired, customized
+   =========================== */
+
+/* 1) Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;500;600;700&display=swap');
+
+/* 2) Brand + Layout Vars */
+:root {
+  /* brand colors */
+  --color-primary: #006491;
+  --color-primary-dark: #005177;
+  --color-accent: #289c52;
+  --color-dark: #1c1c1c;
+  --color-bg: #f9f9f9;
+  --color-light: #ffffff;
+  --brand-blue: #006491;
+
+  /* type */
+  --font-heading: 'Oswald', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* effects */
+  --radius: 6px;
+  --shadow: 0 2px 6px rgba(0,0,0,0.1);
+
+  /* header sizing */
+  --header-h: 74.75px;
+  --subheader-h: 37px;
+  --header-offset: var(--header-h);
+
+  /* layout: single source of truth */
+  --container-max: 1120px;   /* <<< pick your sitewide content width */
+  --container-pad: 16px;     /* side gutter */
+  --container-pad-lg: 24px;  /* gutter ≥1024px */
+  --section-gap: 24px;       /* vertical rhythm */
+
+  /* components */
+  --cart-panel-w: 520px;
+
+  /* design tokens (scaleable) */
+  --ui-scale: 1; /* controlled by .scale-90 on <body> */
+
+  /* spacing */
+  --space-1: calc(4px  * var(--ui-scale));
+  --space-2: calc(8px  * var(--ui-scale));
+  --space-3: calc(12px * var(--ui-scale));
+  --space-4: calc(16px * var(--ui-scale));
+  --space-5: calc(20px * var(--ui-scale));
+  --space-6: calc(24px * var(--ui-scale));
+
+  /* radius */
+  --radius-1: calc(4px * var(--ui-scale));
+  --radius-2: calc(6px * var(--ui-scale));
+
+  /* type scale */
+  --fs-xs:  calc(0.75rem  * var(--ui-scale));
+  --fs-sm:  calc(0.875rem * var(--ui-scale));
+  --fs-md:  calc(1rem     * var(--ui-scale));
+  --fs-lg:  calc(1.125rem * var(--ui-scale));
+  --fs-xl:  calc(1.25rem  * var(--ui-scale));
+  --fs-2xl: calc(1.5rem   * var(--ui-scale));
+
+  /* misc */
+  --btn-letter: calc(0.4px * var(--ui-scale));
+  --fixed-140: calc(140px * var(--ui-scale));
+  --circle-150: calc(150px * var(--ui-scale));
+}
+
+/* bigger gutters on desktop */
+@media (min-width: 1024px) {
+  :root { --container-pad: var(--container-pad-lg); }
+}
+
+
+/* When a subheader is visible, bump the offset used by modals/anchors */
+html.has-subheader { --header-offset: calc(var(--header-h) + var(--subheader-h)); }
+
+/* ====== Compact scaling — NO CSS zoom/transform ====== */
+.scale-90 { --ui-scale: 0.9; }
+/* .scale-100 { --ui-scale: 1; } */
+
+html {
+  /* Scale rem-based sizes cleanly across the app */
+  font-size: calc(100% * var(--ui-scale));
+}
+
+/* 3) Reset / Base */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-padding-top: calc(var(--header-offset) + 8px); }
+[id] { scroll-margin-top: calc(var(--header-offset) + 8px); }
+
+body {
+  font-family: var(--font-body);
+  font-size: 0.9rem; /* base body still fine; rems scale via html font-size */
+  line-height: 1.5;
+  background: var(--color-bg);
+  color: var(--color-dark);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* IMPORTANT: no extra padding here—sticky header already reserves space */
+.page-shell { padding-top: 0 !important; }
+
+a { text-decoration: none; color: inherit; }
+img { max-width: 100%; display: block; }
+
+/* 4) Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+
+/* 5) Container */
+.container {
+  max-width: 1000px; /* Domino’s ~960–1040px */
+  margin: 0 auto;
+  padding: 0 1rem;
+  width: min(100%, calc(var(--container-max) + 2*var(--container-pad)));
+  padding-inline: var(--container-pad);
+  margin-inline: auto;
+}
+
+/* 6) Cards */
+.card {
+  background: var(--color-light);
+  box-shadow: var(--shadow);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  transition: transform 0.15s ease;
+}
+.card:hover { transform: translateY(-2px); }
+
+/* 7) Buttons */
+.button {
+  display: inline-block;
+  background: var(--color-primary);
+  color: var(--color-light);
+  padding: 0.75rem 1.25rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+  box-shadow: var(--shadow);
+}
+.button:hover { background: var(--color-primary-dark); transform: translateY(-1px); }
+.button-accent { background: var(--color-accent); }
+.button-accent:hover { background: #1f7d42; }
+
+/* 8) Builder Grid */
+.pizza-builder { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+@media (min-width: 768px) {
+  .pizza-builder { grid-template-columns: 1fr 0.75fr; min-height: 28rem; }
+}
+
+/* 9) Utilities */
+.text-center { text-align: center; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-4 { margin-top: 1rem; }
+.mt-8 { margin-top: 2rem; }
+
+
+
+/* ===========================
+   Cart (toggle + dropdown)
+   =========================== */
+.cart-toggle {
+  position: relative; background: transparent; border: none; cursor: pointer; padding: .25rem;
+}
+.cart-toggle__badge {
+  position: absolute; top: -4px; right: -4px;
+  background: var(--color-primary); color: #fff;
+  font-size: 12px; line-height: 16px; min-width: 18px; height: 18px;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0 4px; font-weight: 700;
+}
+
+/* Positioned by inline styles (top/right) from JS measurement */
+.cart-sidebar {
+  position: fixed;
+  width: var(--cart-panel-w);
+  max-width: calc(100vw - 24px);
+  background: #fff;
+  border: 1px solid #cfd8dc;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+  transform: translateY(-10px);
+  opacity: 0; pointer-events: none;
+  transition: transform 160ms ease, opacity 160ms ease;
+  z-index: 3500;
+  display: flex; flex-direction: column;
+  max-height: 70vh; overflow: hidden;
+}
+.cart-sidebar[data-open="true"] { transform: translateY(0); opacity: 1; pointer-events: auto; }
+.cart-sidebar__pointer {
+  position: absolute; top: -8px; width: 14px; height: 14px;
+  background: #fff; border-left: 1px solid #cfd8dc; border-top: 1px solid #cfd8dc;
+  transform: rotate(45deg);
+}
+.cart-sidebar__header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 16px; border-bottom: 2px solid #1976d2;
+}
+.cart-sidebar__title { font-weight: 900; color: #0d47a1; text-transform: uppercase; letter-spacing: .3px; }
+.cart-sidebar__close { background: transparent; border: none; font-size: 22px; cursor: pointer; color: #78909c; }
+.cart-sidebar__items { overflow-y: auto; padding: 10px 12px; flex: 1; }
+.cart-empty { padding: 1rem; color: #777; }
+.cart-item { display: grid; grid-template-columns: 76px 1fr auto; gap: 10px; align-items: center; padding: 12px 6px; border-bottom: 1px solid #f0f0f0; }
+.cart-item__thumb { width: 72px; height: 54px; object-fit: cover; border: 1px solid #eee; }
+.cart-item__name { background: none; border: none; padding: 0; margin: 0; cursor: pointer; text-align: left; color: #0b3d91; font-weight: 800; }
+.cart-item__subtitle { color: #666; font-size: 13px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cart-item__price { justify-self: end; font-weight: 700; }
+.cart-item__controls { grid-column: 1 / 4; display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+.cart-item__label { color: #444; font-size: 13px; }
+.cart-item__qty { border: 1px solid #ddd; padding: 6px 8px; }
+.cart-item__btn { border: 1px solid #ddd; padding: 6px 10px; cursor: pointer; font-size: 13px; }
+.cart-item__btn--edit { margin-left: auto; background: #fafafa; }
+.cart-item__btn--remove { background: #fff; color: #e53935; }
+.cart-sidebar__footer { border-top: 1px solid #eee; padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
+.cart-sidebar__subtotal { color: #666; font-weight: 600; }
+.cart-sidebar__checkout { margin-left: auto; background: var(--color-primary); color: #fff; font-weight: 800; border: none; padding: 10px 14px; cursor: pointer; }
+
+/* ===========================
+   Header + Subheader
+   =========================== */
+
+/* Red header bar */
+.site-header.site-header--red {
+  position: sticky; top: 0; z-index: 2000;
+  background: var(--color-primary); color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  font-family: 'Oswald', sans-serif; /* Oswald for all header text */
+}
+.site-header__inner { height: var(--header-h); display: flex; align-items: stretch; }
+.header-row { display: flex; align-items: stretch; gap: 0; }
+
+.header-seg {
+  height: var(--header-h); display: flex; align-items: center; justify-content: center;
+  text-align: center; color: #fff; background: var(--color-primary);
+  border: 0; margin: 0; padding: 0 10px; cursor: pointer;
+  border-left: 1px solid rgba(255,255,255,0.15);
+  font-family: 'Oswald', sans-serif; /* ensure Oswald inside segments */
+}
+.header-seg:first-child { border-left: none; }
+.header-seg__label {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;                 /* Oswald Bold */
+  text-transform: uppercase; letter-spacing: .3px;
+  font-size: 1rem; line-height: 1.1; white-space: normal; word-break: keep-all;
+}
+
+/* Variable-width nav segments */
+.header-seg--nav { flex: 0 0 auto; min-width: 88px; transition: background-color 0.6s ease; }
+.header-seg--nav:hover, .header-seg--nav.is-active { background: var(--color-primary-dark); }
+
+
+/* Carryout/Delivery & Auth – wider */
+.header-seg--mode { flex: 0 0 calc(88px * 2.3); }
+.header-seg--mode .header-seg__label { padding: 8px 10px; border: 2px solid #fff; }
+.header-seg--auth { flex: 0 0 calc(88px * 2.3); background: var(--color-primary-dark); }
+
+/* Cart */
+.header-seg--cart { flex-direction: column; gap: 4px; }
+.site-header .header-seg--cart .cart-toggle svg path { fill: #fff; }
+.header-cart__label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px; font-weight: 700;
+}
+
+/* Subheader: crisp seam + shadow ONLY below */
+.subheader {
+  position: sticky;
+  top: var(--header-h);
+  left: 0;
+  right: 0;
+  z-index: 1990;
+  background: #fff;
+  border-bottom: 0;
+  box-shadow: 0 10px 18px -10px rgba(0,0,0,0.40);
+  overflow: visible;
+  font-family: 'Oswald', sans-serif; /* Oswald for subheader text */
+}
+.subheader__inner {
+  height: var(--subheader-h);
+  display: flex;
+  align-items: center;
+}
+.subheader::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 10px;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.30) 0%,
+    rgba(0,0,0,0.16) 45%,
+    rgba(0,0,0,0.00) 100%
+  );
+}
+
+/* Subnav */
+.subnav { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.subnav__link {
+  background: transparent; border: none; cursor: pointer;
+  padding: 6px 10px; 
+  font-family: 'Oswald', sans-serif; font-weight: 700;
+  color: #333; text-transform: uppercase; letter-spacing: .2px;
+}
+.subnav__link:hover { background: #f3f3f3; }
+.subnav__link.is-active { background: #f0f0f0; color: var(--color-primary); box-shadow: inset 0 -2px 0 var(--color-primary); }
+
+/* Neutralize the old bordered label inside the mode segment */
+.header-seg--mode .header-seg__label {
+  padding: 0; 
+  border: 0; 
+  background: transparent;
+}
+
+/* === Carryout chip (fixed size) === */
+
+/* Pill container */
+.header-seg--mode .carryout-chip {
+  display: inline-flex;            /* size to content */
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;                        /* tight spacing */
+  padding: 6px 8px;               /* tighter horizontal padding */
+  /* 🔧 fixed size */
+  width: 179px;
+  height: 42px;
+  box-sizing: border-box;
+  /* remove any forced width */
+  min-width: unset;                
+  max-width: none;
+  /* also prevent parent flex from stretching it */
+  flex: 0 0 auto;                  /* ⬅️ critical */
+  box-shadow: inset 0 0 0 2px #fff;
+  border-radius: 3px;
+  background: transparent;
+  color: #fff;
+    overflow: visible;
+  transition:
+    background-color 0.6s ease,
+    color 0.6s ease,
+    box-shadow 0.6s ease;
+}
+
+/* Safety: don’t let the button clip the pill border */
+.header-seg--mode { overflow: visible; }
+
+/* Icon area (no box around SVG) */
+.header-seg--mode .carryout-iconbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;                     /* slightly tighter */
+  height: 34px;
+  padding: 0;
+  border: none;
+  flex: 0 0 auto;
+}
+.header-seg--mode .carryout-icon {
+  width: 40px;
+  height: 40px;
+  display: block;
+  color: currentColor;
+}
+/* Hide any boxed rect exported by Illustrator */
+.header-seg--mode .carryout-icon rect { display: none; }
+
+/* Separator */
+.header-seg--mode .carryout-sep {
+  width: 2px;
+  align-self: stretch;
+  background: #fff;
+  opacity: 0.95;
+  border-radius: 1px;
+  margin: -2px 3px;                 /* small but visible */
+  flex: 0 0 auto;
+}
+
+/* Text: same size, left aligned; address bold */
+.header-seg--mode .carryout-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.05;
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  white-space: nowrap;             /* keep on one line group */
+}
+
+.header-seg--mode .carryout-line--sm {
+  font-size: 16px;
+  font-weight: 400;                /* normal */
+  letter-spacing: 0.04em;
+  margin: 0;
+  opacity: 0.98;
+}
+.header-seg--mode .carryout-line--lg {
+  font-size: 16px;
+  font-weight: 700;                /* bold */
+  letter-spacing: 0.03em;
+  margin-top: 0;
+}
+
+
+/* ===========================
+   Menu Page Layout
+   =========================== */
+/* Two-column layout: ~66:25 ratio (≈72.5% / 27.5%) */
+.menu-layout {
+  display: grid;
+  /* Left grows, right shrinks, but never below 260px */
+  grid-template-columns: minmax(0, 66fr) minmax(260px, 25fr);
+  gap: 16px;
+}
+
+/* Collapse to single column on smaller screens (unchanged) */
+@media (max-width: 1024px){
+  .menu-layout { grid-template-columns: 1fr; }
+}
+
+.menu-title {
+  font-family: var(--font-heading); font-weight: 900; font-size: 2.2rem;
+  letter-spacing: .5px; text-transform: uppercase; margin: 0 0 10px;
+}
+
+/* Hero: single full-width image with 1322x370 ratio */
+.menu-heroRow {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.menu-heroRow__hero {
+  display: block;
+  width: 100%;                /* fill the container width */
+  aspect-ratio: 1322 / 370;   /* maintain the image's ratio */
+  height: auto;               /* let aspect-ratio compute height */
+  object-fit: cover;          /* no letterboxing; use 'contain' if you prefer no crop ever */
+  box-shadow: var(--shadow);
+}
+
+/* ETA */
+.eta-card {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  padding: 0;
+  border: 1px solid #e9e9e9; /* same subtle Domino’s border */
+}
+
+/* kill hover pop */
+.eta-card.card:hover { transform: none; }
+
+.eta-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  /* 👇 This is the key: match BYO image’s true left offset */
+  padding: 14px 18px 14px calc(6px + 1px); 
+  /* 6px image margin + 1px container border */
+
+  border-right: 2px solid #e6edf2;
+  text-align: center;
+}
+
+.eta-mins {
+  color: var(--brand-blue);
+  font-weight: 900;
+  font-size: 2rem;  /* tuned smaller so "20 MINS" aligns nicely */
+  line-height: 1;
+}
+
+.eta-sub {
+  color: var(--brand-blue);
+  font-weight: 800;
+  letter-spacing: .4px;
+  margin-top: 4px;
+  font-size: 1rem;  /* same as you already set */
+  text-align: center;
+}
+
+.eta-right {
+  padding: 12px 16px;
+  color: #333;
+}
+
+/* BYO CTA – full width, bigger height, image offset */
+.cta-byo {
+  display: grid;
+  grid-template-columns: 140px 1fr; /* image col + text col */
+  align-items: center;
+  text-align: left;
+  cursor: pointer;
+
+  width: 100%;
+  border: 1px solid #dcdcdc;
+  background: #fff;
+  box-shadow: none;
+
+  /* doubled height */
+  min-height: 109px;   /* was ~100px before, now doubled */
+  gap: 30px;
+}
+
+/* Remove .card pop */
+.cta-byo.card:hover { transform: none; }
+
+/* BYO image — back to the larger look */
+.cta-byo__img {
+  width: 110%;         /* big, like before */
+  max-width: 152px;
+  height: 100px;
+  object-fit: fill;    /* same visual feel as your original */
+  border: none;
+
+  /* small offset so it sits like your earlier screenshot
+     (also keeps the ETA “left edge” lining up nicely) */
+  margin: 6px 0 0 6px;
+}
+
+/* Text block */
+.cta-byo__title {
+  font-family: var(--font-heading);
+  color: var(--brand-blue);
+  font-weight: 900;
+  font-size: 1.9rem;
+  line-height: 1.2;
+}
+
+.cta-byo__sub {
+  color: #5a5a5a;
+  margin-top: 6px;
+  font-size: 1rem;
+}
+
+/* Hover: blue background + white text */
+.cta-byo--dom:hover {
+  background: var(--brand-blue);
+}
+
+.cta-byo--dom:hover .cta-byo__title,
+.cta-byo--dom:hover .cta-byo__sub {
+  color: #fff;
+}
+
+/* Size links */
+.size-links {
+  margin: 40px 0; /* extra breathing room above & below */
+  display: grid;
+  grid-template-columns: repeat(4, auto); /* shrink to content */
+  gap: 12px;
+  justify-content: center;                
+
+  /* ultra-thin border, slightly darker for visibility */
+  border: 1px solid #dcdcdc;
+}
+
+.size-link.size-link--anchor {
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  color: var(--brand-blue);
+  font-weight: 800;
+  text-decoration: underline;
+  padding: 6px 12px;
+}
+
+.size-link--anchor:hover {
+  text-decoration-thickness: 3px;
+}
+
+.size-link.size-link--anchor {
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: center;                     /* center text inside each button */
+  color: var(--brand-blue);
+  font-weight: 800;
+  font-size: 1rem;
+  text-decoration: underline;
+  padding: 6px 12px;
+}
+
+.size-link--anchor:hover {
+  text-decoration-thickness: 3px;
+}
+
+/* Category grid */
+.cat-grid.cat-grid--tight {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.cat-card__label {
+  font-family: var(--font-heading);
+  color: var(--brand-blue);    /* match big blue heading */
+  font-weight: 900;
+  font-size: 1rem;           /* slightly smaller so it fits under image */
+  line-height: 1.2;
+  margin-top: 10px;
+}
+
+.cat-card {
+  background: #fff;
+  border: 1px solid #e9e9e9;
+  overflow: hidden;
+  text-align: center;
+  padding-bottom: 12px;
+  cursor: pointer;
+}
+
+/* Responsive wrapper with fixed ratio */
+.cat-card__imgWrap {
+  width: 100%;                          /* take full column width */
+  aspect-ratio: 188 / 99;               /* maintain perfect ratio */
+  max-width: 188px;                     /* cap at desktop size */
+  margin: 0 auto;                       /* center in column */
+  overflow: hidden;
+}
+
+.cat-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 180ms ease;
+}
+
+.cat-card--dom:hover .cat-card__img {
+  transform: scale(1.06);
+}
+
+.cat-card--empty {
+  visibility: hidden;
+}
+
+/* On smaller screens: scale down proportionally */
+@media (max-width: 768px) {
+  .cat-grid.cat-grid--tight {
+    grid-template-columns: repeat(2, 1fr); /* 2 per row instead of 3 */
+  }
+}
+
+@media (max-width: 480px) {
+  .cat-grid.cat-grid--tight {
+    grid-template-columns: 1fr;         /* 1 per row on very small screens */
+  }
+}
+
+/* Wide promos – aligned with BYO CTA text */
+.wide-promo.wide-promo--dom {
+  display: grid;
+  grid-template-columns: 152px 1fr auto; /* match BYO image width */
+  gap: 30px;                             /* match BYO gap */
+  align-items: center;
+
+  padding: 12px;
+  border: 1px solid #e5e5e5;
+  background: #fff;
+  margin-top: 16px;
+  cursor: pointer;
+  position: relative;
+}
+
+.wide-promo__img {
+  width: 152px;      /* same width as BYO image */
+  height: 100px;     /* same height as BYO image */
+  object-fit: cover;
+  margin-left: 6px;  /* same left offset as BYO image */
+}
+
+.wide-promo__title {
+  color: var(--brand-blue);
+  font-weight: 900;
+  font-size: 1.9rem; /* match BYO heading */
+  line-height: 1.2;
+}
+
+.wide-promo__sub {
+  color: #5a5a5a;    /* match BYO subtext */
+  margin-top: 6px;
+  font-size: 1rem;
+}
+
+/* Arrow (triangle) */
+.wide-promo__arrow {
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 8px solid var(--brand-blue);
+  margin-left: auto;
+  margin-top: auto;
+}
+
+/* Aside */
+.menu-checkoutBtn {
+  width: 100%; margin-bottom: 8px; padding: .9rem 1rem; border-radius: 3px;
+  background: var(--color-primary); color: #fff; border: none;
+  font-weight: 900; cursor: pointer;
+}
+.aside-card { background: #f8f8f8; overflow: hidden; border: 1px solid #e5e5e5; }
+.aside-card__title { background: var(--brand-blue); color: #fff; padding: .6rem .9rem; font-weight: 900; text-transform: uppercase; letter-spacing: .3px; }
+.aside-row { display: flex; justify-content: space-between; align-items: baseline; }
+.aside-label { font-weight: 700; }
+.aside-link { background: none; border: none; color: #0b61d6; text-decoration: underline; cursor: pointer; font-weight: 700; }
+.aside-input { flex: 1; padding: 6px 8px; border: 1px solid #ccc; }
+.aside-btn { padding: 6px 10px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
+.aside-sectionLabel { margin-top: 16px; font-weight: 700; }
+.aside-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+.aside-choice { display: flex; align-items: center; gap: 8px; background: #fff; padding: 8px; border: 1px solid #ddd; }
+.aside-schedule { margin-top: 10px; background: #fff; padding: 8px; border: 1px solid #ddd; }
+.aside-scheduleRow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.aside-small { margin-top: 6px; font-size: 12px; color: #666; }
+.aside-hours { margin-top: 6px; font-size: 13px; color: #333; line-height: 1.4; }
+.aside-totals { margin-top: 16px; border-top: 1px solid #eee; padding-top: 12px; }
+.aside-totalRow { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.aside-totalNum { font-weight: 700; }
+.aside-grandRow { display: flex; justify-content: space-between; margin-top: 8px; font-weight: 900; font-size: 18px; }
+
+/* Sticky follower shell */
+.menu-aside__follower {
+  position: sticky;
+  top: calc(var(--header-offset) + 16px);
+  will-change: transform;
+  transform: translateY(0);
+}
+
+/* ==== Remove hover lift/zoom on menu tiles & buttons ==== */
+.card { transition: none; }
+.card:hover { transform: none; }
+
+.button { transition: background 0.2s ease; } /* keep color fade only */
+.button:hover { transform: none; }
+
+.cat-card__img { transition: none; }
+.cat-card--dom:hover .cat-card__img { transform: none; }
+
+/* ===========================
+   Adoption layer for “90% look” on common UI
+   (safe global tweaks that don’t break Google Places)
+   =========================== */
+
+/* These classnames exist across your app (styled-jsx still allows global matches) */
+.section__body { padding: var(--space-4); }
+.stack { gap: var(--space-3); }
+.methodRow { gap: var(--space-4); margin: var(--space-2) 0 var(--space-3); flex-wrap: wrap; }
+.grid2 { gap: var(--space-3); }
+
+.methodBtn { width: var(--circle-150); height: var(--circle-150); }
+.methodLabel { font-size: var(--fs-sm); letter-spacing: var(--btn-letter); }
+
+.field__label { margin-bottom: var(--space-2); font-size: var(--fs-sm); }
+.field__input {
+  padding: calc(.55rem * var(--ui-scale)) calc(.6rem * var(--ui-scale));
+  border-radius: var(--radius-1);
+  font-size: var(--fs-md);
+}
+
+.bigRed {
+  padding: calc(.9rem * var(--ui-scale)) calc(1.1rem * var(--ui-scale));
+  letter-spacing: var(--btn-letter);
+  border-radius: var(--radius-1);
+}
+
+.confirmBody { padding: var(--space-3); }
+.row { gap: var(--space-3); margin: var(--space-2) 0; }
+.k { width: var(--fixed-140); }
+
+/* Keep Google Places dropdown aligned and on top */
+.pac-container {
+  z-index: 99999 !important;
+  border-radius: var(--radius-2);
+  box-shadow: 0 8px 24px rgba(0,0,0,.14);
+}
+
+/* (Optional) subnav: keep it flat even on hover
+.subnav__link:hover { background: transparent; }
+*/
+
+/* === Header cleanup: no thin borders/seams between segments === */
+
+/* Remove any left/right borders on segments */
+.site-header .header-seg,
+.site-header .header-seg--nav,
+.site-header .header-seg--logo,
+.site-header .header-seg--mode,
+.site-header .header-seg--auth,
+.site-header .header-seg--cart {
+  border: 0 !important;
+}
+
+/* Some builds add the vertical seam via border-left on every seg except first */
+.site-header .header-seg + .header-seg {
+  border-left: 0 !important;
+}
+
+/* If the label had a white border (legacy), kill it */
+.site-header .header-seg--mode .header-seg__label {
+  border: 0 !important;
+  padding: 0; /* keep, prevents an inset pill border */
+}
+
+/* If any pseudo-element is drawing a seam, remove it */
+.site-header .header-seg::before,
+.site-header .header-seg::after {
+  content: none !important;
+}
+
+/* Ensure the red header itself has no inner seam;
+   keep ONLY the bottom drop shadow you already set */
+.site-header.site-header--red {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15); /* keep */
+}
+
+/* Make sure the row doesn’t create gaps or outlines */
+.site-header .header-row {
+  gap: 0;            /* no gaps between segments */
+  outline: none;     /* in case an outline was applied */
+}
+
+/* Respect the new height throughout */
+.site-header__inner { height: var(--header-h); }
+.site-header .header-seg { height: var(--header-h); }
+
+
+/* === Force header to exactly 74.75px & remove seams === */
+
+/* Scope a local token (won't rely on :root if something else overrides it) */
+.site-header.site-header--red {
+  --header-h: 74.75px;
+  height: var(--header-h) !important;
+}
+
+/* Make the inner container and row fill that height */
+.site-header__inner {
+  height: var(--header-h) !important;
+  display: flex;
+  align-items: stretch;
+}
+.site-header .header-row {
+  height: 100% !important;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+/* Every segment must match the height and have no vertical padding/borders */
+.site-header .header-seg,
+.site-header .header-seg--nav,
+.site-header .header-seg--logo,
+.site-header .header-seg--mode,
+.site-header .header-seg--auth,
+.site-header .header-seg--cart {
+  height: 100% !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border: 0 !important;                 /* kill thin borders */
+}
+
+/* Remove the common left seam (border-left on subsequent segments) */
+.site-header .header-seg + .header-seg { border-left: 0 !important; }
+
+/* Kill any pseudo-element seams some themes add */
+.site-header .header-seg::before,
+.site-header .header-seg::after {
+  content: none !important;
+}
+
+/* Keep only the bottom drop shadow on the red header; no inner seams */
+.site-header.site-header--red {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* Ensure the carryout chip doesn't reintroduce a border look on its label */
+.site-header .header-seg--mode .header-seg__label {
+  border: 0 !important;
+  padding: 0 !important;
+}
+
+/* === Header segment widths & behavior === */
+
+/* Never let segments stretch */
+.site-header .header-seg {
+  flex: 0 0 auto !important;
+}
+
+/* Cart width */
+.site-header .header-seg--cart {
+  flex: 0 0 60px !important;
+  max-width: 60px !important;
+  min-width: 60px !important;
+}
+
+/* Sign in & earn rewards width */
+.site-header .header-seg--auth {
+  flex: 0 0 198px !important;
+  max-width: 198px !important;
+  min-width: 198px !important;
+}
+
+/* Carryout/courier mode segment width (the pill lives inside this) */
+.site-header .header-seg--mode {
+  flex: 0 0 199.45px !important;
+  max-width: 199.45px !important;
+  min-width: 199.45px !important;
+  overflow: visible; /* keep your chip border visible */
+}
+
+
+.header-seg--mode .carryout-chip:hover {
+  background: #005177;  /* fill inside */
+  color: #fff;          /* text/icon color inside */
+}
+
+
+/* Nav items (HOME…COMBOS): equal inner spacing, variable width by text */
+.site-header .header-seg--nav {
+  min-width: 0 !important;     /* kill old 88px floor */
+  flex: 0 0 auto !important;   /* size to content */
+  padding-left: 12px !important;
+  padding-right: 12px !important; /* same space both sides across all 5 */
+}
+
+/* Optional: make nav labels render consistently */
+.site-header .header-seg--nav .header-seg__label {
+  font-weight: 700;
+  white-space: nowrap; /* keep labels on one line */
+}
+
+/* size/hover */
+.header-logo-mark {
+  display: block;
+  width: 90px;
+  height: auto;
+  transition: transform .2s ease;
+  cursor: pointer;
+
+  /* default palette for the SVG */
+  --logo-dark:  #0a0606;
+  --logo-light: #ffffff;
+}
+
+.header-seg--logo:hover .header-logo-mark {
+  transform: scale(1.05);
+
+  /* hover palette */
+  --logo-dark:  #0a0606;
+  --logo-light: #005177;
+}
+
+/* soft white veil instead of dark */
+.modal-backdrop.modal-backdrop--soft {
+  position: fixed; inset: 0;
+  background: rgba(255,255,255,0.75); /* subtle, not dark */
+  backdrop-filter: blur(1px);          /* optional: adds a hint of separation */
+}
+
+.modal-viewport--fixed {
+  position: fixed;
+  inset: 0;
+  /* start right below your sticky header */
+
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  display: flex;
+  align-items: flex-start; /* panel starts near the top */
+  justify-content: center;
+}
+
+/* panel fills container, no extra overflow */
+.modal-panel--full {
+  width: 100%;
+  max-width: 1100px;         /* your builder width */
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(0,0,0,.14);
+  border: 1px solid #e5e5e5;
+  position: relative;
+}
+
+/* make sure nothing inside reintroduces inner scrollbars */
+.modal-panel--full .modal-body,
+.modal-panel--full [class*="modal-body"] {
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+
+/* keep page width stable when the overlay shows */
+html.modal-open { scrollbar-gutter: stable both-edges; }
+
+/* X button */
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  line-height: 1;
+  padding: 6px;
+  transition: transform .18s ease, opacity .18s ease;
+  z-index: 1;
+}
+.modal-close:hover  { transform: scale(1.06); opacity: .9; }
+.modal-close:active { transform: scale(.96); }
+
+
+/* when modal open, the PAGE must not scroll */
+body.modal-open {
+  overflow: hidden !important;
+}
+
+/* ===== PizzaBuilder layout tuning (846 / 453 / 334 split) ===== */
+:root{
+  --pb-total: 846px;          /* overall content width (already matches your modal) */
+  --pb-left: 453px;           /* LEFT column target width (your screenshot ~453.5) */
+  --pb-right: 334px;          /* RIGHT column target width (your screenshot ~334.9) */
+  --pb-gap: calc(var(--pb-total) - var(--pb-left) - var(--pb-right)); /* ~58px middle gap */
+  --pb-h-pad-x: 9.5px;        /* header horizontal padding (≈ 9.412 from your inspect) */
+  --pb-h-pad-y: 8px;          /* header vertical padding (≈ 7.614 from your inspect) */
+}
+
+/* Outer frame that wraps the two columns inside PizzaBuilder */
+.pb-grid{
+  display: grid;
+  grid-template-columns: var(--pb-left) var(--pb-right);
+  column-gap: var(--pb-gap);
+  width: var(--pb-total);     /* ensures headers + columns sum to 846 exactly */
+  margin: 0 auto;             /* centered inside the modal’s content area */
+}
+
+/* Optional: if your content inside already stretches, keep it from overflowing */
+.pb-left, .pb-right{ min-width: 0; }
+
+/* The red header bars (apply the class below to each section header element) */
+.pb-h{
+  background: var(--red, #7a1116);
+  color: #fff;
+  font-family: var(--font-heading, Oswald, sans-serif);
+  font-weight: 900;
+  /* same height on both sides derives from padding + line-height */
+}
+.pb-h__inner{
+  padding: var(--pb-h-pad-y) var(--pb-h-pad-x);
+  line-height: 1;             /* keep it tight like your screenshot */
+  font-size: 0.95rem;         /* you can nudge this if you want slightly bigger text */
+}
+
+/* Make headers span only their own column widths automatically */
+.pb-left .pb-h,
+.pb-right .pb-h{ width: 100%; }
+
+/* Responsive: stack on narrow screens */
+@media (max-width: 920px){
+  .pb-grid{
+    grid-template-columns: 1fr;
+    column-gap: 0;
+    width: 100%;
+  }
+}
+
+/* Combo item status chips */
+.combo-item-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  line-height: 1.2;
+  padding: 4px 10px 4px 9px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  font-family: var(--font-body, Inter, system-ui, sans-serif);
+}
+
+/* success (after user customizes) */
+.combo-item-status--ok {
+  background: #e8f5e9;               /* soft green */
+  border-color: #c8e6c9;
+  color: #155724;
+  font-weight: 600;
+}
+
+/* warning / not customized yet */
+.combo-item-status--warn {
+  background: #fff4e5;               /* soft orange */
+  border-color: #ffcc80;
+  color: #b34700;
+  font-weight: 600;
+}
+
+/* tiny circle icon */
+.combo-item-status__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 9999px;
+  background: currentColor;
+  flex: 0 0 auto;
+}
+
+/* check icon style if you want text instead of dot */
+.combo-item-status__check {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+html {
+  overflow-y: scroll;
+}

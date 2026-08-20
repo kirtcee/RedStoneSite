@@ -1,0 +1,15 @@
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+# Next.js build output
+.next/
+
+# Env files (contain API keys)
+.env.local
+.env*.local
