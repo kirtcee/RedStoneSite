@@ -4,7 +4,7 @@
 // pricing.js
 export const formatMoney = (
   cents,
-  { currency = "USD", locale = "en-US" } = {}
+  { currency = "CAD", locale = "en-CA" } = {}
 ) =>
   new Intl.NumberFormat(locale, {
     style: "currency",
