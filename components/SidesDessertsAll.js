@@ -2,7 +2,7 @@
 import React from "react";
 
 /**
- * Only this view (Sides & Desserts → View All) should use the alternate images.
+ * Only this view (Sides → View All) should use the alternate images.
  * The front menu tiles keep using /images/menu_wings.png and /images/menu_drinks.png.
  */
 const IMG_WINGS_VIEWALL  = "/images/sd_wings.png";   // 👈 alternate wings image
@@ -99,30 +99,6 @@ export default function SidesDessertsAll({
               </button>
 
               <p className="feastCard__desc">Sauced or dry-rubbed. Customize in the wings panel.</p>
-            </article>
-          </section>
-        </div>
-      </section>
-
-      {/* ===== Desserts ===== */}
-      <section className="card" style={{ padding: "1rem 1rem 1.25rem" }}>
-        <h2 style={{ margin: "0 0 0.75rem 0" }}>Desserts</h2>
-
-        <div className="feast feast--edge">
-          <section className="feast__grid feast__grid--four">
-            {/* If you have real dessert items, list them like the sides above. */}
-            <article className="feastCard">
-              <div className="feastCard__imgWrap">
-                <img className="feastCard__img" src="/images/desserts/placeholder.jpg" alt="Desserts" loading="lazy" />
-              </div>
-              <div className="feastCard__name" style={{ cursor: "default" }}>Desserts</div>
-              <button type="button" className="btn btn-add" onClick={() => alert("Desserts coming soon!")}>
-                ADD TO ORDER
-              </button>
-              <button type="button" className="btn btn-outline" onClick={() => alert("Desserts coming soon!")}>
-                CUSTOMIZE
-              </button>
-              <p className="feastCard__desc">Sweet treats coming soon.</p>
             </article>
           </section>
         </div>

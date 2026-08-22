@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { priceLineItem, formatMoney } from "./Pricing";
+import { priceLineItem, formatMoney, weightedToppingCount, PRICES, sizeMapUIToPrice } from "./Pricing";
 import { useCart } from "./CartSystem";
 
 export default function PizzaBuilder({
@@ -8,7 +8,7 @@ export default function PizzaBuilder({
   initialData = {},
   pizzaName = "",
   onSave = () => {},
-  maxToppings = null,
+  includedToppings = null, // informational only — e.g. 3 for combo pizzas ("3 included, extra cost more")
   lockedSize = null,
   allowSizeChoice = true
 }) {
@@ -50,6 +50,7 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
   const [cheeseIncluded, setCheeseIncluded] = useState(initialData.cheeseIncluded ?? true);
   const [cheeseCoverage, setCheeseCoverage] = useState(initialData.cheeseCoverage || "full");
   const [cheeseAmount, setCheeseAmount] = useState(initialData.cheeseAmount || "Normal");
+  const [dairyFreeCheese, setDairyFreeCheese] = useState(initialData.dairyFreeCheese ?? false);
   const [secondCoverage, setSecondCoverage] = useState(null);
   const [secondAmount, setSecondAmount] = useState("Normal");
   const [selectedToppings, setSelectedToppings] = useState([]);
@@ -62,9 +63,10 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
 
   // Dips (with images)
   const DIP_DEFS = [
-    { key: "garlic",   name: "Signature Garlic Dip", img: "/images/dips/garlic.png" },
-    { key: "ranch",    name: "Ranch",                img: "/images/dips/ranch.png" },
-    { key: "marinara", name: "Marinara",             img: "/images/dips/marinara.png" },
+    { key: "garlic",     name: "Signature Garlic Dip", img: "/images/dips/garlic.png" },
+    { key: "ranch",      name: "Ranch",                img: "/images/dips/ranch.png" },
+    { key: "marinara",   name: "Marinara",             img: "/images/dips/marinara.png" },
+    { key: "blueCheese", name: "Blue Cheese",          img: "/images/dips/blue-cheese.png" },
   ];
   const initialDips = DIP_DEFS.reduce((acc, d) => { acc[d.key] = 0; return acc; }, {});
   const [dipsQty, setDipsQty] = useState(initialDips);
@@ -77,7 +79,13 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
     { size: "16", label: "X-Large",px: 95 }
   ];
 
-  const crustOptions = ["Thin Crust", "Original Hand Tossed", "Thick Crust"];
+  // Gluten Free only makes sense for true freeform BYO — not inside a combo (locked
+  // size) and not while customizing a named Signature/Specialty recipe.
+  const glutenFreeAvailable = !lockedSize && !pizzaName;
+  const crustOptions = glutenFreeAvailable
+    ? ["Thin Crust", "Original Hand Tossed", "Thick Crust", "Gluten Free"]
+    : ["Thin Crust", "Original Hand Tossed", "Thick Crust"];
+  const isGlutenFree = selectedCrust === "Gluten Free";
   const sauceOptions = ["Pizza Sauce", "Garlic Base", "BBQ Base", "Butter Chicken Base", "Shahi Paneer Base"];
 
   const coverageIcons = [
@@ -86,21 +94,11 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
     { value: "right", label: "◑" }
   ];
 
-  const allToppings = [
-    "Pepperoni", "Real Bacon", "Grilled Chicken", "Shawarma Chicken", "BBQ Chicken",
-    "Butter Chicken", "Beef", "Hot Italian Sausage", "Mild Sausage", "Bacon Crumble",
-    "Mushroom", "Green Pepper", "Onion", "Pineapple", "Tomato", "Hot Peppers",
-    "Green Olives", "Black Olives", "Broccoli", "Jalapeno", "Sun Dried Tomato",
-    "Spinach", "Fresh Garlic", "Feta Cheese", "Ginger", "Coriander", "Sumac Seasoning",
-    "Chipotle Mayo Drizzle", "BBQ Drizzle"
-  ];
-
   const isSpecialToppingAllowed = (topping) => {
     const rules = {
       "BBQ Chicken": ["Bourbon"],
       "BBQ Drizzle": ["Bourbon"],
       "Sumac Seasoning": ["Shawarma"],
-      "Chipotle Mayo Drizzle": ["Sizzler"],
       "Ginger": ["Butter Chicken", "Shahi Paneer"],
       "Coriander": ["Butter Chicken", "Shahi Paneer"],
       "Butter Chicken": ["Butter Chicken"],
@@ -111,9 +109,19 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
 
   useEffect(() => { if (lockedSize) setSelectedSize(lockedSize); }, [lockedSize]);
 
+  // Gluten Free comes in one fixed 13" size — lock to it while selected, and drop
+  // back to a normal default size when the customer switches to a different crust.
+  useEffect(() => {
+    if (isGlutenFree) {
+      setSelectedSize("gf");
+    } else {
+      setSelectedSize((prev) => (prev === "gf" ? "12" : prev));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isGlutenFree]);
+
   const handleToppingToggle = (topping) => {
     const isSelected = selectedToppings.includes(topping);
-    if (!isSelected && maxToppings && selectedToppings.length >= maxToppings) return;
     if (isSelected) {
       setSelectedToppings(selectedToppings.filter((t) => t !== topping));
       const newPlacement = { ...toppingPlacement };
@@ -237,25 +245,55 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
   ]);
 
   const defaultMeats = [
-    "Pepperoni","Real Bacon","Grilled Chicken","Shawarma Chicken","BBQ Chicken",
-    "Butter Chicken","Beef","Hot Italian Sausage","Mild Sausage","Bacon Crumble"
+    "Pepperoni","Real Bacon","Ham","Grilled Chicken","Shawarma Chicken","Halal Chicken",
+    "BBQ Chicken","Butter Chicken","Beef","Hot Italian Sausage","Mild Sausage",
+    "Bacon Crumble","Anchovies","Salami","Halal Pepperoni"
   ].filter(isSpecialToppingAllowed);
 
   const defaultVeggies = [
     "Mushroom","Green Pepper","Onion","Pineapple","Tomato","Hot Peppers",
     "Green Olives","Black Olives","Broccoli","Jalapeno","Sun Dried Tomato",
-    "Spinach","Fresh Garlic","Feta Cheese","Ginger","Coriander","Sumac Seasoning"
+    "Spinach","Fresh Garlic","Roasted Red Pepper","Corn","Paneer","Feta Cheese",
+    "Ginger","Coriander","Sumac Seasoning"
   ].filter(isSpecialToppingAllowed);
 
-  const defaultDrizzles = ["Chipotle Mayo Drizzle","BBQ Drizzle"].filter(isSpecialToppingAllowed);
+  const defaultDrizzles = ["BBQ Drizzle"].filter(isSpecialToppingAllowed);
 
   const meats   = allowedToppings ? defaultMeats.filter((t) => allowedToppings.includes(t))   : defaultMeats;
   const veggies = allowedToppings ? defaultVeggies.filter((t) => allowedToppings.includes(t)) : defaultVeggies;
   const drizzles= allowedToppings ? defaultDrizzles.filter((t) => allowedToppings.includes(t)): defaultDrizzles;
 
-  const isCapReached = !!maxToppings && selectedToppings.length >= maxToppings;
+  const currentWeightedCount = weightedToppingCount({
+    toppings: selectedToppings,
+    toppingPlacement,
+    toppingAmount,
+    cheeseIncluded,
+    cheeseAmount,
+    cheeseCoverage,
+    secondAmount,
+  });
+  const showIncludedNotice = !!includedToppings;
+  const isOverIncluded = showIncludedNotice && currentWeightedCount > includedToppings;
+  const extraRateForNotice = (() => {
+    const sizeKey = lockedSize === "slab" ? "slab" : sizeMapUIToPrice[String(selectedSize)] || String(selectedSize);
+    return PRICES.byo[sizeKey]?.extra ?? 0;
+  })();
 
-  const currentItem = { type: "pizza-byo", size: String(selectedSize), toppings: selectedToppings, qty };
+  const currentItem = {
+    type: "pizza-byo",
+    size: String(selectedSize),
+    crust: selectedCrust,
+    toppings: selectedToppings,
+    toppingPlacement,
+    toppingAmount,
+    cheeseIncluded,
+    cheeseAmount,
+    cheeseCoverage,
+    secondAmount,
+    dairyFreeCheese,
+    dips: dipsQty,
+    qty,
+  };
   const lineSubtotalCents = priceLineItem(currentItem);
 
   // ===== UI helpers =====
@@ -315,6 +353,32 @@ const Section = ({ index, title, children }) => (
           {/* 1. Size & Crust */}
           <Section index={1} title="Size and Crust">
             {/* Sizes */}
+            {isGlutenFree ? (
+              <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.6rem" }}>
+                <div
+                  style={{
+                    width: 65,
+                    height: 65,
+                    borderRadius: "50%",
+                    backgroundColor: MAROON,
+                    border: `2px solid ${MAROON}`,
+                    color: "white",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: 900,
+                    fontFamily: "var(--font-heading), Oswald, sans-serif",
+                    fontSize: 17,
+                    lineHeight: 1,
+                  }}
+                >
+                  13"
+                </div>
+                <span style={{ fontSize: ".9rem", color: "#555" }}>
+                  Gluten Free comes in one size — 13"
+                </span>
+              </div>
+            ) : (
             <div
               style={{
                 display: "flex",
@@ -400,6 +464,7 @@ const Section = ({ index, title, children }) => (
                 );
               })}
             </div>
+            )}
 
             <Divider />
 
@@ -533,6 +598,18 @@ const Section = ({ index, title, children }) => (
                 )}
               </>
             )}
+
+            <Divider />
+
+            <label style={{ display: "flex", alignItems: "center" }}>
+              <input
+                type="checkbox"
+                checked={dairyFreeCheese}
+                onChange={(e) => { e.stopPropagation(); setDairyFreeCheese(!dairyFreeCheese); }}
+                style={{ marginRight: "0.5rem" }}
+              />
+              Dairy-Free Cheese (+{formatMoney(PRICES.dairyFreeCheese)})
+            </label>
           </Section>
 
           {/* 3. Sauce */}
@@ -579,6 +656,24 @@ const Section = ({ index, title, children }) => (
 
           {/* 4. Toppings */}
           <Section index={4} title="Toppings">
+            {showIncludedNotice && (
+              <p
+                style={{
+                  margin: "0 0 0.75rem",
+                  padding: "0.5rem 0.65rem",
+                  background: isOverIncluded ? "#fff4e5" : "#f2f2f2",
+                  border: `1px solid ${isOverIncluded ? "#e0a951" : LIGHT_BORDER}`,
+                  borderRadius: 4,
+                  fontSize: ".85rem",
+                  color: "#333"
+                }}
+              >
+                {includedToppings} topping{includedToppings === 1 ? "" : "s"} included.
+                {isOverIncluded
+                  ? ` You've added extra — +${formatMoney(extraRateForNotice)} each beyond ${includedToppings}.`
+                  : ` Additional toppings cost ${formatMoney(extraRateForNotice)} each.`}
+              </p>
+            )}
             <p
               style={{
                 fontWeight: 900,
@@ -598,7 +693,6 @@ const Section = ({ index, title, children }) => (
                       type="checkbox"
                       checked={selectedToppings.includes(topping)}
                       onChange={(e) => { e.stopPropagation(); handleToppingToggle(topping); }}
-                      disabled={!selectedToppings.includes(topping) && isCapReached}
                       style={{ marginRight: "0.5rem" }}
                     />
                     {topping}
@@ -655,7 +749,6 @@ const Section = ({ index, title, children }) => (
                       type="checkbox"
                       checked={selectedToppings.includes(topping)}
                       onChange={(e) => { e.stopPropagation(); handleToppingToggle(topping); }}
-                      disabled={!selectedToppings.includes(topping) && isCapReached}
                       style={{ marginRight: "0.5rem" }}
                     />
                     {topping}
@@ -690,7 +783,7 @@ const Section = ({ index, title, children }) => (
               ))}
             </div>
 
-            {(pizzaName === "Bourbon" || pizzaName === "Sizzler") && (
+            {pizzaName === "Bourbon" && (
               <>
                 <p
                   style={{
@@ -712,7 +805,6 @@ const Section = ({ index, title, children }) => (
                           type="checkbox"
                           checked={selectedToppings.includes(topping)}
                           onChange={(e) => { e.stopPropagation(); handleToppingToggle(topping); }}
-                          disabled={!selectedToppings.includes(topping) && isCapReached}
                           style={{ marginRight: "0.5rem" }}
                         />
                         {topping}
@@ -951,13 +1043,17 @@ const Section = ({ index, title, children }) => (
 
 
             <div style={{ padding: "1rem", background: LIGHT_BG }}>
-              <p><strong>Size:</strong> {selectedSize}" ({sizes.find((s) => s.size === selectedSize)?.label})</p>
+              <p>
+                <strong>Size:</strong>{" "}
+                {isGlutenFree ? '13" (Gluten Free)' : `${selectedSize}" (${sizes.find((s) => s.size === selectedSize)?.label})`}
+              </p>
               <p><strong>Crust:</strong> {selectedCrust}</p>
               <p>
                 <strong>Cheese:</strong>{" "}
                 {cheeseIncluded
                   ? `${cheeseCoverage} - ${cheeseAmount}${secondCoverage ? ` / ${secondCoverage} - ${secondAmount}` : ""}`
                   : "No Cheese"}
+                {dairyFreeCheese ? " (Dairy-Free)" : ""}
               </p>
               <p><strong>Sauce:</strong> {sauceEnabled ? `${selectedSauce} (${sauceAmount})` : "No Sauce"}</p>
 
@@ -1026,6 +1122,7 @@ const Section = ({ index, title, children }) => (
                     cheeseAmount,
                     secondCoverage,
                     secondAmount,
+                    dairyFreeCheese,
                     toppingPlacement,
                     toppingAmount,
                     dipQty: dipsQty.garlic || 0, // legacy
@@ -1039,7 +1136,8 @@ const Section = ({ index, title, children }) => (
                         "10": 'Small 8"',
                         "12": 'Medium 10"',
                         "14": 'Large 12"',
-                        "16": 'X-Large 14"'
+                        "16": 'X-Large 14"',
+                        "gf": '13" (Gluten Free)'
                       }[String(selectedSize)] || `${selectedSize}"`;
                       const toppingNames = selectedToppings.join(", ");
                       return `${sizeLabel} ${selectedCrust} – ${toppingNames || "No toppings"}`;
@@ -1048,6 +1146,14 @@ const Section = ({ index, title, children }) => (
                       type: "pizza-byo",
                       size: String(selectedSize),
                       toppings: selectedToppings,
+                      toppingPlacement,
+                      toppingAmount,
+                      cheeseIncluded,
+                      cheeseAmount,
+                      cheeseCoverage,
+                      secondAmount,
+                      dairyFreeCheese,
+                      dips: dipsQty,
                       qty
                     })
                   };

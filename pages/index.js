@@ -1,52 +1,6 @@
 // pages/index.js
 import Link from "next/link";
 
-/** Temporary inline SVG (300x92). Replace with your own later. */
-function RewardsLogo(props) {
-  return (
-    <svg
-      viewBox="0 0 300 92"
-      width="300"
-      height="92"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-label="Red Stone Rewards"
-      {...props}
-    >
-      <defs>
-        <linearGradient id="rsBlueGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#0b61d6" />
-          <stop offset="100%" stopColor="#006491" />
-        </linearGradient>
-      </defs>
-      <rect x="0" y="0" width="300" height="92" fill="url(#rsBlueGrad)" />
-      <g>
-        <text
-          x="18"
-          y="40"
-          fill="#ffffff"
-          fontFamily="Oswald, Montserrat, Arial, sans-serif"
-          fontWeight="700"
-          fontSize="22"
-          letterSpacing="1"
-        >
-          RED STONE
-        </text>
-        <text
-          x="18"
-          y="70"
-          fill="#ffffff"
-          fontFamily="Oswald, Montserrat, Arial, sans-serif"
-          fontWeight="900"
-          fontSize="28"
-          letterSpacing="1.2"
-        >
-          REWARDS
-        </text>
-      </g>
-    </svg>
-  );
-}
-
 export default function Home() {
   return (
     <div className="home">
@@ -88,16 +42,6 @@ export default function Home() {
             <img src="/images/home/deal-928x140-b.jpg" alt="Online coupons" />
           </Link>
 
-          {/* Gap then 928x140 rewards banner (SVG + text + button) */}
-          <div className="rewards-928x140">
-            <img src="/images/home/rewards-logo.svg" alt="Red Stone Rewards" className="rewards-svg" />
-            <div className="rewards-copy">
-              <div className="rewards-title">EARN FREE RED STONE EVERY 2 ORDERS</div>
-              <div className="rewards-sub">1 Order of $10 or more = 10 points</div>
-            </div>
-            <Link href="/rewards" className="button rewards-cta">Join Now</Link>
-          </div>
-
           {/* Gap then 928x250 image/button */}
           <Link href="/menu" className="tile tile-928x250">
             <img src="/images/home/deal-928x250.jpg" alt="Family bundle" />
@@ -117,7 +61,7 @@ export default function Home() {
             </p>
 
             <div className="footer-logo">
-              <img src="/images/logo_small.png" alt="Red Stone Pizza" />
+              <img src="/images/storelogo.svg" alt="Red Stone Pizza" />
             </div>
 
             <p className="disc disc-right">
@@ -205,51 +149,6 @@ export default function Home() {
         .tile-928x250 { aspect-ratio: 928 / 250; }
         .tile-928x148 { aspect-ratio: 928 / 148; }
 
-        /* Rewards banner (styled like a tile) */
-        .rewards-928x140 {
-          border: 1px solid #e9e9e9;
-          border-radius: 6px;
-          background: #fff;
-          box-shadow: var(--shadow);
-          box-sizing: border-box;
-
-          display: flex;
-          align-items: center;
-          justify-content: flex-start;
-          gap: 16px;
-          padding: 12px 16px;
-
-          aspect-ratio: 928 / 140;
-          width: 100%;
-        }
-        .rewards-svg {
-          width: 300px;
-          height: 92px;
-          flex: 0 0 auto;
-          display: block;
-        }
-        .rewards-copy {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          gap: 4px;
-        }
-        .rewards-title {
-          font-family: 'Oswald', sans-serif;
-          font-weight: 900;
-          font-size: 1.35rem;
-          letter-spacing: 0.4px;
-          color: var(--brand-blue);
-          line-height: 1.1;
-        }
-        .rewards-sub { color: #777; font-size: 0.95rem; }
-        .rewards-cta {
-          margin-left: auto;
-          align-self: center;
-          padding: 0.55rem 0.95rem;
-          font-weight: 900;
-        }
-
         /* Footer disclaimers + logo */
         .home-footer { margin: 28px 0 36px; }
         .disclaimers {
@@ -278,15 +177,6 @@ export default function Home() {
           .start-row { gap: 10px; }
           .home-title { font-size: 1.6rem; margin-right: 0; }
           .deals-right { grid-template-columns: 1fr; row-gap: 12px; }
-
-          .rewards-928x140 {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 10px;
-            aspect-ratio: auto;
-          }
-          .rewards-svg { width: 100%; height: auto; }
-          .rewards-cta { margin-left: 0; align-self: flex-start; }
 
           .disclaimers { grid-template-columns: 1fr; text-align: center; }
         }

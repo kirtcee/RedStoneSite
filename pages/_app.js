@@ -1,16 +1,30 @@
 // pages/_app.js
 import React, { useEffect } from "react";
 import Script from "next/script";
+import { useRouter } from "next/router";
 import "../styles/globals.css";
 import Header from "../components/Header";
 import { CartProvider } from "../components/CartSystem";
 
 function RootApp({ Component, pageProps }) {
+  const router = useRouter();
+  const isStaffPage = router.pathname.startsWith("/kitchen");
+
   // Enable compact scaling globally (no CSS zoom/transform)
   useEffect(() => {
     document.body.classList.add("scale-90"); // change to 'scale-100' or remove to go back to 100%
     return () => document.body.classList.remove("scale-90");
   }, []);
+
+  // Staff-only pages (e.g. the kitchen dashboard) skip the customer chrome
+  // (order/delivery header, cart, Google Maps) entirely.
+  if (isStaffPage) {
+    return (
+      <main id="page" className="page-shell">
+        <Component {...pageProps} />
+      </main>
+    );
+  }
 
   return (
     <>

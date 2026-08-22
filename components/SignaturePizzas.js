@@ -12,7 +12,6 @@ const signaturePizzas = [
   { name: "Butter Chicken",  toppings: ["Butter Chicken", "Green Pepper", "Onion", "Tomato", "Ginger", "Coriander"], base: "Butter Chicken Base" },
   { name: "Shahi Paneer",    toppings: ["Shahi Paneer", "Green Pepper", "Onion", "Tomato", "Ginger", "Coriander"], base: "Shahi Paneer Base" },
   { name: "Mexican",         toppings: ["Onion", "Beef", "Jalapeno", "Tomato"] },
-  { name: "Sizzler",         toppings: ["Grilled Chicken", "Onion", "Real Bacon", "Chipotle Mayo Drizzle"], base: "BBQ Base" },
   { name: "Loaded Veggie",   toppings: ["Green Pepper", "Mushroom", "Onion", "Tomato", "Corn", "Black Olives"] }
 ];
 

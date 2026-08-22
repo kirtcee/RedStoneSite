@@ -5,8 +5,9 @@ import { useCart } from "./CartSystem";
 
 /* ---- STABLE DEFAULTS (no new refs every render) ---- */
 const DEFAULT_SAUCE_OPTIONS = [
-  "Mild (BBQ)", "Medium", "Hot", "Honey Garlic", "Sweet Chilli", "Honey Heat",
+  "Mild (BBQ)", "Medium", "Hot", "Honey Garlic", "Sweet Chilli", "Hot Honey",
 ];
+const DEFAULT_SERVE_STYLE_OPTIONS = ["Sauced & Tossed", "Sauce on Side"];
 const DEFAULT_PIECE_OPTIONS = [6, 12, 20, 30];
 const DEFAULT_DIPS_OPTIONS  = ["Blue Cheese", "Garlic", "Ranch"];
 const DEFAULT_INCLUDED_DIPS_MAP = { 6: 1, 12: 2, 20: 3, 30: 4 };
@@ -94,6 +95,11 @@ export default function WingsBuilder({
       ? initialData.sauce
       : sauceOptions[0]
   );
+  const [serveStyle, setServeStyle] = useState(
+    initialData.serveStyle && DEFAULT_SERVE_STYLE_OPTIONS.includes(initialData.serveStyle)
+      ? initialData.serveStyle
+      : DEFAULT_SERVE_STYLE_OPTIONS[0]
+  );
 
   const defaultCount = useMemo(() => {
     if (lockedCount && pieceOptions.includes(Number(lockedCount))) return Number(lockedCount);
@@ -145,7 +151,7 @@ export default function WingsBuilder({
       ? " | Dips: " +
         selectedDipsList.map((d) => `${d.label} × ${d.qty}`).join(", ")
       : "";
-    return `${wingsQty} × ${selectedCount}-piece Wings — ${selectedSauce}${dipsSummary}`;
+    return `${wingsQty} × ${selectedCount}-piece Wings — ${selectedSauce} (${serveStyle})${dipsSummary}`;
   };
 
   const currentItem = useMemo(
@@ -269,6 +275,50 @@ export default function WingsBuilder({
               title={sauce}
             >
               {sauce}
+            </button>
+          ))}
+        </div>
+
+        <Divider />
+
+        {/* Serve style */}
+        <p
+          style={{
+            fontWeight: 900,
+            marginBottom: "0.35rem",
+            color: MAROON,
+            fontFamily: "var(--font-heading), Oswald, sans-serif",
+            fontSize: "1rem"
+          }}
+        >
+          Sauced &amp; Tossed or Sauce on Side?
+        </p>
+        <div
+          style={{
+            display: "flex",
+            gap: "0.55rem",
+            marginBottom: "0.4rem",
+            flexWrap: "wrap",
+          }}
+        >
+          {DEFAULT_SERVE_STYLE_OPTIONS.map((style) => (
+            <button
+              key={style}
+              type="button"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setServeStyle(style); }}
+              style={{
+                padding: "0.55rem 0.7rem",
+                backgroundColor: serveStyle === style ? MAROON : "#eee",
+                color: serveStyle === style ? "white" : "#333",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontWeight: 800,
+                fontFamily: "var(--font-heading), Oswald, sans-serif",
+                fontSize: ".9rem"
+              }}
+            >
+              {style}
             </button>
           ))}
         </div>
@@ -477,6 +527,7 @@ export default function WingsBuilder({
               type: "wings",
               summary: buildSummary(),
               sauce: selectedSauce,
+              serveStyle,
               count: selectedCount,
               qty: wingsQty,
               dips: dipQty,

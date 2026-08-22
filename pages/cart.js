@@ -16,13 +16,6 @@ const SUGGESTED_DRINKS = [
   { name: "Water", href: "/menu?tab=drinks" },
 ];
 
-const SUGGESTED_DESSERTS = [
-  { name: "Dessert Placeholder 1", href: "/menu?tab=sides" },
-  { name: "Dessert Placeholder 2", href: "/menu?tab=sides" },
-  { name: "Dessert Placeholder 3", href: "/menu?tab=sides" },
-  { name: "Dessert Placeholder 4", href: "/menu?tab=sides" },
-];
-
 const SUGGESTED_DIPS = [
   { name: "Blue Cheese", href: "/menu?tab=drinks" },
   { name: "Garlic", href: "/menu?tab=drinks" },
@@ -328,7 +321,6 @@ export default function CartPage() {
               <div style={{ padding: "0.75rem" }}>
                 <UpsellRow title="Add Some Sides" items={SUGGESTED_SIDES} />
                 <UpsellRow title="Add Some Drinks" items={SUGGESTED_DRINKS} />
-                <UpsellRow title="Add a Dessert" items={SUGGESTED_DESSERTS} />
                 <UpsellRow title="Add Some Flavour" items={SUGGESTED_DIPS} />
               </div>
             )}

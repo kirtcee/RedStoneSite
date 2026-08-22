@@ -11,7 +11,7 @@ import StoreLogo from "../public/storelogoRSP.svg";
 /**
  * Paths that switch the top-nav into "menu mode"
  */
-const MENU_MODE_PATHS = ["/order", "/menu", "/coupons"];
+const MENU_MODE_PATHS = ["/order", "/menu"];
 
 const buildMenuUrl = (q) => {
   const usp = new URLSearchParams();
@@ -97,9 +97,6 @@ export default function Header() {
   const homeNav = [
     { key: "order", label: "ORDER\nONLINE", onClick: () => router.push("/order") },
     { key: "menu", label: "MENU", onClick: () => router.push("/menu") },
-    { key: "coupons", label: "COUPONS", onClick: () => router.push("/coupons") },
-    { key: "tracker", label: "TRACKER", onClick: () => router.push("/tracker") },
-    { key: "rewards", label: "REWARDS", onClick: () => router.push("/rewards") },
   ];
 
   const menuNav = [
@@ -118,7 +115,7 @@ export default function Header() {
     },
     {
       key: "sides",
-      label: "SIDES &\nDESSERTS",
+      label: "SIDES",
       onClick: () =>
         router.push(buildMenuUrl({ tab: "sides", sub: "all" }), undefined, {
           scroll: false,
@@ -145,7 +142,6 @@ export default function Header() {
   const activeTopKey = useMemo(() => {
     const p = router.pathname || "/";
     if (inMenuMode) {
-      if (p.startsWith("/coupons")) return "coupons";
       if (tab === "sides") return "sides";
       if (tab === "drinks") return "drinks";
       if (sub === "combos") return "combos";
@@ -154,9 +150,6 @@ export default function Header() {
     } else {
       if (p.startsWith("/order")) return "order";
       if (p.startsWith("/menu")) return "menu";
-      if (p.startsWith("/coupons")) return "coupons";
-      if (p.startsWith("/tracker")) return "tracker";
-      if (p.startsWith("/rewards")) return "rewards";
       return "";
     }
   }, [inMenuMode, router.pathname, tab, sub]);
@@ -180,7 +173,6 @@ export default function Header() {
         { key: "all", label: "VIEW ALL", qp: { tab: "sides", sub: "all" } },
         { key: "sides", label: "SIDES", qp: { tab: "sides", sub: "sides" } },
         { key: "wings", label: "WINGS", qp: { tab: "sides", sub: "wings" } },
-        { key: "desserts", label: "DESSERTS", qp: { tab: "sides", sub: "desserts" } },
         { key: "drinks", label: "DRINKS & DIPS", qp: { tab: "drinks" } },
       ];
     }
@@ -344,17 +336,6 @@ export default function Header() {
                   </span>
                 </span>
               )}
-            </button>
-
-            <button
-              className="header-seg header-seg--auth"
-              onClick={() => {
-                if (typeof window !== "undefined")
-                  window.location.href = "/signin";
-              }}
-              title="Sign in & earn rewards"
-            >
-              <span className="header-seg__label">SIGN IN & EARN REWARDS</span>
             </button>
 
             <div className="header-seg header-seg--cart" role="button" aria-label="Cart">

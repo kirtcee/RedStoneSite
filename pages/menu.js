@@ -622,7 +622,6 @@ function MenuBody() {
       { id: "wings",       label: "Wings",            img: "/images/menu_wings.png",     nav: { tab: "entrees", sub: "wings" } },
       { id: "sides",       label: "Sides",            img: "/images/menu_sides.png",     nav: { tab: "sides" } },
       { id: "combos",      label: "Combos",           img: "/images/menu_combos.png",    nav: { tab: "entrees", sub: "combos" } },
-      { id: "desserts",    label: "Desserts",         img: "/images/menu_desserts.png",  nav: { tab: "sides" } },
       { id: "drinks-dips", label: "Drinks & Dips",    img: "/images/menu_drinks.png",    nav: { tab: "drinks" } },
       { id: "special",     label: "Special Menu",     img: "/images/menu_special.png",   nav: { tab: "entrees", sub: "special" } },
     ],
@@ -683,11 +682,8 @@ function MenuBody() {
       return "Menu";
     }
     if (tab === "sides") {
-      if (!sub || sub === "all") return "Sides & Desserts";
       if (sub === "wings") return "Wings";
-      if (sub === "sides") return "Sides";
-      if (sub === "desserts") return "Desserts";
-      return "Sides & Desserts";
+      return "Sides";
     }
     if (tab === "drinks") return "Drinks & Dips";
     return "Menu";
@@ -771,33 +767,6 @@ function MenuBody() {
                 <div className="cat-card cat-card--empty" aria-hidden="true" />
               </div>
 
-              <div
-                className="wide-promo wide-promo--dom"
-                onClick={() => router.push("/coupons")}
-                role="button"
-              >
-                <img src="/images/promo_coupons.png" alt="" className="wide-promo__img" />
-                <div className="wide-promo__body">
-                  <div className="wide-promo__title">Coupons</div>
-                  <div className="wide-promo__sub">Find the perfect hot online deal.</div>
-                </div>
-                <span className="wide-promo__arrow" aria-hidden="true" />
-              </div>
-
-              <div
-                className="wide-promo wide-promo--dom"
-                onClick={() => alert("Featured Items coming soon")}
-                role="button"
-              >
-                <img src="/images/promo_featured.png" alt="" className="wide-promo__img" />
-                <div className="wide-promo__body">
-                  <div className="wide-promo__title">Featured Items</div>
-                  <div className="wide-promo__sub">
-                    No time to waste? Choose a meal and head straight for checkout.
-                  </div>
-                </div>
-                <span className="wide-promo__arrow" aria-hidden="true" />
-              </div>
             </>
           )}
 
@@ -816,7 +785,7 @@ function MenuBody() {
             </div>
           )}
 
-          {/* Sides & Desserts — VIEW ALL */}
+          {/* Sides — VIEW ALL */}
           {tab === "sides" && (!sub || sub === "all") && (
             <div key="sides-viewall">
               <SidesDessertsAll onAddToCart={handleAddToCart} />

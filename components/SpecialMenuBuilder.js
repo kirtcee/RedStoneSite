@@ -1,6 +1,6 @@
 // components/SpecialMenuBuilder.js
 import React, { useMemo, useState } from "react";
-import { priceLineItem, formatMoney } from "./Pricing";
+import { priceLineItem, formatMoney, weightedToppingCount, PRICES } from "./Pricing";
 import { useCart } from "./CartSystem";
 import DebugPizzaOverlay from "./modals/DebugPizzaOverlay";
 
@@ -79,11 +79,13 @@ export default function SpecialMenuBuilder({
   const VEGGIES = [
     "Mushroom","Green Pepper","Onion","Pineapple","Tomato","Hot Peppers",
     "Green Olives","Black Olives","Broccoli","Jalapeno","Sun Dried Tomato",
-    "Spinach","Fresh Garlic","Ginger","Coriander","Sumac Seasoning"
+    "Spinach","Fresh Garlic","Roasted Red Pepper","Corn","Paneer",
+    "Ginger","Coriander","Sumac Seasoning"
   ];
   const MEATS = [
-    "Pepperoni","Real Bacon","Grilled Chicken","Shawarma Chicken","BBQ Chicken",
-    "Butter Chicken","Beef","Hot Italian Sausage","Mild Sausage","Bacon Crumble"
+    "Pepperoni","Real Bacon","Ham","Grilled Chicken","Shawarma Chicken","Halal Chicken",
+    "BBQ Chicken","Butter Chicken","Beef","Hot Italian Sausage","Mild Sausage",
+    "Bacon Crumble","Anchovies","Salami","Halal Pepperoni"
   ];
   const CHEESES = ["Feta Cheese","Extra Cheese","Double Cheese"];
   const DIPS = ["Blue Cheese","Garlic","Ranch"];
@@ -129,13 +131,36 @@ export default function SpecialMenuBuilder({
     return `${qty} × Pizza Sub${toppingStr}`;
   };
 
+  const currentToppings = useMemo(
+    () => ({ meats: selMeat, veggies: selVeg, cheeses: selCheese }),
+    [selMeat, selVeg, selCheese]
+  );
+  const currentWeightedCount = useMemo(
+    () => weightedToppingCount({ toppings: [...selMeat, ...selVeg, ...selCheese] }),
+    [selMeat, selVeg, selCheese]
+  );
+  const extraToppingRate = PRICES.specialsExtraTopping[selectedItem] || 0;
+  const isOverIncluded = showsToppings && currentWeightedCount > 3;
+
   const unitPrice = useMemo(
-    () => formatMoney(priceLineItem({ type: "special", name: selectedItem, qty: 1 })),
-    [selectedItem]
+    () =>
+      formatMoney(
+        priceLineItem({ type: "special", name: selectedItem, toppings: currentToppings, qty: 1 })
+      ),
+    [selectedItem, currentToppings]
   );
   const subtotal = useMemo(
-    () => formatMoney(priceLineItem({ type: "special", name: selectedItem, qty })),
-    [selectedItem, qty]
+    () =>
+      formatMoney(
+        priceLineItem({
+          type: "special",
+          name: selectedItem,
+          toppings: currentToppings,
+          dips: dipQty,
+          qty,
+        })
+      ),
+    [selectedItem, currentToppings, dipQty, qty]
   );
 
   const addToCart = () => {
@@ -189,6 +214,22 @@ export default function SpecialMenuBuilder({
 
             {showsToppings && (
               <>
+                <p
+                  style={{
+                    margin: "0.75rem 0",
+                    padding: "0.5rem 0.65rem",
+                    background: isOverIncluded ? "#fff4e5" : "#f2f2f2",
+                    border: `1px solid ${isOverIncluded ? "#e0a951" : LIGHT_BORDER}`,
+                    borderRadius: 4,
+                    fontSize: ".85rem",
+                    color: "#333",
+                  }}
+                >
+                  3 toppings included.
+                  {isOverIncluded
+                    ? ` You've added extra — +${formatMoney(extraToppingRate)} each beyond 3.`
+                    : ` Additional toppings cost ${formatMoney(extraToppingRate)} each.`}
+                </p>
                 <h4 style={subHeader}>Choose Meats</h4>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.45rem" }}>
                   {MEATS.map((t) => (

@@ -100,6 +100,10 @@ export function CartProvider({ children, onEditItem }) {
 
   // ---- Persistence: Firestore load + realtime subscribe ----
   const suppressSaveRef = useRef(false);
+  // Guards against saving an empty initial cart before the real one has
+  // finished loading (loadCart/subscribeCart are async and can take longer
+  // than the save debounce, which would otherwise overwrite stored items).
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -114,6 +118,8 @@ export function CartProvider({ children, onEditItem }) {
         }
       } catch (e) {
         console.error("Cart load error:", e);
+      } finally {
+        if (mounted) setIsLoaded(true);
       }
     })();
 
@@ -121,6 +127,7 @@ export function CartProvider({ children, onEditItem }) {
       if (!Array.isArray(remote.items)) return;
       suppressSaveRef.current = true;
       setItems(remote.items);
+      setIsLoaded(true);
     });
 
     return () => {
@@ -132,6 +139,7 @@ export function CartProvider({ children, onEditItem }) {
   // ---- Persistence: Debounced save ----
   const saveTimer = useRef(null);
   useEffect(() => {
+    if (!isLoaded) return; // never persist until the initial cart has loaded
     if (suppressSaveRef.current) {
       suppressSaveRef.current = false;
       return;
@@ -142,7 +150,7 @@ export function CartProvider({ children, onEditItem }) {
       saveCart(items, { uid, subtotalCents }).catch(console.error);
     }, 350);
     return () => clearTimeout(saveTimer.current);
-  }, [items, subtotalCents]);
+  }, [items, subtotalCents, isLoaded]);
 
   const value = useMemo(
     () => ({

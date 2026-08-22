@@ -140,8 +140,16 @@ export default function ComboBuilder({
 
   const modalPrice = useMemo(() => {
     if (!selectedCombo) return formatMoney(0);
-    return formatMoney(priceLineItem({ type: "combo", comboId: selectedCombo.id, upgrade, qty }));
-  }, [selectedCombo, upgrade, qty]);
+    return formatMoney(
+      priceLineItem({
+        type: "combo",
+        comboId: selectedCombo.id,
+        upgrade,
+        qty,
+        meta: { sizeLocked: comboSize, items: savedItems },
+      })
+    );
+  }, [selectedCombo, upgrade, qty, comboSize, savedItems]);
 
   const buildComboSummary = (combo, size, items, upg) => {
     const bits = [];
@@ -193,6 +201,9 @@ export default function ComboBuilder({
   return (
     <>
       {/* MAIN COMBO MODAL */}
+      {/* freezeChild=false: this modal's Items list and price must reflect live
+          savedItems/qty/upgrade changes, unlike the single-builder overlays below
+          which benefit from staying frozen (avoids resetting builder scroll/canvas). */}
       <DebugPizzaOverlay
         open={!!selectedCombo}
         onClose={() => {
@@ -208,6 +219,7 @@ export default function ComboBuilder({
         }}
         mode="portal"
         blockRogue
+        freezeChild={false}
       >
         {selectedCombo && (
           <div className="modal-body" style={{ padding: 0 }}>
@@ -465,7 +477,7 @@ export default function ComboBuilder({
         {customizingItem?.type === "pizza" && (
           <PizzaBuilder
             initialData={savedItems[customizingItem.id] || {}}
-            maxToppings={3}
+            includedToppings={3}
             lockedSize={comboSize}
             allowSizeChoice={false}
             forceResponsiveStack

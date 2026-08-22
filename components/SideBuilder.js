@@ -74,7 +74,8 @@ export default function SideBuilder({ side, onClose, onAdd = () => {} }) {
   });
 
   /* —— Logic —— */
-  const SIZE_OPTIONS = ["Regular", "Large"];
+  // Poutine offers a Small tier too; everything else stays Regular/Large.
+  const SIZE_OPTIONS = side === "Poutine" ? ["Small", "Regular", "Large"] : ["Regular", "Large"];
   const DIPS = ["Garlic", "Ranch", "Blue Cheese"];
   const isSizeSelectable = ["French Fries", "Poutine", "Shawarma Poutine", "Onion Rings"].includes(side);
   const hasDips = ["Cheesy Garlic Bread", "Garlic Bread"].includes(side);
@@ -95,7 +96,7 @@ export default function SideBuilder({ side, onClose, onAdd = () => {} }) {
     .map(([label, qty]) => ({ label, qty }));
 
   // Pricing names use "Medium" for Regular to match your Pricing table
-  const sizeToPricingLabel = (size) => (size === "Regular" ? "Medium" : "Large");
+  const sizeToPricingLabel = (size) => (size === "Regular" ? "Medium" : size);
 
   const pricingName = useMemo(() => {
     if (isSizeSelectable) return `${side} (${sizeToPricingLabel(selectedSize)})`;
