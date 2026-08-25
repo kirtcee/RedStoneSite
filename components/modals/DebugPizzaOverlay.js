@@ -3,6 +3,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
+import useBodyLock from "../../hooks/useBodyLock";
 
 /**
  * DebugPizzaOverlay
@@ -160,14 +161,7 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
   }, []);
 
   // lock background
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.documentElement.style.overflow;
-    document.documentElement.style.overflow = "hidden";
-    return () => {
-      document.documentElement.style.overflow = prev;
-    };
-  }, [open]);
+  useBodyLock(open);
 
   // close on outside click (but not on scrollbar)
   const onViewportMouseDown = useCallback(

@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import PizzaBuilder from "./PizzaBuilder";
 import WingsBuilder from "./WingsBuilder";
 import SideBuilder from "./SideBuilder";
-import { priceLineItem, formatMoney } from "./Pricing";
+import { priceLineItem, formatMoney, describePizzaFull } from "./Pricing";
 import { useCart } from "./CartSystem";
 import DebugPizzaOverlay from "./modals/DebugPizzaOverlay";
 
@@ -87,10 +87,11 @@ function findComboById(id) {
 
 export default function ComboBuilder({
   openComboId = null,          // <- parent controls which combo to open
+  editingItem = null,          // <- when set (a saved cart item, type "combo"), reopen it pre-filled instead of starting fresh
   onAdd = () => {},
   onClose = () => {},
 }) {
-  const { addItem } = useCart();
+  const { addItem, updateItem } = useCart();
 
   const [selectedCombo, setSelectedCombo] = useState(null);
   const [customizingItem, setCustomizingItem] = useState(null); // {type:'pizza'|'wings'|'side', id:'pizza1'|...}
@@ -114,24 +115,44 @@ export default function ComboBuilder({
     setIsDirty(false);
   };
 
-  // 🔗 open from parent
+  const startComboFromEdit = (combo, item) => {
+    setSelectedCombo(combo);
+    setComboSize(item.meta?.sizeLocked || comboDefaultSize[combo.id] || "12");
+    setQty(item.qty || 1);
+    setUpgrade(item.upgrade || null);
+    setSavedItems(item.meta?.items || {});
+    setIsDirty(false);
+  };
+
+  // 🔗 open from parent — editing an existing cart item takes precedence
+  // over starting a brand-new combo.
   useEffect(() => {
+    if (editingItem) {
+      const combo = findComboById(editingItem.comboId);
+      if (combo) startComboFromEdit(combo, editingItem);
+      return;
+    }
     if (openComboId) {
       const combo = findComboById(openComboId);
       if (combo) startCombo(combo);
     }
-  }, [openComboId]);
+  }, [openComboId, editingItem]);
 
   const handleSave = (itemId, data) => {
-    const size = data.size ?? comboSize ?? "12";
-    const crust = data.crust ?? "Original Hand Tossed";
-    const toppings =
-      Array.isArray(data.toppings) ? data.toppings :
-      Array.isArray(data.selectedToppings) ? data.selectedToppings : [];
-    const toppingNames = toppings.length ? toppings.join(", ") : "No toppings";
-    const sizeLabel = sizeLabelMap[size] || `${size}"`;
-    const summary = `${sizeLabel} ${crust} – ${toppingNames}`;
-    setSavedItems((prev) => ({ ...prev, [itemId]: { ...data, size, crust, toppings, summary } }));
+    // Only pizza slots ("pizza", "pizza1", "pizza2") get the pizza-shaped
+    // summary — wings/side slots already carry their own correct summary
+    // from their builder's onAdd payload, which must not be overwritten.
+    if (itemId.startsWith("pizza")) {
+      const size = data.size ?? comboSize ?? "12";
+      const crust = data.crust ?? "Original Hand Tossed";
+      const toppings =
+        Array.isArray(data.toppings) ? data.toppings :
+        Array.isArray(data.selectedToppings) ? data.selectedToppings : [];
+      const summary = describePizzaFull({ ...data, size, crust, toppings });
+      setSavedItems((prev) => ({ ...prev, [itemId]: { ...data, size, crust, toppings, summary } }));
+    } else {
+      setSavedItems((prev) => ({ ...prev, [itemId]: { ...data } }));
+    }
     setCustomizingItem(null);
     setIsDirty(true);
   };
@@ -174,8 +195,11 @@ export default function ComboBuilder({
     setIsDirty(false);
   };
 
+  const comboIsComplete =
+    !!selectedCombo && selectedCombo.items.every((k) => !!savedItems[k]);
+
   const addToCart = () => {
-    if (!selectedCombo) return;
+    if (!selectedCombo || !comboIsComplete) return;
     const payload = {
       type: "combo",
       comboId: selectedCombo.id,
@@ -187,7 +211,11 @@ export default function ComboBuilder({
         items: selectedCombo.items.reduce((acc, key) => { acc[key] = savedItems[key]; return acc; }, {}),
       },
     };
-    addItem(payload);
+    if (editingItem) {
+      updateItem(editingItem.id, payload);
+    } else {
+      addItem(payload);
+    }
     onAdd(payload);
     resetAll();
     onClose();
@@ -435,22 +463,28 @@ export default function ComboBuilder({
               </div>
 
               {/* ===== CTA ===== */}
+              {!comboIsComplete && (
+                <p style={{ margin: "0 0 0.5rem", fontSize: "0.85rem", color: "#8b1a1a", fontWeight: 700 }}>
+                  Customize every item above before adding this combo to your cart.
+                </p>
+              )}
               <button
                 onClick={addToCart}
+                disabled={!comboIsComplete}
                 style={{
                   width: "100%",
                   padding: "1rem",
-                  backgroundColor: "#E91E28",
+                  backgroundColor: comboIsComplete ? "#E91E28" : "#ccc",
                   color: "white",
                   fontWeight: 900,
                   border: "none",
                   borderRadius: 0,
-                  cursor: "pointer",
+                  cursor: comboIsComplete ? "pointer" : "not-allowed",
                   textTransform: "uppercase",
                   fontFamily: "var(--font-heading, Oswald, sans-serif)",
                 }}
               >
-                Add Combo to Cart — {modalPrice}
+                {editingItem ? "Save Changes" : "Add Combo to Cart"} — {modalPrice}
               </button>
             </div>
           </div>
@@ -546,7 +580,9 @@ export default function ComboBuilder({
         {customizingItem?.type === "side" && selectedCombo?.id !== "takecare" && (
           <SideBuilder
             side="Garlic Bread"
+            initialData={savedItems[customizingItem.id] || {}}
             onClose={() => setCustomizingItem(null)}
+            addToCartDirect={false}
             onAdd={(data) =>
               handleSave(customizingItem.id, {
                 summary: data?.summary || "Side customized",

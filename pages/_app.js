@@ -1,15 +1,17 @@
 // pages/_app.js
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Script from "next/script";
 import { useRouter } from "next/router";
 import "../styles/globals.css";
 import Header from "../components/Header";
 import { CartProvider } from "../components/CartSystem";
+import CartEditOverlay from "../components/CartEditOverlay";
 
 function RootApp({ Component, pageProps }) {
   const router = useRouter();
   const isStaffPage = router.pathname.startsWith("/kitchen");
+  const [editingItem, setEditingItem] = useState(null);
 
   // Enable compact scaling globally (no CSS zoom/transform)
   useEffect(() => {
@@ -52,12 +54,13 @@ function RootApp({ Component, pageProps }) {
         onError={(e) => console.error("Google Maps JS failed to load", e)}
       />
 
-      <CartProvider>
+      <CartProvider onEditItem={setEditingItem}>
         <Header />
         {/* Content always starts below the header (and subheader when present) */}
         <main id="page" className="page-shell">
           <Component {...pageProps} />
         </main>
+        <CartEditOverlay editingItem={editingItem} onClose={() => setEditingItem(null)} />
       </CartProvider>
     </>
   );

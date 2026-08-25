@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { priceLineItem, formatMoney, weightedToppingCount, PRICES, sizeMapUIToPrice } from "./Pricing";
+import { priceLineItem, formatMoney, weightedToppingCount, PRICES, sizeMapUIToPrice, PREMIUM_TOPPINGS, describePizzaFull } from "./Pricing";
 import { useCart } from "./CartSystem";
 
 export default function PizzaBuilder({
@@ -51,15 +51,15 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
   const [cheeseCoverage, setCheeseCoverage] = useState(initialData.cheeseCoverage || "full");
   const [cheeseAmount, setCheeseAmount] = useState(initialData.cheeseAmount || "Normal");
   const [dairyFreeCheese, setDairyFreeCheese] = useState(initialData.dairyFreeCheese ?? false);
-  const [secondCoverage, setSecondCoverage] = useState(null);
-  const [secondAmount, setSecondAmount] = useState("Normal");
+  const [secondCoverage, setSecondCoverage] = useState(initialData.secondCoverage || null);
+  const [secondAmount, setSecondAmount] = useState(initialData.secondAmount || "Normal");
   const [selectedToppings, setSelectedToppings] = useState([]);
   const [toppingPlacement, setToppingPlacement] = useState({});
   const [toppingAmount, setToppingAmount] = useState({});
-  const [bake, setBake] = useState("normal");
-  const [oregano, setOregano] = useState("without");
-  const [crushedRedPepper, setCrushedRedPepper] = useState("without");
-  const [qty, setQty] = useState(1);
+  const [bake, setBake] = useState(initialData.bake || "normal");
+  const [oregano, setOregano] = useState(initialData.oregano || "without");
+  const [crushedRedPepper, setCrushedRedPepper] = useState(initialData.crushedRedPepper || "without");
+  const [qty, setQty] = useState(initialData.qty || 1);
 
   // Dips (with images)
   const DIP_DEFS = [
@@ -68,7 +68,7 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
     { key: "marinara",   name: "Marinara",             img: "/images/dips/marinara.png" },
     { key: "blueCheese", name: "Blue Cheese",          img: "/images/dips/blue-cheese.png" },
   ];
-  const initialDips = DIP_DEFS.reduce((acc, d) => { acc[d.key] = 0; return acc; }, {});
+  const initialDips = DIP_DEFS.reduce((acc, d) => { acc[d.key] = initialData.dips?.[d.key] || 0; return acc; }, {});
   const [dipsQty, setDipsQty] = useState(initialDips);
 
   // ===== Data =====
@@ -150,7 +150,10 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
       setSelectedToppings(toppingsToApply);
       const newPlacement = {};
       const newAmount = {};
-      toppingsToApply.forEach((t) => { newPlacement[t] = "full"; newAmount[t] = "Normal"; });
+      toppingsToApply.forEach((t) => {
+        newPlacement[t] = initialData.toppingPlacement?.[t] || "full";
+        newAmount[t] = initialData.toppingAmount?.[t] || "Normal";
+      });
       setToppingPlacement(newPlacement);
       setToppingAmount(newAmount);
     }
@@ -669,9 +672,7 @@ const Section = ({ index, title, children }) => (
                 }}
               >
                 {includedToppings} topping{includedToppings === 1 ? "" : "s"} included.
-                {isOverIncluded
-                  ? ` You've added extra — +${formatMoney(extraRateForNotice)} each beyond ${includedToppings}.`
-                  : ` Additional toppings cost ${formatMoney(extraRateForNotice)} each.`}
+                {` Additional toppings cost ${formatMoney(extraRateForNotice)} each. Toppings marked ★ count as 2.`}
               </p>
             )}
             <p
@@ -695,7 +696,7 @@ const Section = ({ index, title, children }) => (
                       onChange={(e) => { e.stopPropagation(); handleToppingToggle(topping); }}
                       style={{ marginRight: "0.5rem" }}
                     />
-                    {topping}
+                    {topping}{PREMIUM_TOPPINGS.has(topping) ? " ★" : ""}
                   </label>
                   {selectedToppings.includes(topping) && (
                     <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginTop: "0.3rem" }}>
@@ -751,7 +752,7 @@ const Section = ({ index, title, children }) => (
                       onChange={(e) => { e.stopPropagation(); handleToppingToggle(topping); }}
                       style={{ marginRight: "0.5rem" }}
                     />
-                    {topping}
+                    {topping}{PREMIUM_TOPPINGS.has(topping) ? " ★" : ""}
                   </label>
                   {selectedToppings.includes(topping) && (
                     <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginTop: "0.3rem" }}>
@@ -1061,9 +1062,14 @@ const Section = ({ index, title, children }) => (
                 <>
                   <p style={{ fontWeight: "bold", marginTop: "0.6rem" }}>Toppings:</p>
                   <ul style={{ paddingLeft: "1.2rem", margin: 0 }}>
-                    {selectedToppings.map((t) => (
-                      <li key={t}>{t} — {toppingPlacement[t]} / {toppingAmount[t] || "Normal"}</li>
-                    ))}
+                    {selectedToppings.map((t) => {
+                      const placement = toppingPlacement[t] || "full";
+                      const amount = toppingAmount[t] || "Normal";
+                      const isDefault = placement === "full" && amount === "Normal";
+                      return (
+                        <li key={t}>{t}{isDefault ? "" : ` — ${placement} / ${amount}`}</li>
+                      );
+                    })}
                   </ul>
                 </>
               )}
@@ -1131,17 +1137,23 @@ const Section = ({ index, title, children }) => (
                     oregano,
                     crushedRedPepper,
                     qty,
-                    summary: (() => {
-                      const sizeLabel = {
-                        "10": 'Small 8"',
-                        "12": 'Medium 10"',
-                        "14": 'Large 12"',
-                        "16": 'X-Large 14"',
-                        "gf": '13" (Gluten Free)'
-                      }[String(selectedSize)] || `${selectedSize}"`;
-                      const toppingNames = selectedToppings.join(", ");
-                      return `${sizeLabel} ${selectedCrust} – ${toppingNames || "No toppings"}`;
-                    })(),
+                    summary: describePizzaFull({
+                      size: selectedSize,
+                      crust: selectedCrust,
+                      cheeseIncluded,
+                      cheeseCoverage,
+                      cheeseAmount,
+                      secondCoverage,
+                      secondAmount,
+                      dairyFreeCheese,
+                      sauceEnabled,
+                      sauce: selectedSauce,
+                      sauceAmount,
+                      toppings: selectedToppings,
+                      toppingPlacement,
+                      toppingAmount,
+                      dips: dipsQty,
+                    }),
                     lineSubtotalCents: priceLineItem({
                       type: "pizza-byo",
                       size: String(selectedSize),

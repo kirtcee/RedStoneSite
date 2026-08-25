@@ -3,7 +3,7 @@ import React, { useState, useMemo } from "react";
 import { priceLineItem, formatMoney } from "./Pricing";
 import { useCart } from "./CartSystem";
 
-export default function SideBuilder({ side, onClose, onAdd = () => {} }) {
+export default function SideBuilder({ side, onClose, onAdd = () => {}, addToCartDirect = true, initialData = {} }) {
   const { addItem } = useCart();
 
   /* —— Theme: match Pizza/Wings builder —— */
@@ -82,11 +82,15 @@ export default function SideBuilder({ side, onClose, onAdd = () => {} }) {
   const hasGravy = side === "French Fries";
   const hasHotSauceToggle = side === "Shawarma Poutine";
 
-  const [selectedSize, setSelectedSize] = useState("Regular");
-  const [quantity, setQuantity] = useState(1);
-  const [gravyQty, setGravyQty] = useState(0);
-  const [dipQty, setDipQty] = useState({ Garlic: 0, Ranch: 0, "Blue Cheese": 0 });
-  const [hotSauce, setHotSauce] = useState("No");
+  const [selectedSize, setSelectedSize] = useState(initialData.size || "Regular");
+  const [quantity, setQuantity] = useState(initialData.qty || 1);
+  const [gravyQty, setGravyQty] = useState(initialData.gravy || 0);
+  const [dipQty, setDipQty] = useState({
+    Garlic: initialData.dips?.Garlic || 0,
+    Ranch: initialData.dips?.Ranch || 0,
+    "Blue Cheese": initialData.dips?.["Blue Cheese"] || 0,
+  });
+  const [hotSauce, setHotSauce] = useState(initialData.hotSauce || "No");
 
   const updateDipQty = (dip, delta) =>
     setDipQty((prev) => ({ ...prev, [dip]: Math.max(0, prev[dip] + delta) }));
@@ -363,14 +367,16 @@ export default function SideBuilder({ side, onClose, onAdd = () => {} }) {
             const payload = {
               type: "side",
               name: pricingName,
+              side,
+              size: isSizeSelectable ? selectedSize : null,
               qty: quantity,
               gravy: gravyQty,
               dips: dipQty,
               hotSauce,
               summary: buildSummary(),
             };
-            addItem(payload);
-            onAdd(payload); // parent closes the modal
+            if (addToCartDirect) addItem(payload);
+            onAdd(payload); // parent closes the modal (and/or handles the payload itself)
           }}
           style={{
             flex: 1,

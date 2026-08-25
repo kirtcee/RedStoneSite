@@ -1,16 +1,12 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { createPortal } from "react-dom";
 import ComboBuilder from "../ComboBuilder";
+import useBodyLock from "../../hooks/useBodyLock";
 
 export default function ComboBuilderPortal({ openComboId, onAdd, onClose }) {
-  if (typeof document === "undefined" || !openComboId) return null;
+  useBodyLock(!!openComboId);
 
-  useEffect(() => {
-    const html = document.documentElement;
-    const prev = html.style.overflow;
-    html.style.overflow = "hidden";
-    return () => { html.style.overflow = prev; };
-  }, []);
+  if (typeof document === "undefined" || !openComboId) return null;
 
   return createPortal(
     <ComboBuilder openComboId={openComboId} onAdd={onAdd} onClose={onClose} />,

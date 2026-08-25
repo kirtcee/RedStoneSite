@@ -90,6 +90,23 @@ export function CartProvider({ children, onEditItem }) {
     setItems((prev) => prev.filter((it) => it.id !== id));
   }, []);
 
+  // Replaces one existing line (used by "Edit") rather than merging/adding —
+  // unlike addItem, this never combines with another matching line even if
+  // the edited item now happens to match one.
+  const updateItem = useCallback((id, raw) => {
+    setItems((prev) =>
+      prev.map((it) => {
+        if (it.id !== id) return it;
+        const next = { ...raw };
+        if (!next.qty || next.qty < 1) next.qty = 1;
+        const keyObj = { ...next };
+        delete keyObj.qty;
+        delete keyObj.lineSubtotalCents;
+        return { ...next, id, _key: JSON.stringify(keyObj) };
+      })
+    );
+  }, []);
+
   const clearCart = useCallback(() => setItems([]), []);
 
   // ---- Derived subtotal ----
@@ -161,6 +178,7 @@ export function CartProvider({ children, onEditItem }) {
       toggleCart,
       addItem,
       updateQty,
+      updateItem,
       removeItem,
       clearCart,
       subtotalCents,
@@ -174,6 +192,7 @@ export function CartProvider({ children, onEditItem }) {
       toggleCart,
       addItem,
       updateQty,
+      updateItem,
       removeItem,
       clearCart,
       subtotalCents,

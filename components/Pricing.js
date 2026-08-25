@@ -470,3 +470,77 @@ function flattenSpecialToppings(toppings) {
     ...(toppings.cheeses || []),
   ];
 }
+
+const PIZZA_SIZE_LABELS_UI = {
+  "10": 'Small 8"',
+  "12": 'Medium 10"',
+  "14": 'Large 12"',
+  "16": 'X-Large 14"',
+  "gf": '13" (Gluten Free)',
+};
+
+const PIZZA_DIP_LABELS = {
+  garlic: "Signature Garlic Dip",
+  ranch: "Ranch",
+  marinara: "Marinara",
+  blueCheese: "Blue Cheese",
+};
+
+// Full build description for a BYO pizza — mirrors what PizzaBuilder's "My
+// Pizza" summary panel shows visually (size, crust, cheese, sauce, toppings
+// with placement/amount, dips), so cart lines and combo item descriptions
+// never fall back to a bare "No toppings" when there's still a real build
+// (cheese, sauce, etc.) behind it. Accepts the same shape PizzaBuilder's
+// onSave payload uses.
+export function describePizzaFull(data = {}) {
+  const bits = [];
+
+  const sizeKey = data.size != null ? String(data.size) : "";
+  const sizeLabel = PIZZA_SIZE_LABELS_UI[sizeKey] || (sizeKey ? `${sizeKey}"` : "");
+  bits.push([sizeLabel, data.crust].filter(Boolean).join(" "));
+
+  if (data.cheeseIncluded === false) {
+    bits.push("No Cheese");
+  } else {
+    const coverage = data.cheeseCoverage || "full";
+    const amount = data.cheeseAmount || "Normal";
+    let cheeseBit = `Cheese: ${coverage} - ${amount}`;
+    if (data.secondCoverage) {
+      cheeseBit += ` / ${data.secondCoverage} - ${data.secondAmount || "Normal"}`;
+    }
+    if (data.dairyFreeCheese) cheeseBit += " (Dairy-Free)";
+    bits.push(cheeseBit);
+  }
+
+  if (data.sauceEnabled === false) {
+    bits.push("No Sauce");
+  } else if (data.sauce) {
+    bits.push(`Sauce: ${data.sauce}${data.sauceAmount ? ` (${data.sauceAmount})` : ""}`);
+  }
+
+  const toppings = Array.isArray(data.toppings)
+    ? data.toppings
+    : Array.isArray(data.selectedToppings)
+    ? data.selectedToppings
+    : [];
+  if (toppings.length) {
+    const placement = data.toppingPlacement || {};
+    const amount = data.toppingAmount || {};
+    const toppingBits = toppings.map((t) => {
+      const p = placement[t] || "full";
+      const a = amount[t] || "Normal";
+      return p === "full" && a === "Normal" ? t : `${t} (${p}/${a})`;
+    });
+    bits.push(`Toppings: ${toppingBits.join(", ")}`);
+  } else {
+    bits.push("No Toppings");
+  }
+
+  const dips = data.dips || {};
+  const dipBits = Object.entries(dips)
+    .filter(([, qty]) => Number(qty) > 0)
+    .map(([key, qty]) => `${PIZZA_DIP_LABELS[key] || key} × ${qty}`);
+  if (dipBits.length) bits.push(`Dips: ${dipBits.join(", ")}`);
+
+  return bits.filter(Boolean).join(" — ");
+}

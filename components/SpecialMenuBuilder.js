@@ -7,10 +7,12 @@ import DebugPizzaOverlay from "./modals/DebugPizzaOverlay";
 export default function SpecialMenuBuilder({
   itemType = "panzerotti",
   open = true,
+  initialData = {},
+  editingId = null,
   onAdd = () => {},
   onClose = () => {},
 }) {
-  const { addItem } = useCart();
+  const { addItem, updateItem } = useCart();
 
   /* —— Fit + theme — mirrors Pizza/Wings builder —— */
   const PANEL_INNER_MAX = 840;   // fits inside 880px modal with breathing room
@@ -90,11 +92,13 @@ export default function SpecialMenuBuilder({
   const CHEESES = ["Feta Cheese","Extra Cheese","Double Cheese"];
   const DIPS = ["Blue Cheese","Garlic","Ranch"];
 
-  const [qty, setQty] = useState(1);
-  const [selVeg, setSelVeg] = useState([]);
-  const [selMeat, setSelMeat] = useState([]);
-  const [selCheese, setSelCheese] = useState([]);
-  const [dipQty, setDipQty] = useState(DIPS.reduce((acc, d) => ({ ...acc, [d]: 0 }), {}));
+  const [qty, setQty] = useState(initialData.qty || 1);
+  const [selVeg, setSelVeg] = useState(initialData.toppings?.veggies || []);
+  const [selMeat, setSelMeat] = useState(initialData.toppings?.meats || []);
+  const [selCheese, setSelCheese] = useState(initialData.toppings?.cheeses || []);
+  const [dipQty, setDipQty] = useState(
+    DIPS.reduce((acc, d) => ({ ...acc, [d]: initialData.dips?.[d] || 0 }), {})
+  );
 
   const toggleIn = (list, value, setter) =>
     setter(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
@@ -178,7 +182,11 @@ export default function SpecialMenuBuilder({
       dips: showsDips ? { ...dipQty } : undefined,
       summary: buildSummary(),
     };
-    addItem(payload);
+    if (editingId) {
+      updateItem(editingId, payload);
+    } else {
+      addItem(payload);
+    }
     onAdd(payload);
     onClose();
   };

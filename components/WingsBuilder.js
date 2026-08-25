@@ -155,8 +155,8 @@ export default function WingsBuilder({
   };
 
   const currentItem = useMemo(
-    () => ({ type: "wings", count: selectedCount, qty: wingsQty }),
-    [selectedCount, wingsQty]
+    () => ({ type: "wings", count: selectedCount, qty: wingsQty, dips: dipQty }),
+    [selectedCount, wingsQty, dipQty]
   );
   const lineSubtotalCents = priceLineItem(currentItem);
   const lineSubtotal = formatMoney(lineSubtotalCents);

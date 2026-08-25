@@ -1,15 +1,11 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { createPortal } from "react-dom";
+import useBodyLock from "../../hooks/useBodyLock";
 
 export default function PortalShell({ open, onClose, children, maxWidth = 1100 }) {
-  if (typeof document === "undefined" || !open) return null;
+  useBodyLock(open);
 
-  useEffect(() => {
-    const html = document.documentElement;
-    const prev = html.style.overflow;
-    html.style.overflow = "hidden";
-    return () => { html.style.overflow = prev; };
-  }, []);
+  if (typeof document === "undefined" || !open) return null;
 
   const node = (
     <>

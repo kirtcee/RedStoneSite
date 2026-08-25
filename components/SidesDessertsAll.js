@@ -2,16 +2,14 @@
 import React from "react";
 
 /**
- * Only this view (Sides → View All) should use the alternate images.
- * The front menu tiles keep using /images/menu_wings.png and /images/menu_drinks.png.
+ * Only this view (Sides → View All) should use the alternate wings image.
+ * The front menu tile keeps using /images/menu_wings.png.
  */
 const IMG_WINGS_VIEWALL  = "/images/sd_wings.png";   // 👈 alternate wings image
-const IMG_DRINKS_VIEWALL = "/images/sd_drinks.png";  // 👈 alternate drinks image
 
 export default function SidesDessertsAll({
   onOpenSide,             // (sideName: string) => void
   onOpenWings,            // () => void
-  onOpenDrinksCategory,   // (id: 'twoLiters'|'cans'|'other'|'dips') => void
 }) {
   /* ----- Data lists (use names your builders understand) ----- */
   const SIDES = [
@@ -21,13 +19,6 @@ export default function SidesDessertsAll({
     { key: "Onion Rings",        name: "Onion Rings",        img: "/images/sides/onion-rings.jpg",         desc: "Crispy battered rings." },
     { key: "Cheesy Garlic Bread",name: "Cheesy Garlic Bread",img: "/images/sides/cheesy-garlic-bread.jpg", desc: "Buttery garlic, lots of cheese." },
     { key: "Garlic Bread",       name: "Garlic Bread",       img: "/images/sides/garlic-bread.jpg",        desc: "Toasty classic garlic bread." },
-  ];
-
-  const DRINK_BUCKETS = [
-    { id: "twoLiters", label: "2L Bottles" },
-    { id: "cans",      label: "Cans" },
-    { id: "other",     label: "Other Drinks" },
-    { id: "dips",      label: "Dips" },
   ];
 
   const handleWings = () => {
@@ -100,44 +91,6 @@ export default function SidesDessertsAll({
 
               <p className="feastCard__desc">Sauced or dry-rubbed. Customize in the wings panel.</p>
             </article>
-          </section>
-        </div>
-      </section>
-
-      {/* ===== Drinks & Dips ===== */}
-      <section className="card" style={{ padding: "1rem 1rem 1.25rem" }}>
-        <h2 style={{ margin: "0 0 0.75rem 0" }}>Drinks &amp; Dips</h2>
-
-        <div className="feast feast--edge">
-          <section className="feast__grid feast__grid--four">
-            {DRINK_BUCKETS.map(({ id, label }) => (
-              <article key={id} className="feastCard">
-                <div className="feastCard__imgWrap">
-                  <img className="feastCard__img" src={IMG_DRINKS_VIEWALL} alt={label} loading="lazy" />
-                </div>
-
-                <button
-                  type="button"
-                  className="feastCard__name"
-                  onClick={() => onOpenDrinksCategory?.(id)}
-                  title={label}
-                >
-                  {label}
-                </button>
-
-                <button type="button" className="btn btn-add" onClick={() => onOpenDrinksCategory?.(id)}>
-                  ADD TO ORDER
-                </button>
-
-                <button type="button" className="btn btn-outline" onClick={() => onOpenDrinksCategory?.(id)}>
-                  CUSTOMIZE
-                </button>
-
-                <p className="feastCard__desc">
-                  Pick your favourites and add the perfect dip.
-                </p>
-              </article>
-            ))}
           </section>
         </div>
       </section>

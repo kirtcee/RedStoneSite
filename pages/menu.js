@@ -64,7 +64,11 @@ function EntreesView({
     return (
       <div className="card" style={{ overflow: "visible", padding: "1rem 1rem 2rem" }}>
         <div className="feast--edge">
-          <WingsBuilder onClose={() => {}} onAdd={(item) => onAddToCart?.(item)} />
+          <WingsBuilder
+            onClose={() => {}}
+            onAdd={(item) => onAddToCart?.(item)}
+            addToCartDirect={false}
+          />
         </div>
 
         <style jsx>{`
@@ -420,28 +424,29 @@ function SidesView({ selectedSide, setSelectedSide }) {
 
         .feastCard__desc{ margin:10px 0 2px; color:#333; font-size:.9rem; line-height:1.33; }
       `}</style>
-
-      {/* Popup: SideBuilder */}
-      {selectedSide && (
-        <>
-          <div className="modal-backdrop" onClick={() => setSelectedSide(null)} />
-          <div
-            className="modal-viewport"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setSelectedSide(null);
-            }}
-            style={{ paddingTop:24, paddingBottom:24 }}
-          >
-            <div className="modal-panel" onClick={(e)=>e.stopPropagation()}>
-              <button className="modal-close" onClick={() => setSelectedSide(null)} aria-label="Close" type="button">✖</button>
-              <div className="modal-body">
-                <SideBuilder side={selectedSide} onClose={() => setSelectedSide(null)} onAdd={() => setSelectedSide(null)} />
-              </div>
-            </div>
-          </div>
-        </>
-      )}
     </div>
+  );
+}
+
+/* Popup: SideBuilder — shared by SidesView (sub=sides) and the sub=all
+   "View All" screen, both of which just set `selectedSide` on the parent.
+   Uses the same DebugPizzaOverlay every other builder popup in the app
+   uses — the old hand-rolled .modal-backdrop/.modal-viewport/.modal-panel
+   classes here had no matching CSS anywhere in the codebase, so the popup
+   rendered inline in the page flow instead of as an overlay. */
+function SideBuilderPopup({ selectedSide, setSelectedSide }) {
+  return (
+    <DebugPizzaOverlay
+      open={!!selectedSide}
+      onClose={() => setSelectedSide(null)}
+      mode="portal"
+      blockRogue
+      title={selectedSide || "Customize"}
+    >
+      {selectedSide && (
+        <SideBuilder side={selectedSide} onClose={() => setSelectedSide(null)} onAdd={() => setSelectedSide(null)} />
+      )}
+    </DebugPizzaOverlay>
   );
 }
 
@@ -788,14 +793,44 @@ function MenuBody() {
           {/* Sides — VIEW ALL */}
           {tab === "sides" && (!sub || sub === "all") && (
             <div key="sides-viewall">
-              <SidesDessertsAll onAddToCart={handleAddToCart} />
+              <SidesDessertsAll
+                onOpenSide={(name) => setSelectedSide(name)}
+                onOpenWings={() => setTabSub({ tab: "sides", sub: "wings" })}
+              />
+              <SideBuilderPopup selectedSide={selectedSide} setSelectedSide={setSelectedSide} />
             </div>
           )}
 
           {/* Per-sub Sides view (feast cards + popup) */}
-          {tab === "sides" && sub && sub !== "all" && (
-            <div key={`sides-${sub}`}>
+          {tab === "sides" && sub === "sides" && (
+            <div key="sides-sides">
               <SidesView selectedSide={selectedSide} setSelectedSide={setSelectedSide} />
+              <SideBuilderPopup selectedSide={selectedSide} setSelectedSide={setSelectedSide} />
+            </div>
+          )}
+
+          {/* Sides tab's own Wings subnav — same builder as the Entrées tab's Wings view */}
+          {tab === "sides" && sub === "wings" && (
+            <div key="sides-wings" className="card" style={{ overflow: "visible", padding: "1rem 1rem 2rem" }}>
+              <div className="feast--edge">
+                <WingsBuilder
+                  onClose={() => {}}
+                  onAdd={(item) => handleAddToCart?.(item)}
+                  addToCartDirect={false}
+                />
+              </div>
+              <style jsx>{`
+                .feast--edge {
+                  margin-left: calc(-1rem - 1px);
+                  margin-right: calc(-1rem - 1px);
+                }
+                @media (max-width: 520px) {
+                  .feast--edge {
+                    margin-left: -1rem;
+                    margin-right: -1rem;
+                  }
+                }
+              `}</style>
             </div>
           )}
 
