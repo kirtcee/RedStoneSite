@@ -1,5 +1,6 @@
 // pages/_app.js
 import React, { useEffect } from "react";
+import Head from "next/head";
 import Script from "next/script";
 import { useRouter } from "next/router";
 import "../styles/globals.css";
@@ -16,18 +17,33 @@ function RootApp({ Component, pageProps }) {
     return () => document.body.classList.remove("scale-90");
   }, []);
 
+  const siteHead = (
+    <Head>
+      <title>Red Stone Pizza — Order Online</title>
+      <meta
+        name="description"
+        content="Order pizza, wings, sides, and drinks online from Red Stone Pizza for carryout or delivery."
+      />
+      <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    </Head>
+  );
+
   // Staff-only pages (e.g. the kitchen dashboard) skip the customer chrome
   // (order/delivery header, cart, Google Maps) entirely.
   if (isStaffPage) {
     return (
-      <main id="page" className="page-shell">
-        <Component {...pageProps} />
-      </main>
+      <>
+        {siteHead}
+        <main id="page" className="page-shell">
+          <Component {...pageProps} />
+        </main>
+      </>
     );
   }
 
   return (
     <>
+      {siteHead}
       {/* Load Google Maps JS + Places library once for the whole app */}
       <Script
         id="google-maps"

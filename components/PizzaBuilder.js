@@ -375,7 +375,7 @@ const Section = ({ index, title, children }) => (
                   13"
                 </div>
                 <span style={{ fontSize: ".9rem", color: "#555" }}>
-                  Gluten Free comes in one size — 13"
+                  Gluten Free comes in one size: 13" 
                 </span>
               </div>
             ) : (

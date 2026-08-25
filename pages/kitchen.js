@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { db } from "../utils/firebaseConfig";
+import { useRouter } from "next/router";
+import { db, auth } from "../utils/firebaseConfig";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import {
   collection,
   onSnapshot,
@@ -10,6 +12,7 @@ import {
   updateDoc
 } from "firebase/firestore";
 import { formatMoney } from "../components/Pricing";
+import { STAFF_EMAIL } from "../utils/kitchenAuth";
 
 function describeItem(item) {
   if (!item) return "Item";
@@ -28,9 +31,26 @@ function describeItem(item) {
 }
 
 export default function KitchenDashboard() {
+  const router = useRouter();
   const [orders, setOrders] = useState([]);
+  const [isStaff, setIsStaff] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  // Anonymous customers are also "signed in" (see firebaseConfig.js), so
+  // staff access requires the specific staff account, not just any user.
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      const staff = !!user && user.email === STAFF_EMAIL;
+      setIsStaff(staff);
+      setAuthChecked(true);
+      if (!staff) router.replace("/kitchen-login");
+    });
+    return () => unsubscribe();
+  }, [router]);
 
   useEffect(() => {
+    if (!isStaff) return;
+
     const q = query(
       collection(db, "orders"),
       where("completed", "==", false),
@@ -46,16 +66,32 @@ export default function KitchenDashboard() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isStaff]);
+
+  if (!authChecked || !isStaff) {
+    return (
+      <div className="kitchen">
+        <p style={{ padding: 24 }}>Checking staff login…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="kitchen">
       <header className="kitchen-header">
         <div className="kitchen-header__inner">
           <h1>🍕 Kitchen Dashboard</h1>
-          <span className="kitchen-count">
-            {orders.length} order{orders.length === 1 ? "" : "s"} open
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <span className="kitchen-count">
+              {orders.length} order{orders.length === 1 ? "" : "s"} open
+            </span>
+            <button
+              className="kitchen-logout"
+              onClick={() => signOut(auth).then(() => router.push("/kitchen-login"))}
+            >
+              Log Out
+            </button>
+          </div>
         </div>
       </header>
 
@@ -143,6 +179,19 @@ export default function KitchenDashboard() {
           font-size: 0.9rem;
           opacity: 0.9;
           font-weight: 600;
+        }
+        .kitchen-logout {
+          background: rgba(255, 255, 255, 0.15);
+          color: #fff;
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          border-radius: 6px;
+          padding: 6px 12px;
+          font-size: 0.8rem;
+          font-weight: 700;
+          cursor: pointer;
+        }
+        .kitchen-logout:hover {
+          background: rgba(255, 255, 255, 0.25);
         }
         .kitchen-body {
           max-width: 1200px;

@@ -1,0 +1,40 @@
+rules_version = '2';
+
+// Deploy this by pasting it into:
+// Firebase Console -> your project -> Firestore Database -> Rules tab -> Publish
+//
+// This is the actual security boundary for the app — the /kitchen page's
+// staff login (see utils/kitchenAuth.js) only gates the UI. Anyone with the
+// public Firebase config (which ships in the client bundle by design) can
+// otherwise talk to Firestore directly, so these rules are what actually
+// stop a non-staff visitor from listing/editing orders.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /orders/{orderId} {
+      // Any signed-in visitor (including anonymous customers — see
+      // firebaseConfig.js) can create an order at checkout, and can fetch
+      // one order by its exact (unguessable, random) ID for the
+      // order-confirmation page.
+      allow create: if request.auth != null;
+      allow get: if request.auth != null;
+
+      // Listing all orders (the kitchen dashboard's live query) and editing
+      // orders (marking them completed) is staff-only. The staff account's
+      // email must match utils/kitchenAuth.js's STAFF_EMAIL exactly.
+      allow list, update, delete: if request.auth != null
+        && request.auth.token.email == "kitchen@redstonepizza.local";
+    }
+
+    match /carts/{cartId} {
+      // Best-effort cart mirror (see utils/cartPersistence.js) — a user can
+      // only read/write their own cart document, keyed by their auth uid.
+      allow read, write: if request.auth != null && request.auth.uid == cartId;
+    }
+
+    // Default-deny everything else.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

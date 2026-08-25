@@ -116,7 +116,7 @@ function StoreMap({ onCarryoutClick, mapsReady, storeLatLng }) {
       <div style="min-width:220px">
         <div style="font-weight:700;margin-bottom:6px;">Redstone Pizza</div>
         <div style="margin-bottom:4px;">576 Concession St, Hamilton, ON</div>
-        <div style="margin-bottom:4px;">Phone: <a href="tel:+1-000-000-0000">000-000-0000</a></div>
+        <div style="margin-bottom:4px;">Phone: <a href="tel:+1-905-385-9888">905-385-9888</a></div>
         <div style="margin-bottom:8px;">Hours: 11:00–22:00</div>
         <button id="map-carryout-btn" style="background:#e91e28;color:#fff;border:0;border-radius:4px;padding:.5rem .75rem;font-weight:800;cursor:pointer;width:100%;text-transform:uppercase">Carryout</button>
       </div>
