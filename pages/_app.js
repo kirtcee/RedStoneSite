@@ -7,6 +7,7 @@ import "../styles/globals.css";
 import Header from "../components/Header";
 import { CartProvider, CartSidebar } from "../components/CartSystem";
 import CartEditOverlay from "../components/CartEditOverlay";
+import ServiceGateOverlay from "../components/ServiceGateOverlay";
 
 function RootApp({ Component, pageProps }) {
   const router = useRouter();
@@ -62,6 +63,7 @@ function RootApp({ Component, pageProps }) {
         </main>
         <CartSidebar />
         <CartEditOverlay editingItem={editingItem} onClose={() => setEditingItem(null)} />
+        <ServiceGateOverlay />
       </CartProvider>
     </>
   );

@@ -8,7 +8,6 @@ import React, {
   useEffect,
   useRef,
 } from "react";
-import { useRouter } from "next/router";
 import { formatMoney, priceLineItem } from "./Pricing";
 import { loadCart, saveCart, subscribeCart } from "../utils/cartPersistence";
 import { auth } from "../utils/firebaseConfig";
@@ -16,7 +15,6 @@ import { auth } from "../utils/firebaseConfig";
 const CartContext = createContext(null);
 
 export function CartProvider({ children, onEditItem }) {
-  const router = useRouter();
   const [items, setItems] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -35,57 +33,100 @@ export function CartProvider({ children, onEditItem }) {
     [onEditItem]
   );
 
-  // ---- Require service (carryout / delivery) before adding items ----
-  const ensureServiceSelected = useCallback(() => {
-    if (typeof window === "undefined") return true;
+  // ---- Service method (carryout/delivery) — single source of truth ----
+  // Starts unset for a first-time visitor (never defaults to carryout) and
+  // only ever changes through confirmCarryout/confirmDelivery below, which
+  // are the only two places that write these two localStorage keys.
+  const [service, setService] = useState(null);
+  const [deliveryAddress, setDeliveryAddress] = useState(null);
 
+  useEffect(() => {
     try {
       const s = localStorage.getItem("rs_service");
-      if (!s) {
-        const next =
-          window.location.pathname + (window.location.search || "");
+      if (s === "carryout" || s === "delivery") setService(s);
+      const raw = localStorage.getItem("rs_delivery_address");
+      if (raw) setDeliveryAddress(JSON.parse(raw));
+    } catch {}
+  }, []);
 
-        router.push({
-          pathname: "/order",
-          query: { next },
-        });
+  const confirmCarryout = useCallback(() => {
+    setService("carryout");
+    try {
+      localStorage.setItem("rs_service", "carryout");
+    } catch {}
+  }, []);
 
-        return false; // block the action for now
-      }
-      return true;
-    } catch {
-      // if localStorage fails, just allow it rather than break ordering
-      return true;
-    }
-  }, [router]);
+  const confirmDelivery = useCallback((address) => {
+    setService("delivery");
+    setDeliveryAddress(address);
+    try {
+      localStorage.setItem("rs_service", "delivery");
+      localStorage.setItem("rs_delivery_address", JSON.stringify(address));
+    } catch {}
+  }, []);
+
+  const isServiceConfirmed =
+    service === "carryout" || (service === "delivery" && !!deliveryAddress);
+
+  // ---- Service gate overlay ----
+  // Opened by addItem (below) when a service method isn't confirmed yet, or
+  // directly by Header's mode chip. onConfirmed (if any) runs once the user
+  // finishes the picker, so a blocked add-to-cart completes automatically
+  // instead of losing whatever the customer was doing.
+  const [serviceGateOpen, setServiceGateOpen] = useState(false);
+  const pendingOnConfirmedRef = useRef(null);
+
+  const openServiceGate = useCallback((onConfirmedCb) => {
+    pendingOnConfirmedRef.current = onConfirmedCb || null;
+    setServiceGateOpen(true);
+  }, []);
+
+  const closeServiceGate = useCallback(() => {
+    setServiceGateOpen(false);
+    pendingOnConfirmedRef.current = null;
+  }, []);
+
+  const handleGateConfirmed = useCallback(() => {
+    const fn = pendingOnConfirmedRef.current;
+    pendingOnConfirmedRef.current = null;
+    setServiceGateOpen(false);
+    fn?.();
+  }, []);
 
   // ---- Add/Update/Remove/clear ----
+  const reallyAddItem = useCallback((raw) => {
+    const item = { ...raw };
+    if (!item.qty || item.qty < 1) item.qty = 1;
+
+    // unique key for merging quantities of identical items
+    const keyObj = { ...item };
+    delete keyObj.qty;
+    delete keyObj.lineSubtotalCents;
+    const itemKey = JSON.stringify(keyObj);
+
+    setItems((prev) => {
+      const idx = prev.findIndex((p) => p._key === itemKey);
+      if (idx !== -1) {
+        const next = prev.slice();
+        next[idx] = { ...next[idx], qty: next[idx].qty + item.qty };
+        return next;
+      }
+      return [...prev, { ...item, _key: itemKey, id: cryptoRandomId() }];
+    });
+    setIsOpen(true);
+  }, []);
+
   const addItem = useCallback(
     (raw) => {
-      // gate: if service not chosen yet, send them to /order
-      if (!ensureServiceSelected()) return;
-
-      const item = { ...raw };
-      if (!item.qty || item.qty < 1) item.qty = 1;
-
-      // unique key for merging quantities of identical items
-      const keyObj = { ...item };
-      delete keyObj.qty;
-      delete keyObj.lineSubtotalCents;
-      const itemKey = JSON.stringify(keyObj);
-
-      setItems((prev) => {
-        const idx = prev.findIndex((p) => p._key === itemKey);
-        if (idx !== -1) {
-          const next = prev.slice();
-          next[idx] = { ...next[idx], qty: next[idx].qty + item.qty };
-          return next;
-        }
-        return [...prev, { ...item, _key: itemKey, id: cryptoRandomId() }];
-      });
-      setIsOpen(true);
+      // gate: block until a service method (+ address, for delivery) is
+      // confirmed — the overlay completes this same add once they do.
+      if (!isServiceConfirmed) {
+        openServiceGate(() => reallyAddItem(raw));
+        return;
+      }
+      reallyAddItem(raw);
     },
-    [ensureServiceSelected]
+    [isServiceConfirmed, openServiceGate, reallyAddItem]
   );
 
   const updateQty = useCallback((id, qty) => {
@@ -193,6 +234,15 @@ export function CartProvider({ children, onEditItem }) {
       clearCart,
       subtotalCents,
       onEditItem: handleEditItem,
+      service,
+      deliveryAddress,
+      isServiceConfirmed,
+      confirmCarryout,
+      confirmDelivery,
+      openServiceGate,
+      closeServiceGate,
+      serviceGateOpen,
+      handleGateConfirmed,
     }),
     [
       items,
@@ -207,6 +257,15 @@ export function CartProvider({ children, onEditItem }) {
       clearCart,
       subtotalCents,
       handleEditItem,
+      service,
+      deliveryAddress,
+      isServiceConfirmed,
+      confirmCarryout,
+      confirmDelivery,
+      openServiceGate,
+      closeServiceGate,
+      serviceGateOpen,
+      handleGateConfirmed,
     ]
   );
 
@@ -246,6 +305,8 @@ export function CartSidebar() {
     removeItem,
     subtotalCents,
     onEditItem,
+    isServiceConfirmed,
+    openServiceGate,
   } = useCart();
 
   // dynamic positioning so the panel's right edge aligns to the container
@@ -403,18 +464,12 @@ export function CartSidebar() {
         <button
           className="cart-sidebar__checkout"
           onClick={() => {
-            if (typeof window === "undefined") return;
-            try {
-              const s = localStorage.getItem("rs_service");
-              if (!s) {
-                const next = "/cart";
-                window.location.href =
-                  `/order?next=${encodeURIComponent(next)}`;
-              } else {
-                window.location.href = "/cart";
-              }
-            } catch {
+            if (isServiceConfirmed) {
               window.location.href = "/cart";
+            } else {
+              openServiceGate(() => {
+                window.location.href = "/cart";
+              });
             }
           }}
         >
