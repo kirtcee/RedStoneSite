@@ -25,6 +25,16 @@ export function CartProvider({ children, onEditItem }) {
   const closeCart = useCallback(() => setIsOpen(false), []);
   const toggleCart = useCallback(() => setIsOpen((v) => !v), []);
 
+  // Close the dropdown before handing off to the edit overlay, so the two
+  // never sit open on top of each other.
+  const handleEditItem = useCallback(
+    (item) => {
+      setIsOpen(false);
+      onEditItem?.(item);
+    },
+    [onEditItem]
+  );
+
   // ---- Require service (carryout / delivery) before adding items ----
   const ensureServiceSelected = useCallback(() => {
     if (typeof window === "undefined") return true;
@@ -182,7 +192,7 @@ export function CartProvider({ children, onEditItem }) {
       removeItem,
       clearCart,
       subtotalCents,
-      onEditItem,
+      onEditItem: handleEditItem,
     }),
     [
       items,
@@ -196,7 +206,7 @@ export function CartProvider({ children, onEditItem }) {
       removeItem,
       clearCart,
       subtotalCents,
-      onEditItem,
+      handleEditItem,
     ]
   );
 
@@ -287,8 +297,24 @@ export function CartSidebar() {
     };
   }, [measure, isOpen]);
 
+  // Close on an outside click — anywhere except the panel itself and the
+  // header cart icon (which has its own toggle behavior).
+  const panelRef = useRef(null);
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const onPointerDown = (e) => {
+      if (panelRef.current?.contains(e.target)) return;
+      if (e.target.closest?.(".header-seg--cart")) return;
+      closeCart();
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [isOpen, closeCart]);
+
   return (
     <div
+      ref={panelRef}
       className="cart-sidebar"
       data-open={isOpen ? "true" : "false"}
       style={{ top: pos.top, right: pos.right }}

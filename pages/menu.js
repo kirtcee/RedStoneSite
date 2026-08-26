@@ -13,7 +13,7 @@ import ComboBuilder, { comboSections, comboThumbFor } from "../components/ComboB
 import SpecialMenuBuilder from "../components/SpecialMenuBuilder";
 import SidesDessertsAll from "../components/SidesDessertsAll";
 import { DrinksCategoryPanel } from "../components/DrinksDipsBuilder";
-import { CartSidebar, CartToggle, useCart } from "../components/CartSystem";
+import { CartToggle, useCart } from "../components/CartSystem";
 import { formatMoney } from "../components/Pricing";
 
 // Hardened portal overlay (stable nested scroller)
@@ -474,7 +474,7 @@ function DrinksView() {
                 {it.label}
               </button>
 
-              <button type="button" className="btn btn-add" onClick={() => setOpenCat(it.id)}>ADD TO ORDER</button>
+              <button type="button" className="btn btn-add" onClick={() => setOpenCat(it.id)}>CUSTOMIZE</button>
               <p className="feastCard__desc">Build your {it.label.toLowerCase()} order.</p>
             </article>
           ))}
@@ -520,27 +520,26 @@ function DrinksView() {
       `}</style>
 
       {/* Right-panel modal */}
-      {openCat && (
-        <>
-          <div className="modal-backdrop" onClick={() => setOpenCat(null)} />
-          <div className="modal-viewport" onClick={() => setOpenCat(null)} style={{ paddingTop:24, paddingBottom:24 }}>
-            <div className="modal-panel" onClick={(e)=>e.stopPropagation()}>
-              <button className="modal-close" onClick={() => setOpenCat(null)} aria-label="Close">✖</button>
-              <div className="modal-body">
-                <DrinksCategoryPanel
-                  title={launchers.find((x)=>x.id===openCat)?.label || "Options"}
-                  categoryId={openCat}
-                  categoryLabel={launchers.find((x)=>x.id===openCat)?.label || ""}
-                  options={launchers.find((x)=>x.id===openCat)?.options || []}
-                  initialItems={[]}
-                  onClose={() => setOpenCat(null)}
-                  onAdd={() => setOpenCat(null)}
-                />
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+      <DebugPizzaOverlay
+        open={!!openCat}
+        onClose={() => setOpenCat(null)}
+        mode="portal"
+        blockRogue
+        title={launchers.find((x) => x.id === openCat)?.label || "Options"}
+      >
+        {openCat && (
+          <DrinksCategoryPanel
+            key={openCat}
+            title={launchers.find((x) => x.id === openCat)?.label || "Options"}
+            categoryId={openCat}
+            categoryLabel={launchers.find((x) => x.id === openCat)?.label || ""}
+            options={launchers.find((x) => x.id === openCat)?.options || []}
+            initialItems={[]}
+            onClose={() => setOpenCat(null)}
+            onAdd={() => setOpenCat(null)}
+          />
+        )}
+      </DebugPizzaOverlay>
     </div>
   );
 }
@@ -699,7 +698,6 @@ function MenuBody() {
       <div style={{ position: "fixed", top: 12, right: 12, zIndex: 1100 }}>
         <CartToggle />
       </div>
-      <CartSidebar />
 
       <div className="menu-layout">
         <section className="menu-main" key={`${tab}-${sub}-panel`}>

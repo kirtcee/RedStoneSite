@@ -4,6 +4,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import useBodyLock from "../../hooks/useBodyLock";
+import { useCart } from "../CartSystem";
 
 /**
  * DebugPizzaOverlay
@@ -162,6 +163,13 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
 
   // lock background
   useBodyLock(open);
+
+  // Opening any builder overlay closes the cart dropdown, so the two never
+  // sit open on top of each other.
+  const { closeCart } = useCart();
+  useEffect(() => {
+    if (open) closeCart();
+  }, [open, closeCart]);
 
   // close on outside click (but not on scrollbar)
   const onViewportMouseDown = useCallback(

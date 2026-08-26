@@ -5,7 +5,7 @@ import Script from "next/script";
 import { useRouter } from "next/router";
 import "../styles/globals.css";
 import Header from "../components/Header";
-import { CartProvider } from "../components/CartSystem";
+import { CartProvider, CartSidebar } from "../components/CartSystem";
 import CartEditOverlay from "../components/CartEditOverlay";
 
 function RootApp({ Component, pageProps }) {
@@ -60,6 +60,7 @@ function RootApp({ Component, pageProps }) {
         <main id="page" className="page-shell">
           <Component {...pageProps} />
         </main>
+        <CartSidebar />
         <CartEditOverlay editingItem={editingItem} onClose={() => setEditingItem(null)} />
       </CartProvider>
     </>
