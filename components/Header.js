@@ -97,6 +97,12 @@ export default function Header() {
   const homeNav = [
     { key: "order", label: "ORDER\nONLINE", onClick: () => router.push("/order") },
     { key: "menu", label: "MENU", onClick: () => router.push("/menu") },
+    { key: "deals", label: "DEALS", onClick: () => router.push("/deals") },
+    {
+      key: "calculator",
+      label: "PIZZA\nCALCULATOR",
+      onClick: () => router.push("/pizza-calculator"),
+    },
   ];
 
   const menuNav = [
@@ -150,6 +156,8 @@ export default function Header() {
     } else {
       if (p.startsWith("/order")) return "order";
       if (p.startsWith("/menu")) return "menu";
+      if (p.startsWith("/deals")) return "deals";
+      if (p.startsWith("/pizza-calculator")) return "calculator";
       return "";
     }
   }, [inMenuMode, router.pathname, tab, sub]);
@@ -271,76 +279,80 @@ export default function Header() {
       <header className="site-header site-header--red">
         <div className="container site-header__inner">
           <div className="header-row">
-            <Link href="/" className="header-seg header-seg--logo" aria-label="Home">
-              <StoreLogo className="header-logo-mark" aria-hidden focusable="false" />
-            </Link>
+            <div className="header-row__start">
+              <Link href="/" className="header-seg header-seg--logo" aria-label="Home">
+                <StoreLogo className="header-logo-mark" aria-hidden focusable="false" />
+              </Link>
 
-            {topItems.map((item) => (
-              <button
-                key={item.key}
-                className={`header-seg header-seg--nav ${
-                  activeTopKey === item.key ? "is-active" : ""
-                }`}
-                onClick={item.onClick}
-                aria-current={activeTopKey === item.key ? "page" : undefined}
-                title={item.label.replace(/\n/g, " ")}
-              >
-                <span className="header-seg__label">
-                  {item.label.split("\n").map((line, i) => (
-                    <span key={i} style={{ display: "block" }}>
-                      {line}
-                    </span>
-                  ))}
-                </span>
-              </button>
-            ))}
-
-            <button
-              className="header-seg header-seg--mode"
-              onClick={openOrderModal}
-              aria-label="Order details"
-              title="Order details"
-            >
-              {service === "carryout" ? (
-                <span
-                  className="carryout-chip"
-                  aria-label={`Carryout From ${carryoutAddressFull}`}
-                >
-                  <span className="carryout-iconbox" aria-hidden="true">
-                    <CarryoutIcon className="carryout-icon" focusable="false" />
-                  </span>
-                  <span className="carryout-sep" aria-hidden="true" />
-                  <span className="carryout-text">
-                    <span className="carryout-line carryout-line--sm">CARRYOUT FROM</span>
-                    <span className="carryout-line carryout-line--lg">
-                      {carryoutAddress}
-                    </span>
-                  </span>
-                </span>
-              ) : (
-                <span
-                  className="carryout-chip"
-                  aria-label={`Delivery To ${
-                    formatAddressFull(deliveryAddress) || "Enter Address"
+              {topItems.map((item) => (
+                <button
+                  key={item.key}
+                  className={`header-seg header-seg--nav ${
+                    activeTopKey === item.key ? "is-active" : ""
                   }`}
+                  onClick={item.onClick}
+                  aria-current={activeTopKey === item.key ? "page" : undefined}
+                  title={item.label.replace(/\n/g, " ")}
                 >
-                  <span className="carryout-iconbox" aria-hidden="true">
-                    <DeliveryIcon className="carryout-icon" focusable="false" />
+                  <span className="header-seg__label">
+                    {item.label.split("\n").map((line, i) => (
+                      <span key={i} style={{ display: "block" }}>
+                        {line}
+                      </span>
+                    ))}
                   </span>
-                  <span className="carryout-sep" aria-hidden="true" />
-                  <span className="carryout-text">
-                    <span className="carryout-line carryout-line--sm">DELIVERY TO</span>
-                    <span className="carryout-line carryout-line--lg">
-                      {deliveryAddressDisplay}
+                </button>
+              ))}
+            </div>
+
+            <div className="header-row__end">
+              <button
+                className="header-seg header-seg--mode"
+                onClick={openOrderModal}
+                aria-label="Order details"
+                title="Order details"
+              >
+                {service === "carryout" ? (
+                  <span
+                    className="carryout-chip"
+                    aria-label={`Carryout From ${carryoutAddressFull}`}
+                  >
+                    <span className="carryout-iconbox" aria-hidden="true">
+                      <CarryoutIcon className="carryout-icon" focusable="false" />
+                    </span>
+                    <span className="carryout-sep" aria-hidden="true" />
+                    <span className="carryout-text">
+                      <span className="carryout-line carryout-line--sm">CARRYOUT FROM</span>
+                      <span className="carryout-line carryout-line--lg">
+                        {carryoutAddress}
+                      </span>
                     </span>
                   </span>
-                </span>
-              )}
-            </button>
+                ) : (
+                  <span
+                    className="carryout-chip"
+                    aria-label={`Delivery To ${
+                      formatAddressFull(deliveryAddress) || "Enter Address"
+                    }`}
+                  >
+                    <span className="carryout-iconbox" aria-hidden="true">
+                      <DeliveryIcon className="carryout-icon" focusable="false" />
+                    </span>
+                    <span className="carryout-sep" aria-hidden="true" />
+                    <span className="carryout-text">
+                      <span className="carryout-line carryout-line--sm">DELIVERY TO</span>
+                      <span className="carryout-line carryout-line--lg">
+                        {deliveryAddressDisplay}
+                      </span>
+                    </span>
+                  </span>
+                )}
+              </button>
 
-            <div className="header-seg header-seg--cart" role="button" aria-label="Cart">
-              <CartToggle />
-              <div className="header-cart__label">CART</div>
+              <div className="header-seg header-seg--cart" role="button" aria-label="Cart">
+                <CartToggle />
+                <div className="header-cart__label">CART</div>
+              </div>
             </div>
           </div>
         </div>

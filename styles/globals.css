@@ -242,7 +242,12 @@ h3 { font-size: 1.25rem; }
   font-family: 'Oswald', sans-serif; /* Oswald for all header text */
 }
 .site-header__inner { height: var(--header-h); display: flex; align-items: stretch; }
-.header-row { display: flex; align-items: stretch; gap: 0; }
+.header-row { display: flex; align-items: stretch; justify-content: space-between; gap: 0; }
+/* Two flush clusters (logo+nav, mode+cart) anchored to opposite edges of the
+   centered .container, instead of every segment packed against the left
+   edge with dead space on the right. Segment sizing/spacing is untouched —
+   only where the two groups sit within the row changes. */
+.header-row__start, .header-row__end { display: flex; align-items: stretch; gap: 0; }
 
 .header-seg {
   height: var(--header-h); display: flex; align-items: center; justify-content: center;

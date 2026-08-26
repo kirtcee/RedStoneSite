@@ -13,7 +13,7 @@ import ComboBuilder, { comboSections, comboThumbFor } from "../components/ComboB
 import SpecialMenuBuilder from "../components/SpecialMenuBuilder";
 import SidesDessertsAll from "../components/SidesDessertsAll";
 import { DrinksCategoryPanel } from "../components/DrinksDipsBuilder";
-import { CartToggle, useCart } from "../components/CartSystem";
+import { useCart } from "../components/CartSystem";
 import { formatMoney } from "../components/Pricing";
 
 // Hardened portal overlay (stable nested scroller)
@@ -695,10 +695,6 @@ function MenuBody() {
 
   return (
     <div className="container" style={{ padding: "1rem 0" }}>
-      <div style={{ position: "fixed", top: 12, right: 12, zIndex: 1100 }}>
-        <CartToggle />
-      </div>
-
       <div className="menu-layout">
         <section className="menu-main" key={`${tab}-${sub}-panel`}>
           <h1 className="menu-title">{pageTitle}</h1>
