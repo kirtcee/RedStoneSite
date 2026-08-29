@@ -1,5 +1,22 @@
 // components/SidesDessertsAll.jsx
-import React from "react";
+import React, { useState } from "react";
+import { useCart } from "./CartSystem";
+import { priceLineItem } from "./Pricing";
+
+// Sides with a plain size choice (no gravy/dip decisions needed) get a
+// direct-add size picker instead of always opening the full builder.
+// Pricing keys use "Medium" for what the builder UI calls "Regular".
+// Colors follow the same light-to-dark size progression as the pizza cards.
+const SEG_S = "#e57373";
+const SEG_R = "#e91e28";
+const SEG_L = "#b71c1c";
+const SIDE_SIZES = {
+  "French Fries":     [{ size: "Regular", abbr: "R", color: SEG_R }, { size: "Large", abbr: "L", color: SEG_L }],
+  "Poutine":          [{ size: "Small", abbr: "S", color: SEG_S }, { size: "Regular", abbr: "R", color: SEG_R }, { size: "Large", abbr: "L", color: SEG_L }],
+  "Shawarma Poutine": [{ size: "Regular", abbr: "R", color: SEG_R }, { size: "Large", abbr: "L", color: SEG_L }],
+  "Onion Rings":      [{ size: "Regular", abbr: "R", color: SEG_R }, { size: "Large", abbr: "L", color: SEG_L }],
+};
+const sizeToPricingLabel = (size) => (size === "Regular" ? "Medium" : size);
 
 /**
  * Only this view (Sides → View All) should use the alternate wings image.
@@ -11,6 +28,23 @@ export default function SidesDessertsAll({
   onOpenSide,             // (sideName: string) => void
   onOpenWings,            // () => void
 }) {
+  const { addItem } = useCart();
+  const [sizePickerFor, setSizePickerFor] = useState(null);
+
+  const addSideAtSize = (side, size) => {
+    const name = `${side} (${sizeToPricingLabel(size)})`;
+    const payload = {
+      type: "side",
+      name,
+      side,
+      size,
+      qty: 1,
+      summary: `1 × ${side} (${size})`,
+    };
+    payload.lineSubtotalCents = priceLineItem(payload);
+    addItem(payload);
+    setSizePickerFor(null);
+  };
   /* ----- Data lists (use names your builders understand) ----- */
   const SIDES = [
     { key: "French Fries",       name: "French Fries",       img: "/images/sides/fries.jpg",               desc: "Crispy golden fries." },
@@ -51,13 +85,38 @@ export default function SidesDessertsAll({
                   {it.name}
                 </button>
 
-                <button type="button" className="btn btn-add" onClick={() => onOpenSide?.(it.key)}>
-                  ADD TO ORDER
-                </button>
+                {SIDE_SIZES[it.key] ? (
+                  sizePickerFor === it.key ? (
+                    <div className="btn btn-add btn-add--split" role="group" aria-label={`Choose a size for ${it.name}`}>
+                      {SIDE_SIZES[it.key].map((s) => (
+                        <button
+                          key={s.size}
+                          type="button"
+                          className="btn-add__seg"
+                          style={{ background: s.color }}
+                          onClick={() => addSideAtSize(it.key, s.size)}
+                          title={s.size}
+                        >
+                          {s.abbr}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <button type="button" className="btn btn-add" onClick={() => setSizePickerFor(it.key)}>
+                      ADD TO ORDER
+                    </button>
+                  )
+                ) : (
+                  <button type="button" className="btn btn-add" onClick={() => onOpenSide?.(it.key)}>
+                    CHOOSE OPTIONS
+                  </button>
+                )}
 
-                <button type="button" className="btn btn-outline" onClick={() => onOpenSide?.(it.key)}>
-                  CUSTOMIZE
-                </button>
+                {SIDE_SIZES[it.key] && (
+                  <button type="button" className="btn btn-outline" onClick={() => onOpenSide?.(it.key)}>
+                    CUSTOMIZE
+                  </button>
+                )}
 
                 {it.desc ? <p className="feastCard__desc">{it.desc}</p> : null}
               </article>
@@ -82,11 +141,7 @@ export default function SidesDessertsAll({
               </button>
 
               <button type="button" className="btn btn-add" onClick={handleWings}>
-                ADD TO ORDER
-              </button>
-
-              <button type="button" className="btn btn-outline" onClick={handleWings}>
-                CUSTOMIZE
+                CHOOSE OPTIONS
               </button>
 
               <p className="feastCard__desc">Sauced or dry-rubbed. Customize in the wings panel.</p>
@@ -98,9 +153,9 @@ export default function SidesDessertsAll({
       {/* ===== Scoped feast styles (identical to your pizza sections) ===== */}
       <style jsx>{`
         :global(:root) {
-          --brand-blue: #006491;
-          --red: #e91e28;
-          --light-border: #e9e9e9;
+          --brand-blue: #000000;
+          --red: #8b1a1a;
+          --light-border: #d9c49c;
         }
 
         .feast--edge {
@@ -133,16 +188,20 @@ export default function SidesDessertsAll({
           .feast__grid--four { grid-template-columns: 1fr; }
         }
 
-        .feastCard { display: flex; flex-direction: column; }
+        .feastCard {
+          display: flex;
+          flex-direction: column;
+          background: #fdf7f0;
+          border: 1px solid var(--light-border);
+          border-radius: .1875rem;
+          padding: 12px;
+        }
 
         .feastCard__imgWrap {
           width: 100%;
           height: 133px;
-          background: #fff;
           border-radius: 4px;
           overflow: hidden;
-          border: 1px solid var(--light-border);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
         .feastCard__img {
           display: block;
@@ -181,6 +240,27 @@ export default function SidesDessertsAll({
         .btn-add { background: var(--red); color: #fff; border: none; }
         .btn-add:hover { filter: brightness(0.96); }
 
+        .btn-add--split{
+          display: flex;
+          gap: 6px;
+          padding: 0;
+          background: transparent;
+          overflow: visible;
+        }
+        .btn-add__seg{
+          flex: 1;
+          color: #fff;
+          border: none;
+          border-radius: 4px;
+          padding: 0.52rem 0.2rem;
+          font-family: var(--font-heading, Oswald, sans-serif);
+          font-weight: 900;
+          letter-spacing: .45px;
+          cursor: pointer;
+          transition: transform 0.08s ease, filter 0.12s ease;
+        }
+        .btn-add__seg:hover{ filter: brightness(1.1); transform: translateY(-1px); }
+
         .btn-outline {
           background: #fff;
           border: 3px solid var(--brand-blue);
@@ -190,7 +270,7 @@ export default function SidesDessertsAll({
 
         .feastCard__desc {
           margin: 10px 0 2px;
-          color: #333;
+          color: #6b3f22;
           font-size: 0.9rem;
           line-height: 1.33;
         }

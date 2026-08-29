@@ -19,11 +19,13 @@ export default function PizzaBuilder({
   // ===== refs for scroll control =====
   const rootRef = useRef(null);
 
-  // ===== Theme =====
+  // ===== Theme (matches the menu/deals page cream-box makeover) =====
   const MAROON = "#8b1a1a";
-  const LIGHT_BORDER = "#b8b8b8"; // slightly darker per your last note
-  const LIGHT_BG = "#f9f9f9";
+  const LIGHT_BORDER = "#d9c49c"; // thin dark-brown-tan border (--menu-box-border)
+  const LIGHT_BG = "#fdf7f0";     // cream box fill (--menu-box-bg)
   const LIGHT_RED_INACTIVE = "#ffb0b0"; // a tad darker
+  const TEXT_BROWN = "#6b3f22";   // body text color inside the boxes
+  const BOX_RADIUS = ".1875rem";
   // ===== Layout constants to match your screenshots =====
 const PB_TOTAL = 846;           // total builder width
 const PB_GAP = 16;              // gap between columns
@@ -47,18 +49,49 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
   const [sauceEnabled, setSauceEnabled] = useState(initialData.sauceEnabled ?? true);
   const [selectedSauce, setSelectedSauce] = useState(initialData.sauce || "Pizza Sauce");
   const [sauceAmount, setSauceAmount] = useState(initialData.sauceAmount || "Normal");
-  const [cheeseIncluded, setCheeseIncluded] = useState(initialData.cheeseIncluded ?? true);
+  // Cheese type is a single choice — regular, dairy-free, or none — rather
+  // than two independently-toggleable booleans, so the two can't both be on
+  // at once. Coverage/amount selectors below are shared by regular and
+  // dairy-free cheese alike (there's no separate dairy-free pizza artwork).
+  const [cheeseType, setCheeseType] = useState(
+    initialData.dairyFreeCheese
+      ? "dairyFree"
+      : initialData.cheeseIncluded === false
+      ? "none"
+      : "regular"
+  );
+  const cheeseIncluded = cheeseType !== "none";
+  const dairyFreeCheese = cheeseType === "dairyFree";
   const [cheeseCoverage, setCheeseCoverage] = useState(initialData.cheeseCoverage || "full");
   const [cheeseAmount, setCheeseAmount] = useState(initialData.cheeseAmount || "Normal");
-  const [dairyFreeCheese, setDairyFreeCheese] = useState(initialData.dairyFreeCheese ?? false);
   const [secondCoverage, setSecondCoverage] = useState(initialData.secondCoverage || null);
   const [secondAmount, setSecondAmount] = useState(initialData.secondAmount || "Normal");
   const [selectedToppings, setSelectedToppings] = useState([]);
   const [toppingPlacement, setToppingPlacement] = useState({});
   const [toppingAmount, setToppingAmount] = useState({});
+
+  // Named recipe pizzas (Signature/Specialty) start with just their own
+  // toppings shown — the full catalog is one click away via "Add More
+  // Toppings" instead of always being dumped on screen. Captured once at
+  // mount (not live off selectedToppings) so unchecking a recipe topping
+  // doesn't make its own checkbox disappear.
+  const [toppingsExpanded, setToppingsExpanded] = useState(false);
+  const [recipeToppings] = useState(() => {
+    const t =
+      Array.isArray(initialData.toppings) && initialData.toppings.length > 0
+        ? initialData.toppings
+        : Array.isArray(presetToppings) && presetToppings.length > 0
+        ? presetToppings
+        : [];
+    return new Set(t);
+  });
+  const isRecipePizza = !!pizzaName;
   const [bake, setBake] = useState(initialData.bake || "normal");
   const [oregano, setOregano] = useState(initialData.oregano || "without");
   const [crushedRedPepper, setCrushedRedPepper] = useState(initialData.crushedRedPepper || "without");
+  const [coriander, setCoriander] = useState(initialData.coriander || "without");
+  const [ginger, setGinger] = useState(initialData.ginger || "without");
+  const [garlicCrust, setGarlicCrust] = useState(initialData.garlicCrust || "without");
   const [qty, setQty] = useState(initialData.qty || 1);
 
   // Dips (with images)
@@ -210,8 +243,8 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
     if (cheeseIncluded) {
       const addOverlay = (type, side) => { const suffix = side ? `-${side}` : ""; imageQueue.push(`/pizza_layers/${type}${suffix}.png`); };
       if (cheeseCoverage === "left" || cheeseCoverage === "right") {
-        const leftAmount  = cheeseAmount;
-        const rightAmount = secondAmount || cheeseAmount;
+        const leftAmount  = cheeseCoverage === "left"  ? cheeseAmount : secondAmount || cheeseAmount;
+        const rightAmount = cheeseCoverage === "right" ? cheeseAmount : secondAmount || cheeseAmount;
         if (leftAmount  === "Extra")  addOverlay("Extra-Cheese",  "Left");
         if (leftAmount  === "Double") addOverlay("Double-Cheese", "Left");
         if (rightAmount === "Extra")  addOverlay("Extra-Cheese",  "Right");
@@ -249,12 +282,12 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
 
   const defaultMeats = [
     "Pepperoni","Real Bacon","Ham","Grilled Chicken","Shawarma Chicken","Halal Chicken",
-    "BBQ Chicken","Butter Chicken","Beef","Hot Italian Sausage","Mild Sausage",
+    "BBQ Chicken","Butter Chicken","Shahi Paneer","Beef","Hot Italian Sausage","Mild Sausage",
     "Bacon Crumble","Anchovies","Salami","Halal Pepperoni"
   ].filter(isSpecialToppingAllowed);
 
   const defaultVeggies = [
-    "Mushroom","Green Pepper","Onion","Pineapple","Tomato","Hot Peppers",
+    "Mushroom","Green Pepper","Onion","Pickle","Pineapple","Tomato","Hot Peppers",
     "Green Olives","Black Olives","Broccoli","Jalapeno","Sun Dried Tomato",
     "Spinach","Fresh Garlic","Roasted Red Pepper","Corn","Paneer","Feta Cheese",
     "Ginger","Coriander","Sumac Seasoning"
@@ -262,9 +295,14 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
 
   const defaultDrizzles = ["BBQ Drizzle"].filter(isSpecialToppingAllowed);
 
-  const meats   = allowedToppings ? defaultMeats.filter((t) => allowedToppings.includes(t))   : defaultMeats;
-  const veggies = allowedToppings ? defaultVeggies.filter((t) => allowedToppings.includes(t)) : defaultVeggies;
-  const drizzles= allowedToppings ? defaultDrizzles.filter((t) => allowedToppings.includes(t)): defaultDrizzles;
+  const meatsCatalog    = allowedToppings ? defaultMeats.filter((t) => allowedToppings.includes(t))    : defaultMeats;
+  const veggiesCatalog  = allowedToppings ? defaultVeggies.filter((t) => allowedToppings.includes(t))  : defaultVeggies;
+  const drizzlesCatalog = allowedToppings ? defaultDrizzles.filter((t) => allowedToppings.includes(t)) : defaultDrizzles;
+
+  const collapseToRecipe = isRecipePizza && !toppingsExpanded;
+  const meats    = collapseToRecipe ? meatsCatalog.filter((t) => recipeToppings.has(t))    : meatsCatalog;
+  const veggies  = collapseToRecipe ? veggiesCatalog.filter((t) => recipeToppings.has(t))  : veggiesCatalog;
+  const drizzles = collapseToRecipe ? drizzlesCatalog.filter((t) => recipeToppings.has(t)) : drizzlesCatalog;
 
   const currentWeightedCount = weightedToppingCount({
     toppings: selectedToppings,
@@ -295,6 +333,7 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
     secondAmount,
     dairyFreeCheese,
     dips: dipsQty,
+    garlicCrust,
     qty,
   };
   const lineSubtotalCents = priceLineItem(currentItem);
@@ -312,7 +351,7 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
   );
 
 const Section = ({ index, title, children }) => (
-  <div style={{ marginBottom: "1.25rem", border: `1px solid ${LIGHT_BORDER}`, background: "#fff", overflowAnchor: 'none' }}>
+  <div style={{ marginBottom: "1.25rem", border: `1px solid ${LIGHT_BORDER}`, borderRadius: BOX_RADIUS, overflow: "hidden", background: LIGHT_BG, overflowAnchor: 'none' }}>
     <div className="pb-h">
       <div className="pb-h__inner">
         {index}. {title}
@@ -322,13 +361,39 @@ const Section = ({ index, title, children }) => (
   </div>
 );
 
+// Compact grouped column used by the Special Instructions section — a bold
+// brown label over its radio options, laid out several-to-a-row with a
+// vertical rule between (mirrors the reference's Bake/Cut/Oregano rows)
+// instead of the old one-category-per-full-width-row stack.
+const InstrGroup = ({ title, children }) => (
+  <div style={{ flex: 1, minWidth: 0 }}>
+    <p
+      style={{
+        fontWeight: 900,
+        marginBottom: "0.4rem",
+        color: TEXT_BROWN,
+        fontFamily: "var(--font-heading), Oswald, sans-serif",
+        fontSize: ".85rem",
+        textTransform: "uppercase",
+        letterSpacing: ".3px",
+      }}
+    >
+      {title}
+    </p>
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>{children}</div>
+  </div>
+);
+
+const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LIGHT_BORDER, margin: "0 1.25rem" }} />;
+
 
   const stop = (e) => { e.preventDefault(); e.stopPropagation(); };
 
   return (
     <div
       ref={rootRef}
-      style={{ background: "#fff", fontFamily: "var(--font-body), Inter, system-ui, sans-serif" }}
+      className="pb-scope"
+      style={{ background: "#fff", color: TEXT_BROWN, fontFamily: "var(--font-body), Inter, system-ui, sans-serif" }}
       onPointerDown={(e) => e.stopPropagation()}  // stop bubbling pointerdown
       onMouseDown={(e) => e.stopPropagation()}    // cover legacy mouse listeners
       onClick={(e) => e.stopPropagation()}        // stop bubbling click
@@ -498,14 +563,30 @@ const Section = ({ index, title, children }) => (
 
           {/* 2. Cheese */}
           <Section index={2} title="Cheese">
-            <label style={{ display: "flex", alignItems: "center", marginBottom: "0.6rem" }}>
+            <label style={{ display: "flex", alignItems: "center", marginBottom: "0.35rem" }}>
               <input
                 type="checkbox"
-                checked={cheeseIncluded}
-                onChange={(e) => { e.stopPropagation(); setCheeseIncluded(!cheeseIncluded); }}
+                checked={cheeseType === "regular"}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  setCheeseType(cheeseType === "regular" ? "none" : "regular");
+                }}
                 style={{ marginRight: "0.5rem" }}
               />
               Cheese
+            </label>
+
+            <label style={{ display: "flex", alignItems: "center", marginBottom: "0.6rem" }}>
+              <input
+                type="checkbox"
+                checked={cheeseType === "dairyFree"}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  setCheeseType(cheeseType === "dairyFree" ? "none" : "dairyFree");
+                }}
+                style={{ marginRight: "0.5rem" }}
+              />
+              Dairy-Free Cheese (+{formatMoney(PRICES.dairyFreeCheese)})
             </label>
 
             {cheeseIncluded && (
@@ -601,18 +682,6 @@ const Section = ({ index, title, children }) => (
                 )}
               </>
             )}
-
-            <Divider />
-
-            <label style={{ display: "flex", alignItems: "center" }}>
-              <input
-                type="checkbox"
-                checked={dairyFreeCheese}
-                onChange={(e) => { e.stopPropagation(); setDairyFreeCheese(!dairyFreeCheese); }}
-                style={{ marginRight: "0.5rem" }}
-              />
-              Dairy-Free Cheese (+{formatMoney(PRICES.dairyFreeCheese)})
-            </label>
           </Section>
 
           {/* 3. Sauce */}
@@ -675,11 +744,13 @@ const Section = ({ index, title, children }) => (
                 {` Additional toppings cost ${formatMoney(extraRateForNotice)} each. Toppings marked ★ count as 2.`}
               </p>
             )}
+            {meats.length > 0 && (
+            <>
             <p
               style={{
                 fontWeight: 900,
                 marginBottom: "0.35rem",
-                color: MAROON,
+                color: TEXT_BROWN,
                 fontFamily: "var(--font-heading), Oswald, sans-serif",
                 fontSize: "1rem" // smaller subheader
               }}
@@ -727,15 +798,19 @@ const Section = ({ index, title, children }) => (
                 </div>
               ))}
             </div>
+            </>
+            )}
 
-            <Divider />
+            {meats.length > 0 && veggies.length > 0 && <Divider />}
 
+            {veggies.length > 0 && (
+            <>
             <p
               style={{
                 fontWeight: 900,
                 marginBottom: "0.35rem",
                 marginTop: "0.35rem",
-                color: MAROON,
+                color: TEXT_BROWN,
                 fontFamily: "var(--font-heading), Oswald, sans-serif",
                 fontSize: "1rem"
               }}
@@ -783,15 +858,17 @@ const Section = ({ index, title, children }) => (
                 </div>
               ))}
             </div>
+            </>
+            )}
 
-            {pizzaName === "Bourbon" && (
+            {pizzaName === "Bourbon" && drizzles.length > 0 && (
               <>
                 <p
                   style={{
                     fontWeight: 900,
                     marginBottom: "0.35rem",
                     marginTop: "0.5rem",
-                    color: MAROON,
+                    color: TEXT_BROWN,
                     fontFamily: "var(--font-heading), Oswald, sans-serif",
                     fontSize: "1rem"
                   }}
@@ -826,6 +903,30 @@ const Section = ({ index, title, children }) => (
                   ))}
                 </div>
               </>
+            )}
+
+            {isRecipePizza && !toppingsExpanded && (
+              <button
+                type="button"
+                onClick={(e) => { stop(e); setToppingsExpanded(true); }}
+                style={{
+                  marginTop: "0.75rem",
+                  width: "100%",
+                  padding: "0.6rem 1rem",
+                  background: "#fff",
+                  border: `2px dashed ${MAROON}`,
+                  borderRadius: 6,
+                  color: MAROON,
+                  fontWeight: 900,
+                  fontFamily: "var(--font-heading), Oswald, sans-serif",
+                  fontSize: ".85rem",
+                  letterSpacing: ".3px",
+                  textTransform: "uppercase",
+                  cursor: "pointer"
+                }}
+              >
+                + Add More Toppings
+              </button>
             )}
           </Section>
 
@@ -895,23 +996,13 @@ const Section = ({ index, title, children }) => (
             ))}
           </Section>
 
-          {/* 6. Special Instructions */}
+          {/* 6. Special Instructions — grouped into two compact rows of
+              columns (mirrors the Bake/Cut/Oregano reference layout) instead
+              of one full-width block per category, to save vertical space. */}
           <Section index={6} title="Special Instructions">
-            {/* Bake */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-              <p
-                style={{
-                  fontWeight: 900,
-                  marginBottom: "0.2rem",
-                  color: MAROON,
-                  fontFamily: "var(--font-heading), Oswald, sans-serif",
-                  fontSize: "1rem"
-                }}
-              >
-                Bake
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-                <label>
+            <div style={{ display: "flex" }}>
+              <InstrGroup title="Bake">
+                <label style={{ display: "flex", alignItems: "center" }}>
                   <input
                     type="radio"
                     name="bake"
@@ -920,9 +1011,9 @@ const Section = ({ index, title, children }) => (
                     onChange={(e) => { e.stopPropagation(); setBake("light"); }}
                     style={{ marginRight: "0.5rem" }}
                   />
-                  Lightly done
+                  Lightly Done
                 </label>
-                <label>
+                <label style={{ display: "flex", alignItems: "center" }}>
                   <input
                     type="radio"
                     name="bake"
@@ -931,9 +1022,9 @@ const Section = ({ index, title, children }) => (
                     onChange={(e) => { e.stopPropagation(); setBake("normal"); }}
                     style={{ marginRight: "0.5rem" }}
                   />
-                  Normal bake
+                  Normal Bake
                 </label>
-                <label>
+                <label style={{ display: "flex", alignItems: "center" }}>
                   <input
                     type="radio"
                     name="bake"
@@ -942,28 +1033,14 @@ const Section = ({ index, title, children }) => (
                     onChange={(e) => { e.stopPropagation(); setBake("well"); }}
                     style={{ marginRight: "0.5rem" }}
                   />
-                  Well done
+                  Well Done
                 </label>
-              </div>
-            </div>
+              </InstrGroup>
 
-            <Divider />
+              <VRule />
 
-            {/* Oregano */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-              <p
-                style={{
-                  fontWeight: 900,
-                  marginBottom: "0.2rem",
-                  color: MAROON,
-                  fontFamily: "var(--font-heading), Oswald, sans-serif",
-                  fontSize: "1rem"
-                }}
-              >
-                Oregano
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-                <label>
+              <InstrGroup title="Oregano">
+                <label style={{ display: "flex", alignItems: "center" }}>
                   <input
                     type="radio"
                     name="oregano"
@@ -972,9 +1049,9 @@ const Section = ({ index, title, children }) => (
                     onChange={(e) => { e.stopPropagation(); setOregano("with"); }}
                     style={{ marginRight: "0.5rem" }}
                   />
-                  With oregano
+                  With Oregano
                 </label>
-                <label>
+                <label style={{ display: "flex", alignItems: "center" }}>
                   <input
                     type="radio"
                     name="oregano"
@@ -983,28 +1060,14 @@ const Section = ({ index, title, children }) => (
                     onChange={(e) => { e.stopPropagation(); setOregano("without"); }}
                     style={{ marginRight: "0.5rem" }}
                   />
-                  Without oregano
+                  Without Oregano
                 </label>
-              </div>
-            </div>
+              </InstrGroup>
 
-            <Divider />
+              <VRule />
 
-            {/* Spice */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-              <p
-                style={{
-                  fontWeight: 900,
-                  marginBottom: "0.2rem",
-                  color: MAROON,
-                  fontFamily: "var(--font-heading), Oswald, sans-serif",
-                  fontSize: "1rem"
-                }}
-              >
-                Spice it up
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-                <label>
+              <InstrGroup title="Spice It Up">
+                <label style={{ display: "flex", alignItems: "center" }}>
                   <input
                     type="radio"
                     name="spice"
@@ -1013,9 +1076,9 @@ const Section = ({ index, title, children }) => (
                     onChange={(e) => { e.stopPropagation(); setCrushedRedPepper("with"); }}
                     style={{ marginRight: "0.5rem" }}
                   />
-                  With crushed red peppers
+                  With Crushed Red Peppers
                 </label>
-                <label>
+                <label style={{ display: "flex", alignItems: "center" }}>
                   <input
                     type="radio"
                     name="spice"
@@ -1024,9 +1087,92 @@ const Section = ({ index, title, children }) => (
                     onChange={(e) => { e.stopPropagation(); setCrushedRedPepper("without"); }}
                     style={{ marginRight: "0.5rem" }}
                   />
-                  Without crushed red peppers
+                  Without Crushed Red Peppers
                 </label>
-              </div>
+              </InstrGroup>
+            </div>
+
+            <Divider style={{ margin: "1rem auto" }} />
+
+            <div style={{ display: "flex" }}>
+              <InstrGroup title="Coriander">
+                <label style={{ display: "flex", alignItems: "center" }}>
+                  <input
+                    type="radio"
+                    name="coriander"
+                    value="with"
+                    checked={coriander === "with"}
+                    onChange={(e) => { e.stopPropagation(); setCoriander("with"); }}
+                    style={{ marginRight: "0.5rem" }}
+                  />
+                  With Coriander
+                </label>
+                <label style={{ display: "flex", alignItems: "center" }}>
+                  <input
+                    type="radio"
+                    name="coriander"
+                    value="without"
+                    checked={coriander === "without"}
+                    onChange={(e) => { e.stopPropagation(); setCoriander("without"); }}
+                    style={{ marginRight: "0.5rem" }}
+                  />
+                  Without Coriander
+                </label>
+              </InstrGroup>
+
+              <VRule />
+
+              <InstrGroup title="Ginger">
+                <label style={{ display: "flex", alignItems: "center" }}>
+                  <input
+                    type="radio"
+                    name="ginger"
+                    value="with"
+                    checked={ginger === "with"}
+                    onChange={(e) => { e.stopPropagation(); setGinger("with"); }}
+                    style={{ marginRight: "0.5rem" }}
+                  />
+                  With Ginger
+                </label>
+                <label style={{ display: "flex", alignItems: "center" }}>
+                  <input
+                    type="radio"
+                    name="ginger"
+                    value="without"
+                    checked={ginger === "without"}
+                    onChange={(e) => { e.stopPropagation(); setGinger("without"); }}
+                    style={{ marginRight: "0.5rem" }}
+                  />
+                  Without Ginger
+                </label>
+              </InstrGroup>
+
+              <VRule />
+
+              <InstrGroup title="Garlic Crust">
+                <label style={{ display: "flex", alignItems: "center" }}>
+                  <input
+                    type="radio"
+                    name="garlicCrust"
+                    value="with"
+                    checked={garlicCrust === "with"}
+                    onChange={(e) => { e.stopPropagation(); setGarlicCrust("with"); }}
+                    style={{ marginRight: "0.5rem" }}
+                  />
+                  With Garlic Crust (+{formatMoney(PRICES.garlicCrust)})
+                </label>
+                <label style={{ display: "flex", alignItems: "center" }}>
+                  <input
+                    type="radio"
+                    name="garlicCrust"
+                    value="without"
+                    checked={garlicCrust === "without"}
+                    onChange={(e) => { e.stopPropagation(); setGarlicCrust("without"); }}
+                    style={{ marginRight: "0.5rem" }}
+                  />
+                  Without Garlic Crust
+                </label>
+              </InstrGroup>
             </div>
           </Section>
         </div>
@@ -1037,7 +1183,7 @@ const Section = ({ index, title, children }) => (
 
 
           {/* Bordered box ends under the button */}
-          <div style={{ background: "#f8f8f8", padding: 0, border: `1px solid ${LIGHT_BORDER}` }}>
+          <div style={{ background: LIGHT_BG, padding: 0, border: `1px solid ${LIGHT_BORDER}`, borderRadius: BOX_RADIUS, overflow: "hidden" }}>
 <div className="pb-h">
   <div className="pb-h__inner">My Pizza</div>
 </div>
@@ -1083,6 +1229,18 @@ const Section = ({ index, title, children }) => (
                 </p>
               )}
 
+              <p style={{ fontWeight: "bold", marginTop: "0.6rem" }}>Special Instructions:</p>
+              <ul style={{ paddingLeft: "1.2rem", margin: 0 }}>
+                <li>Bake: {{ light: "Lightly done", normal: "Normal bake", well: "Well done" }[bake]}</li>
+                {oregano === "with" && <li>With oregano</li>}
+                {crushedRedPepper === "with" && <li>With crushed red peppers</li>}
+                {coriander === "with" && <li>With coriander</li>}
+                {ginger === "with" && <li>With ginger</li>}
+                {garlicCrust === "with" && (
+                  <li>Garlic crust (+{formatMoney(PRICES.garlicCrust)})</li>
+                )}
+              </ul>
+
               <Divider />
 
               <div
@@ -1116,7 +1274,10 @@ const Section = ({ index, title, children }) => (
                   e.preventDefault(); e.stopPropagation();
                   const payload = {
                     type: "pizza-byo",
-                    pizzaName: pizzaName || "Custom Pizza",
+                    // Left empty for a true build-your-own — display layers
+                    // compute a "Large 3 Topping Pizza"-style title from the
+                    // build itself. Named recipe pizzas keep their own name.
+                    pizzaName: pizzaName || "",
                     size: String(selectedSize),
                     crust: selectedCrust,
                     toppings: selectedToppings.slice(),
@@ -1136,6 +1297,9 @@ const Section = ({ index, title, children }) => (
                     bake,
                     oregano,
                     crushedRedPepper,
+                    coriander,
+                    ginger,
+                    garlicCrust,
                     qty,
                     summary: describePizzaFull({
                       size: selectedSize,
@@ -1153,6 +1317,12 @@ const Section = ({ index, title, children }) => (
                       toppingPlacement,
                       toppingAmount,
                       dips: dipsQty,
+                      bake,
+                      oregano,
+                      crushedRedPepper,
+                      coriander,
+                      ginger,
+                      garlicCrust,
                     }),
                     lineSubtotalCents: priceLineItem({
                       type: "pizza-byo",
@@ -1166,6 +1336,7 @@ const Section = ({ index, title, children }) => (
                       secondAmount,
                       dairyFreeCheese,
                       dips: dipsQty,
+                      garlicCrust,
                       qty
                     })
                   };
@@ -1174,11 +1345,11 @@ const Section = ({ index, title, children }) => (
                 style={{
                   width: "100%",
                   padding: "1rem",
-                  backgroundColor: "#E91E28", // keep original bright red here
+                  backgroundColor: MAROON,
                   color: "white",
                   fontWeight: 900,
                   border: "none",
-                  borderRadius: "0px",
+                  borderRadius: BOX_RADIUS,
                   fontSize: "1rem",
                   cursor: "pointer",
                   textTransform: "uppercase",
@@ -1204,6 +1375,10 @@ const Section = ({ index, title, children }) => (
 
       {/* Close X as a decal (no layout impact, never moves with scroll) */}
       <style jsx global>{`
+        .pb-scope input[type="radio"],
+        .pb-scope input[type="checkbox"] {
+          accent-color: #8b1a1a;
+        }
         .modal-panel { position: relative; display: flex; flex-direction: column; }
         .modal-close {
           position: absolute !important;

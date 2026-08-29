@@ -1,11 +1,10 @@
 // pages/menu.js
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 
 // Core builder & sections
 import PizzaBuilder from "../components/PizzaBuilder";
-import SideSelector from "../components/SideSelector";
 import SideBuilder from "../components/SideBuilder";
 import SpecialtyPizzas from "../components/SpecialtyPizzas";
 import SignaturePizzas from "../components/SignaturePizzas";
@@ -14,10 +13,11 @@ import SpecialMenuBuilder from "../components/SpecialMenuBuilder";
 import SidesDessertsAll from "../components/SidesDessertsAll";
 import { DrinksCategoryPanel } from "../components/DrinksDipsBuilder";
 import { useCart } from "../components/CartSystem";
-import { formatMoney } from "../components/Pricing";
+import { priceLineItem } from "../components/Pricing";
 
 // Hardened portal overlay (stable nested scroller)
 import DebugPizzaOverlay from "../components/modals/DebugPizzaOverlay";
+import OrderSettingsAside from "../components/OrderSettingsAside";
 
 // Dynamic wings (client-only)
 const WingsBuilder = dynamic(() => import("../components/WingsBuilder"), {
@@ -65,7 +65,7 @@ function EntreesView({
       <div className="card" style={{ overflow: "visible", padding: "1rem 1rem 2rem" }}>
         <div className="feast--edge">
           <WingsBuilder
-            onClose={() => {}}
+            onClose={() => setTabSub({ tab: "entrees", sub: "all" })}
             onAdd={(item) => onAddToCart?.(item)}
             addToCartDirect={false}
           />
@@ -122,15 +122,7 @@ function EntreesView({
                       className="btn btn-add"
                       onClick={() => setOpenComboId(combo.id)}
                     >
-                      ADD TO ORDER
-                    </button>
-
-                    <button
-                      type="button"
-                      className="btn btn-outline"
-                      onClick={() => setOpenComboId(combo.id)}
-                    >
-                      CUSTOMIZE
+                      CHOOSE OPTIONS
                     </button>
 
                     <p className="feastCard__desc">{combo.subtitle}</p>
@@ -142,17 +134,16 @@ function EntreesView({
         </div>
 
         <style jsx>{`
-          :global(:root){ --brand-blue:#006491; --red:#e91e28; --light-border:#e9e9e9; }
+          :global(:root){ --brand-blue:#000000; --red:#8b1a1a; --light-border:#d9c49c; }
           .feast--edge{ margin-left:calc(-1rem - 1px); margin-right:calc(-1rem - 1px); }
           @media (max-width:520px){ .feast--edge{ margin-left:-1rem; margin-right:-1rem; } }
           .feast__grid{ display:grid; column-gap:16px; row-gap:14px; align-items:start; }
           .feast__grid--three{ grid-template-columns:repeat(3,minmax(0,1fr)); }
           @media (max-width:800px){ .feast__grid--three{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
           @media (max-width:520px){ .feast__grid--three{ grid-template-columns:1fr; } }
-          .feastCard{ display:flex; flex-direction:column; }
+          .feastCard{ display:flex; flex-direction:column; background:#fdf7f0; border:1px solid var(--light-border); border-radius:.1875rem; padding:12px; }
           .feastCard__imgWrap{
-            width:100%; height:133px; background:#fff; border-radius:4px; overflow:hidden;
-            border:1px solid var(--light-border); box-shadow:0 2px 8px rgba(0,0,0,0.08);
+            width:100%; height:133px; border-radius:4px; overflow:hidden;
           }
           .feastCard__img{ width:100%; height:100%; object-fit:fill; }
           .feastCard__name{
@@ -170,7 +161,7 @@ function EntreesView({
           .btn-add:hover{ filter:brightness(0.96); }
           .btn-outline{ background:#fff; border:3px solid var(--brand-blue); color:var(--brand-blue); }
           .btn-outline:hover{ background:#f4f9ff; }
-          .feastCard__desc{ margin:10px 0 2px; color:#333; font-size:.9rem; line-height:1.33; }
+          .feastCard__desc{ margin:10px 0 2px; color:#6b3f22; font-size:.9rem; line-height:1.33; }
         `}</style>
 
         {/* mount the modal/logic controller */}
@@ -238,14 +229,7 @@ function EntreesView({
                   className="btn btn-add"
                   onClick={() => openSpecial(it.key)}
                 >
-                  ADD TO ORDER
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-outline"
-                  onClick={() => openSpecial(it.key)}
-                >
-                  CUSTOMIZE
+                  CHOOSE OPTIONS
                 </button>
 
                 <p className="feastCard__desc">{it.desc}</p>
@@ -256,9 +240,9 @@ function EntreesView({
 
         <style jsx>{`
           :global(:root) {
-            --brand-blue: #006491;
-            --red: #e91e28;
-            --light-border: #e9e9e9;
+            --brand-blue: #000000;
+            --red: #8b1a1a;
+            --light-border: #d9c49c;
           }
           .feast--edge {
             margin-left: calc(-1rem - 1px);
@@ -289,10 +273,9 @@ function EntreesView({
               grid-template-columns: 1fr;
             }
           }
-          .feastCard { display: flex; flex-direction: column; }
+          .feastCard { display: flex; flex-direction: column; background:#fdf7f0; border:1px solid var(--light-border); border-radius:.1875rem; padding:12px; }
           .feastCard__imgWrap{
-            width:100%; height:133px; background:#fff; border-radius:4px; overflow:hidden;
-            border:1px solid var(--light-border); box-shadow:0 2px 8px rgba(0,0,0,0.08);
+            width:100%; height:133px; border-radius:4px; overflow:hidden;
           }
           .feastCard__img{ display:block; width:100%; height:100%; object-fit:fill; }
           .feastCard__name{
@@ -310,7 +293,7 @@ function EntreesView({
           .btn-add:hover{ filter:brightness(0.96); }
           .btn-outline{ background:#fff; border:3px solid var(--brand-blue); color:var(--brand-blue); }
           .btn-outline:hover{ background:#f4f9ff; }
-          .feastCard__desc{ margin:10px 0 2px; color:#333; font-size:.9rem; line-height:1.33; }
+          .feastCard__desc{ margin:10px 0 2px; color:#6b3f22; font-size:.9rem; line-height:1.33; }
         `}</style>
 
         {/* Popup builder for Special Menu */}
@@ -352,7 +335,21 @@ function EntreesView({
 }
 
 /* ---------------- Sides: feast-style grid + popup builder --------------- */
+// Colors follow the same light-to-dark size progression as the pizza cards.
+const SIDE_SEG_S = "#e57373";
+const SIDE_SEG_R = "#e91e28";
+const SIDE_SEG_L = "#b71c1c";
+const SIDE_SIZES = {
+  "French Fries":     [{ size: "Regular", abbr: "R", color: SIDE_SEG_R }, { size: "Large", abbr: "L", color: SIDE_SEG_L }],
+  "Poutine":          [{ size: "Small", abbr: "S", color: SIDE_SEG_S }, { size: "Regular", abbr: "R", color: SIDE_SEG_R }, { size: "Large", abbr: "L", color: SIDE_SEG_L }],
+  "Shawarma Poutine": [{ size: "Regular", abbr: "R", color: SIDE_SEG_R }, { size: "Large", abbr: "L", color: SIDE_SEG_L }],
+  "Onion Rings":      [{ size: "Regular", abbr: "R", color: SIDE_SEG_R }, { size: "Large", abbr: "L", color: SIDE_SEG_L }],
+};
+const sideSizeToPricingLabel = (size) => (size === "Regular" ? "Medium" : size);
+
 function SidesView({ selectedSide, setSelectedSide }) {
+  const { addItem } = useCart();
+  const [sizePickerFor, setSizePickerFor] = useState(null);
   const items = [
     { name: "French Fries",        img: "/images/sides/fries.jpg",             desc: "Crispy golden fries." },
     { name: "Poutine",             img: "/images/sides/poutine.jpg",           desc: "Fries, cheese curds & gravy." },
@@ -362,6 +359,21 @@ function SidesView({ selectedSide, setSelectedSide }) {
     { name: "Garlic Bread",        img: "/images/sides/garlic-bread.jpg",      desc: "Toasty classic garlic bread." },
   ];
   const openSide = (name) => setSelectedSide(name);
+
+  const addSideAtSize = (side, size) => {
+    const name = `${side} (${sideSizeToPricingLabel(size)})`;
+    const payload = {
+      type: "side",
+      name,
+      side,
+      size,
+      qty: 1,
+      summary: `1 × ${side} (${size})`,
+    };
+    payload.lineSubtotalCents = priceLineItem(payload);
+    addItem(payload);
+    setSizePickerFor(null);
+  };
 
   return (
     <div className="card" style={{ padding: "1rem 1rem 2rem" }}>
@@ -377,8 +389,31 @@ function SidesView({ selectedSide, setSelectedSide }) {
                 {it.name}
               </button>
 
-              <button type="button" className="btn btn-add" onClick={() => openSide(it.name)}>ADD TO ORDER</button>
-              <button type="button" className="btn btn-outline" onClick={() => openSide(it.name)}>CUSTOMIZE</button>
+              {SIDE_SIZES[it.name] ? (
+                sizePickerFor === it.name ? (
+                  <div className="btn btn-add btn-add--split" role="group" aria-label={`Choose a size for ${it.name}`}>
+                    {SIDE_SIZES[it.name].map((s) => (
+                      <button
+                        key={s.size}
+                        type="button"
+                        className="btn-add__seg"
+                        style={{ background: s.color }}
+                        onClick={() => addSideAtSize(it.name, s.size)}
+                        title={s.size}
+                      >
+                        {s.abbr}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <button type="button" className="btn btn-add" onClick={() => setSizePickerFor(it.name)}>ADD TO ORDER</button>
+                )
+              ) : (
+                <button type="button" className="btn btn-add" onClick={() => openSide(it.name)}>CHOOSE OPTIONS</button>
+              )}
+              {SIDE_SIZES[it.name] && (
+                <button type="button" className="btn btn-outline" onClick={() => openSide(it.name)}>CUSTOMIZE</button>
+              )}
 
               {it.desc ? <p className="feastCard__desc">{it.desc}</p> : null}
             </article>
@@ -387,7 +422,7 @@ function SidesView({ selectedSide, setSelectedSide }) {
       </div>
 
       <style jsx>{`
-        :global(:root){ --brand-blue:#006491; --red:#e91e28; --light-border:#e9e9e9; }
+        :global(:root){ --brand-blue:#000000; --red:#8b1a1a; --light-border:#d9c49c; }
 
         .feast--edge{ margin-left:calc(-1rem - 1px); margin-right:calc(-1rem - 1px); }
         @media (max-width:520px){ .feast--edge{ margin-left:-1rem; margin-right:-1rem; } }
@@ -398,10 +433,9 @@ function SidesView({ selectedSide, setSelectedSide }) {
         @media (max-width:800px){  .feast__grid--four{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
         @media (max-width:520px){  .feast__grid--four{ grid-template-columns:1fr; } }
 
-        .feastCard{ display:flex; flex-direction:column; }
+        .feastCard{ display:flex; flex-direction:column; background:#fdf7f0; border:1px solid var(--light-border); border-radius:.1875rem; padding:12px; }
         .feastCard__imgWrap{
-          width:100%; height:133px; background:#fff; border-radius:4px; overflow:hidden;
-          border:1px solid var(--light-border); box-shadow:0 2px 8px rgba(0,0,0,0.08);
+          width:100%; height:133px; border-radius:4px; overflow:hidden;
         }
         .feastCard__img{ width:100%; height:100%; object-fit:fill; }
 
@@ -419,10 +453,17 @@ function SidesView({ selectedSide, setSelectedSide }) {
         .btn + .btn{ margin-top:8px; }
         .btn-add{ background:var(--red); color:#fff; border:none; }
         .btn-add:hover{ filter:brightness(0.96); }
+        .btn-add--split{ display:flex; gap:6px; padding:0; background:transparent; overflow:visible; }
+        .btn-add__seg{
+          flex:1; color:#fff; border:none; border-radius:4px; padding:0.48rem 0.2rem;
+          font-family:var(--font-heading, Oswald, sans-serif); font-weight:900; letter-spacing:.45px; cursor:pointer;
+          transition: transform 0.08s ease, filter 0.12s ease;
+        }
+        .btn-add__seg:hover{ filter:brightness(1.1); transform: translateY(-1px); }
         .btn-outline{ background:#fff; border:3px solid var(--brand-blue); color:var(--brand-blue); }
         .btn-outline:hover{ background:#f4f9ff; }
 
-        .feastCard__desc{ margin:10px 0 2px; color:#333; font-size:.9rem; line-height:1.33; }
+        .feastCard__desc{ margin:10px 0 2px; color:#6b3f22; font-size:.9rem; line-height:1.33; }
       `}</style>
     </div>
   );
@@ -482,7 +523,7 @@ function DrinksView() {
       </div>
 
       <style jsx>{`
-        :global(:root){ --brand-blue:#006491; --red:#e91e28; --light-border:#e9e9e9; }
+        :global(:root){ --brand-blue:#000000; --red:#8b1a1a; --light-border:#d9c49c; }
 
         .feast--edge{ margin-left:calc(-1rem - 1px); margin-right:calc(-1rem - 1px); }
         @media (max-width:520px){ .feast--edge{ margin-left:-1rem; margin-right:-1rem; } }
@@ -493,16 +534,14 @@ function DrinksView() {
         @media (max-width:800px){  .feast__grid--four{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
         @media (max-width:520px){  .feast__grid--four{ grid-template-columns:1fr; } }
 
-        .feastCard{ display:flex; flex-direction:column; }
+        .feastCard{ display:flex; flex-direction:column; background:#fdf7f0; border:1px solid var(--light-border); border-radius:.1875rem; padding:12px; }
         .feastCard__imgWrap{
-          width:100%; height:133px; background:#fff; border-radius:
-4px; overflow:hidden;
-          border:1px solid var(--light-border); box-shadow:0 2px 8px rgba(0,0,0,0.08);
+          width:100%; height:133px; border-radius:4px; overflow:hidden;
         }
         .feastCard__img{ width:100%; height:100%; object-fit:fill; }
 
         .feastCard__name{
-          margin:8px 0 10px; padding:0; background:none; border:0; color:#006491;
+          margin:8px 0 10px; padding:0; background:none; border:0; color:#000000;
           font-family:var(--font-heading, Oswald, sans-serif); font-weight:900; font-size:1.02rem; text-align:left; cursor:pointer;
         }
         .feastCard__name:hover{ text-decoration:underline; }
@@ -513,10 +552,10 @@ function DrinksView() {
           border-radius:4px; cursor:pointer;
         }
         .btn + .btn{ margin-top:8px; }
-        .btn-add{ background:#e91e28; color:#fff; border:none; }
+        .btn-add{ background:#8b1a1a; color:#fff; border:none; }
         .btn-add:hover{ filter:brightness(0.96); }
 
-        .feastCard__desc{ margin:10px 0 2px; color:#333; font-size:.9rem; line-height:1.33; }
+        .feastCard__desc{ margin:10px 0 2px; color:#6b3f22; font-size:.9rem; line-height:1.33; }
       `}</style>
 
       {/* Right-panel modal */}
@@ -549,8 +588,7 @@ function MenuBody() {
   const router = useRouter();
 
   // Cart/totals
-  const { addItem, openCart, subtotalCents: cartSubtotalCents } = useCart();
-  const subtotalCents = cartSubtotalCents ?? 0;
+  const { addItem, openCart, service } = useCart();
 
   const tab = (router.query.tab || "entrees").toString();
   const sub = (router.query.sub || "all").toString();
@@ -561,23 +599,9 @@ function MenuBody() {
       shallow: true,
     });
 
-  // Right sticky & totals
-  const [location, setLocation] = useState("Hamilton, ON L8N1G3");
-  const [changingLoc, setChangingLoc] = useState(false);
-  const [newLoc, setNewLoc] = useState("");
-  const [serviceMethod, setServiceMethod] = useState("Carryout");
-  const [orderTiming, setOrderTiming] = useState("Now");
-  const today = new Date();
-  const yyyyMmDd = today.toISOString().slice(0, 10);
-  const [scheduleDate, setScheduleDate] = useState(yyyyMmDd);
-  const [scheduleTime, setScheduleTime] = useState("18:00");
-  const [showHours, setShowHours] = useState(false);
-  const hours = { open: "11:00", close: "22:00" };
-  const openHoursForDate = () => hours;
-
-  const deliveryCents = serviceMethod === "Delivery" ? 499 : 0;
-  const taxCents = Math.round(0.13 * (subtotalCents + deliveryCents));
-  const totalCents = subtotalCents + deliveryCents + taxCents;
+  // Wings popup (opened from the Sides "View All" card — should behave like
+  // every other side's popup builder, not navigate away to a full page)
+  const [showWingsModal, setShowWingsModal] = useState(false);
 
   // Pizza Builder popup state
   const [showBuilder, setShowBuilder] = useState(false);
@@ -632,44 +656,6 @@ function MenuBody() {
     []
   );
 
-  // Sticky follower
-  const followerRef = useRef(null);
-  const lagRef = useRef(0);
-  const prevScrollRef = useRef(0);
-  const rafRef = useRef(0);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    prevScrollRef.current = window.scrollY;
-    const onScroll = () => {
-      const y = window.scrollY;
-      const delta = y - prevScrollRef.current;
-      prevScrollRef.current = y;
-      lagRef.current = Math.max(-220, Math.min(220, lagRef.current - delta));
-      if (!rafRef.current) {
-        const tick = () => {
-          lagRef.current *= 0.88;
-          if (followerRef.current) {
-            followerRef.current.style.transform = `translateY(${lagRef.current}px)`;
-          }
-          if (Math.abs(lagRef.current) > 0.5) {
-            rafRef.current = requestAnimationFrame(tick);
-          } else {
-            lagRef.current = 0;
-            if (followerRef.current) followerRef.current.style.transform = "translateY(0px)";
-            rafRef.current = 0;
-          }
-        };
-        rafRef.current = requestAnimationFrame(tick);
-      }
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      rafRef.current = 0;
-    };
-  }, []);
-
   const handleAddToCart = (item) => {
     addItem(item);
     openCart();
@@ -713,41 +699,47 @@ function MenuBody() {
 
               <div className="card eta-card">
                 <div className="eta-left">
-                  <div className="eta-mins">20 MINS</div>
-                  <div className="eta-sub">EST. CARRYOUT TIME</div>
+                  <div className="eta-mins">{service === "delivery" ? "45 MINS" : "20 MINS"}</div>
+                  <div className="eta-sub">
+                    EST. {service === "delivery" ? "DELIVERY" : "CARRYOUT"} TIME
+                  </div>
                 </div>
                 <div className="eta-right">
-                  Your Carryout will be ready in about <strong>20 minutes</strong> after you place your order.
+                  Your {service === "delivery" ? "Delivery" : "Carryout"} will be ready in about{" "}
+                  <strong>{service === "delivery" ? "45 minutes" : "20 minutes"}</strong> after you
+                  place your order.
                 </div>
               </div>
 
-              <button
-                className="card cta-byo cta-byo--dom"
-                onClick={() => openBuilder()}
-                aria-label="Build Your Own Pizza"
-              >
-                <img className="cta-byo__img" src="/images/byo_thumb.png" alt="" />
-                <div>
-                  <div className="cta-byo__title">Build Your Own Pizza</div>
-                  <div className="cta-byo__sub">Watch the pizza of your wildest dreams come to life.</div>
-                </div>
-              </button>
+              <div className="byo-box">
+                <button
+                  className="cta-byo cta-byo--dom"
+                  onClick={() => openBuilder()}
+                  aria-label="Build Your Own Pizza"
+                >
+                  <img className="cta-byo__img" src="/images/byo_thumb.png" alt="" />
+                  <div>
+                    <div className="cta-byo__title">Build Your Own Pizza</div>
+                    <div className="cta-byo__sub">Watch the pizza of your wildest dreams come to life.</div>
+                  </div>
+                </button>
 
-              <div className="size-links size-links--anchor">
-                {[
-                  { label: "Small", size: 10 },
-                  { label: "Medium", size: 12 },
-                  { label: "Large", size: 14 },
-                  { label: "X-Large", size: 16 },
-                ].map((s) => (
-                  <button
-                    key={s.size}
-                    className="size-link size-link--anchor"
-                    onClick={() => openBYOSize(s.size)}
-                  >
-                    {s.label}
-                  </button>
-                ))}
+                <div className="size-links size-links--anchor">
+                  {[
+                    { label: "Small", size: 10 },
+                    { label: "Medium", size: 12 },
+                    { label: "Large", size: 14 },
+                    { label: "X-Large", size: 16 },
+                  ].map((s) => (
+                    <button
+                      key={s.size}
+                      className="size-link size-link--anchor"
+                      onClick={() => openBYOSize(s.size)}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="cat-grid cat-grid--tight">
@@ -789,9 +781,27 @@ function MenuBody() {
             <div key="sides-viewall">
               <SidesDessertsAll
                 onOpenSide={(name) => setSelectedSide(name)}
-                onOpenWings={() => setTabSub({ tab: "sides", sub: "wings" })}
+                onOpenWings={() => setShowWingsModal(true)}
               />
               <SideBuilderPopup selectedSide={selectedSide} setSelectedSide={setSelectedSide} />
+              <DebugPizzaOverlay
+                open={showWingsModal}
+                onClose={() => setShowWingsModal(false)}
+                mode="portal"
+                blockRogue
+                title="Wings"
+              >
+                {showWingsModal && (
+                  <WingsBuilder
+                    onClose={() => setShowWingsModal(false)}
+                    onAdd={(item) => {
+                      handleAddToCart(item);
+                      setShowWingsModal(false);
+                    }}
+                    addToCartDirect={false}
+                  />
+                )}
+              </DebugPizzaOverlay>
             </div>
           )}
 
@@ -808,7 +818,7 @@ function MenuBody() {
             <div key="sides-wings" className="card" style={{ overflow: "visible", padding: "1rem 1rem 2rem" }}>
               <div className="feast--edge">
                 <WingsBuilder
-                  onClose={() => {}}
+                  onClose={() => setTabSub({ tab: "sides", sub: "all" })}
                   onAdd={(item) => handleAddToCart?.(item)}
                   addToCartDirect={false}
                 />
@@ -831,140 +841,8 @@ function MenuBody() {
           {tab === "drinks" && <div key="drinks-all"><DrinksView /></div>}
         </section>
 
-        {/* RIGHT — sticky follower + order settings */}
-        <aside className="menu-aside">
-          <div className="menu-aside__follower" ref={followerRef}>
-            <button
-              type="button"
-              className="menu-checkoutBtn"
-              onClick={(e) => { e.stopPropagation(); router.push('/checkout'); }}
-            >
-              CHECKOUT
-            </button>
-
-            <div className="aside-card">
-              <div className="aside-card__title">ORDER SETTINGS</div>
-
-              <div style={{ padding: 12 }}>
-                <div className="aside-row">
-                  <div className="aside-label">My Location</div>
-                  <button onClick={() => setChangingLoc((v) => !v)} className="aside-link">
-                    CHANGE
-                  </button>
-                </div>
-
-                {!changingLoc ? (
-                  <div style={{ marginTop: 4 }}>{location}</div>
-                ) : (
-                  <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-                    <input
-                      value={newLoc}
-                      onChange={(e) => setNewLoc(e.target.value)}
-                      className="aside-input"
-                      placeholder="Enter address or postal code"
-                    />
-                    <button
-                      onClick={() => {
-                        setLocation(newLoc || location);
-                        setChangingLoc(false);
-                      }}
-                      className="aside-btn"
-                    >
-                      Save
-                    </button>
-                  </div>
-                )}
-
-                <div className="aside-sectionLabel">Service Method</div>
-                <div className="aside-choices">
-                  {["Carryout", "Delivery"].map((opt) => (
-                    <label key={opt} className="aside-choice">
-                      <input
-                        type="radio"
-                        name="serviceMethod"
-                        checked={serviceMethod === opt}
-                        onChange={() => setServiceMethod(opt)}
-                      />
-                      {opt}
-                    </label>
-                  ))}
-                </div>
-
-                <div className="aside-sectionLabel">Order Timing</div>
-                <div className="aside-choices">
-                  {["Now", "Later"].map((opt) => (
-                    <label key={opt} className="aside-choice">
-                      <input
-                        type="radio"
-                        name="orderTiming"
-                        checked={orderTiming === opt}
-                        onChange={() => setOrderTiming(opt)}
-                      />
-                      {opt}
-                    </label>
-                  ))}
-                </div>
-
-                {orderTiming === "Later" && (
-                  <div className="aside-schedule">
-                    <div className="aside-scheduleRow">
-                      <span role="img" aria-label="calendar">📅</span>
-                      <input
-                        type="date"
-                        value={scheduleDate}
-                        onChange={(e) => setScheduleDate(e.target.value)}
-                        className="aside-input"
-                      />
-                      <input
-                        type="time"
-                        value={scheduleTime}
-                        onChange={(e) => setScheduleTime(e.target.value)}
-                        min={(openHoursForDate(scheduleDate) || hours).open}
-                        max={(openHoursForDate(scheduleDate) || hours).close}
-                        step={300}
-                        className="aside-input"
-                      />
-                    </div>
-                    <div className="aside-small">
-                      Available hours for selected day: {(openHoursForDate(scheduleDate) || hours).open}–{(openHoursForDate(scheduleDate) || hours).close}
-                    </div>
-                  </div>
-                )}
-
-                <button onClick={() => setShowHours((v) => !v)} className="aside-link" style={{ marginTop: 8, padding: 0 }}>
-                  View Store Hours
-                </button>
-                {showHours && (
-                  <div className="aside-hours">
-                    Mon–Sat: 11:00–22:00<br />
-                    Sun: 12:00–21:00
-                  </div>
-                )}
-
-                <div className="aside-totals">
-                  <div className="aside-totalRow">
-                    <div>Food &amp; Beverage:</div>
-                    <div className="aside-totalNum">{formatMoney(subtotalCents)}</div>
-                  </div>
-                  {serviceMethod === "Delivery" && (
-                    <div className="aside-totalRow">
-                      <div>Delivery:</div>
-                      <div className="aside-totalNum">{formatMoney(499)}</div>
-                    </div>
-                  )}
-                  <div className="aside-totalRow">
-                    <div>Taxes:</div>
-                    <div className="aside-totalNum">{formatMoney(taxCents)}</div>
-                  </div>
-                  <div className="aside-grandRow">
-                    <div>Order Total:</div>
-                    <div>{formatMoney(totalCents)}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </aside>
+        {/* RIGHT — sticky order settings (shared with pages/coupons.js) */}
+        <OrderSettingsAside />
       </div>
 
       {/* ===== STABLE Pizza Builder PORTAL (hardened) ===== */}

@@ -12,11 +12,19 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     match /orders/{orderId} {
+      // Orders are created ONLY by pages/api/placeOrder.js, via the
+      // Firebase Admin SDK — which bypasses these rules entirely, so that
+      // route is what actually enforces a real, server-recomputed price.
+      // Direct client writes are refused outright: previously this was
+      // `allow create: if request.auth != null` (any anonymous visitor),
+      // which meant nothing here stopped a tampered client from writing a
+      // fake total straight into Firestore. See utils/saveOrder.js and
+      // pages/api/placeOrder.js.
+      allow create: if false;
+
       // Any signed-in visitor (including anonymous customers — see
-      // firebaseConfig.js) can create an order at checkout, and can fetch
-      // one order by its exact (unguessable, random) ID for the
-      // order-confirmation page.
-      allow create: if request.auth != null;
+      // firebaseConfig.js) can still fetch one order by its exact
+      // (unguessable, random) ID for the order-confirmation page.
       allow get: if request.auth != null;
 
       // Listing all orders (the kitchen dashboard's live query) and editing

@@ -11,23 +11,32 @@ import {
   doc,
   updateDoc
 } from "firebase/firestore";
-import { formatMoney } from "../components/Pricing";
+import { formatMoney, describePizzaFull } from "../components/Pricing";
+import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { STAFF_EMAIL } from "../utils/kitchenAuth";
 
 function describeItem(item) {
   if (!item) return "Item";
-  if (item.summary) return item.summary;
-  if (item.type === "pizza-byo") {
-    const toppings = Array.isArray(item.toppings) ? item.toppings.join(", ") : "";
-    const size = item.size ? `${item.size}"` : "";
-    return [size, item.crust, toppings].filter(Boolean).join(" — ") || "Build Your Own Pizza";
-  }
+  if (item.type === "pizza-byo") return describePizzaFull(item);
   if (item.type === "pizza-specialty") return item.name || "Specialty Pizza";
-  if (item.type === "wings") return `${item.count} Wings — ${item.sauce || ""}`;
-  if (item.type === "side") return item.name || "Side";
-  if (item.type === "special") return item.name || "Special";
-  if (item.type === "combo") return item.comboId || "Combo";
-  return "Item";
+  if (item.type === "wings") return `${item.count} Wings • ${item.sauce || ""}`;
+  if (item.type === "side") return item.summary || item.name || "Side";
+  if (item.type === "special") return item.summary || item.name || "Special";
+  if (item.type === "combo") return comboNameFor(item.comboId);
+  return item.summary || "Item";
+}
+
+function formatScheduled(order) {
+  if (order.orderTiming !== "later" || !order.schedule?.date) return null;
+  const d = new Date(`${order.schedule.date}T${order.schedule.time || "00:00"}:00`);
+  if (isNaN(d.getTime())) return `${order.schedule.date} ${order.schedule.time || ""}`.trim();
+  return d.toLocaleString([], {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export default function KitchenDashboard() {
@@ -99,8 +108,13 @@ export default function KitchenDashboard() {
         {orders.length === 0 && <p className="kitchen-empty">No orders yet.</p>}
 
         <div className="kitchen-grid">
-          {orders.map((order) => (
-            <article key={order.id} className="order-card">
+          {orders.map((order) => {
+            const scheduledLabel = formatScheduled(order);
+            return (
+            <article
+              key={order.id}
+              className={`order-card ${scheduledLabel ? "order-card--scheduled" : ""}`}
+            >
               <div className="order-card__top">
                 <div>
                   <div className="order-name">{order.contact?.name || "N/A"}</div>
@@ -109,11 +123,32 @@ export default function KitchenDashboard() {
                 <span className="order-service">{order.serviceMethod || "N/A"}</span>
               </div>
 
+              {scheduledLabel ? (
+                <div className="order-timing order-timing--scheduled">
+                  <span className="order-timing__badge">SCHEDULED</span>
+                  <span className="order-timing__value">{scheduledLabel}</span>
+                </div>
+              ) : (
+                <div className="order-timing order-timing--asap">
+                  <span className="order-timing__badge">ASAP</span>
+                </div>
+              )}
+
               <ul className="order-items">
                 {(order.items || []).map((it, i) => (
                   <li key={i}>
                     <span className="order-items__qty">{it.qty || 1}×</span>
                     {describeItem(it)}
+                    {it.type === "combo" && it.meta?.items && (
+                      <ul className="order-items__combo-children">
+                        {Object.entries(it.meta.items).map(([key, child]) => (
+                          <li key={key}>
+                            <strong>{comboItemLabel(key)}:</strong>{" "}
+                            {child?.summary || "Not customized yet"}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -122,7 +157,7 @@ export default function KitchenDashboard() {
                 <span>
                   Placed {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleTimeString() : "—"}
                 </span>
-                {order.pickupTime?.toDate && (
+                {!scheduledLabel && order.pickupTime?.toDate && (
                   <span>Pickup {order.pickupTime.toDate().toLocaleTimeString()}</span>
                 )}
               </div>
@@ -142,7 +177,8 @@ export default function KitchenDashboard() {
                 </button>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       </main>
 
@@ -153,7 +189,7 @@ export default function KitchenDashboard() {
           font-family: var(--font-body, "Inter", sans-serif);
         }
         .kitchen-header {
-          background: #006491;
+          background: #000000;
           color: #fff;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
         }
@@ -215,6 +251,37 @@ export default function KitchenDashboard() {
           display: flex;
           flex-direction: column;
           gap: 10px;
+          border: 2px solid transparent;
+        }
+        .order-card--scheduled {
+          border-color: #f59e0b;
+          background: #fffaf0;
+        }
+        .order-timing {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .order-timing__badge {
+          font-size: 0.72rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+          padding: 3px 8px;
+          border-radius: 4px;
+        }
+        .order-timing--scheduled .order-timing__badge {
+          background: #f59e0b;
+          color: #fff;
+        }
+        .order-timing--scheduled .order-timing__value {
+          font-weight: 800;
+          color: #92400e;
+          font-size: 0.9rem;
+        }
+        .order-timing--asap .order-timing__badge {
+          background: #eef2f6;
+          color: #555;
         }
         .order-card__top {
           display: flex;
@@ -255,8 +322,18 @@ export default function KitchenDashboard() {
         }
         .order-items__qty {
           font-weight: 700;
-          color: #006491;
+          color: #000000;
           margin-right: 6px;
+        }
+        .order-items__combo-children {
+          list-style: none;
+          margin: 3px 0 0;
+          padding: 0 0 0 18px;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          font-size: 0.82rem;
+          color: #555;
         }
         .order-card__meta {
           display: flex;

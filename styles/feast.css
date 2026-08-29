@@ -1,7 +1,7 @@
 :root {
-  --brand-blue:#006491;
-  --red:#e91e28;
-  --light-border:#e9e9e9;
+  --brand-blue:#000000;
+  --red:#8b1a1a;
+  --light-border:#d9c49c;
   --heading: Oswald, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
 }
 
@@ -50,40 +50,17 @@ html.is-modal-open {
 
 .feastCard__desc{ margin:10px 0 2px; color:#333; font-size:.9rem; line-height:1.33; }
 
-/* ===== Category grid (landing) ===== */
-.cat-grid{ display:grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap:12px; }
-@media (max-width:900px){ .cat-grid{ grid-template-columns: repeat(3,minmax(0,1fr)); } }
-@media (max-width:680px){ .cat-grid{ grid-template-columns: repeat(2,minmax(0,1fr)); } }
-@media (max-width:420px){ .cat-grid{ grid-template-columns: 1fr; } }
+/* Category grid (landing) — actual rules live in globals.css (.cat-grid--tight
+   / .cat-card), which is imported before this file and was being overridden
+   by a stale duplicate here. */
 
-.cat-card{ display:flex; align-items:center; gap:12px; padding:10px; background:#fff; border:1px solid var(--light-border); border-radius:6px; cursor:pointer; }
-.cat-card__imgWrap{ width:64px; height:64px; border-radius:6px; overflow:hidden; background:#fff; border:1px solid var(--light-border); }
-.cat-card__img{ width:100%; height:100%; object-fit:cover; }
-.cat-card__label{ font-family:var(--heading); font-weight:900; font-size:1rem; color:#222; }
+/* .cta-byo / .eta-card and their children: actual rules live in globals.css,
+   which is imported before this file — a stale duplicate here (white bg,
+   flex layout, tiny image) was silently overriding it, same issue as the
+   .cat-card duplicate above. */
 
-/* ===== Promos / CTA ===== */
-.wide-promo{ display:flex; align-items:center; gap:14px; padding:10px; margin-top:10px; border:1px solid var(--light-border); border-radius:6px; cursor:pointer; background:#fff; }
-.wide-promo__img{ width:86px; height:86px; object-fit:cover; border-radius:6px; border:1px solid var(--light-border); }
-.wide-promo__title{ font-family:var(--heading); font-weight:900; }
-.wide-promo__arrow{ margin-left:auto; width:10px; height:10px; border-right:2px solid #444; border-top:2px solid #444; transform:rotate(45deg); }
-
-.cta-byo{ display:flex; gap:12px; align-items:center; padding:12px; margin:10px 0; border:1px solid var(--light-border); border-radius:6px; background:#fff; cursor:pointer; }
-.cta-byo__img{ width:86px; height:86px; object-fit:cover; border-radius:6px; border:1px solid var(--light-border); }
-.cta-byo__title{ font-family:var(--heading); font-weight:900; font-size:1.1rem; }
-.cta-byo__sub{ color:#444; }
-
-/* ===== ETA card ===== */
-.eta-card{ display:flex; gap:16px; align-items:center; padding:12px; border:1px solid var(--light-border); border-radius:6px; background:#fff; margin:10px 0; }
-.eta-mins{ font-family:var(--heading); font-weight:900; font-size:1.15rem; }
-.eta-sub{ font-size:.78rem; color:#666; }
-
-/* ===== Aside bits (common) ===== */
-.aside-card{ border:1px solid var(--light-border); border-radius:6px; background:#fff; overflow:hidden; }
-.aside-card__title{ font-family:var(--heading); font-weight:900; font-size:1rem; padding:10px 12px; border-bottom:1px solid var(--light-border); }
-.aside-link{ background:none; border:0; color:var(--brand-blue); cursor:pointer; padding:0; }
-.aside-input{ border:1px solid var(--light-border); border-radius:4px; padding:6px 8px; }
-.aside-choices{ display:flex; gap:10px; margin:6px 0 8px; }
-.aside-choice{ display:flex; align-items:center; gap:6px; }
-.aside-totals{ border-top:1px dashed var(--light-border); margin-top:10px; padding-top:10px; }
-.aside-totalRow, .aside-grandRow{ display:flex; justify-content:space-between; margin:6px 0; }
-.aside-grandRow{ font-weight:700; font-family:var(--heading); }
+/* .wide-promo* and .aside-card* (except .aside-card itself, which lives in
+   globals.css): removed. Unused anywhere in the app except .aside-card, and
+   this file's copy of .aside-card was the same shadow-duplicate problem —
+   it loads after globals.css and was silently overriding the cream/rounded
+   version globals.css defines. */

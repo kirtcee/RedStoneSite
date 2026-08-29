@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import PizzaBuilder from "./PizzaBuilder";
 import SideBuilder from "./SideBuilder";
 import ComboBuilder from "./ComboBuilder";
+import DealBuilder from "./DealBuilder";
 import SpecialMenuBuilder from "./SpecialMenuBuilder";
 import DebugPizzaOverlay from "./modals/DebugPizzaOverlay";
 import { useCart } from "./CartSystem";
@@ -82,6 +83,11 @@ export default function CartEditOverlay({ editingItem, onClose }) {
       // ComboBuilder manages its own overlay/open-state internally, driven
       // by the editingItem prop (see startComboFromEdit in ComboBuilder.js).
       return <ComboBuilder editingItem={editingItem} onClose={onClose} />;
+
+    case "deal":
+      // Same pattern as combo — DealBuilder manages its own overlay, driven
+      // by the editingItem prop.
+      return <DealBuilder editingItem={editingItem} onClose={onClose} />;
 
     case "special":
       // SpecialMenuBuilder also manages its own overlay via its `open` prop.

@@ -3,15 +3,16 @@ import React, { useMemo, useState, useEffect } from "react";
 import { priceLineItem, formatMoney } from "./Pricing";
 import { useCart } from "./CartSystem";
 
-/* ===== Theme ===== */
+/* ===== Theme (matches the Pizza Builder's cream-box makeover) ===== */
 const PANEL_INNER_MAX = 840;
 const MAROON = "#8b1a1a";
-const PRIMARY_RED = "#E91E28";
-const LIGHT_BORDER = "#c5c5c5";
-const LIGHTER_BG = "#f9f9f9";
+const LIGHT_BORDER = "#d9c49c"; // thin dark-brown-tan border (--menu-box-border)
+const LIGHTER_BG = "#fdf7f0";   // cream box fill (--menu-box-bg)
+const TEXT_BROWN = "#6b3f22";   // body text color inside the boxes
+const BOX_RADIUS = ".1875rem";
 
 const sectionBar = {
-  background: MAROON,
+  background: "#000",
   color: "#fff",
   padding: "0.6rem 0.85rem",
   fontFamily: "var(--font-heading, Oswald, sans-serif)",
@@ -25,8 +26,15 @@ const dividerInset = {
   width: "calc(100% - 2rem)",
   margin: "12px auto",
 };
+// Wraps a numbered section (black header bar + cream body) in the same
+// bordered/rounded box used by the Pizza Builder's Section component.
+const SectionBox = ({ children }) => (
+  <div style={{ border: `1px solid ${LIGHT_BORDER}`, borderRadius: BOX_RADIUS, overflow: "hidden", marginBottom: "1rem" }}>
+    {children}
+  </div>
+);
 const circleButtonLg = {
-  background: PRIMARY_RED,
+  background: MAROON,
   color: "#fff",
   borderRadius: "50%",
   width: 48,
@@ -105,7 +113,7 @@ export function DrinksCategoryPanel({
   };
 
   const summary = useMemo(() => {
-    if (!items.length) return `${categoryLabel} — none selected`;
+    if (!items.length) return `${categoryLabel}: none selected`;
     return `${categoryLabel}: ` + items.map((i) => `${i.label} × ${i.qty}`).join(", ");
   }, [items, categoryLabel]);
 
@@ -148,15 +156,16 @@ export function DrinksCategoryPanel({
         maxWidth: `${PANEL_INNER_MAX}px`,
         margin: "0 auto",
         background: "#fff",
+        color: TEXT_BROWN,
         // Extra breathing room inside the popup container
         paddingTop: "16px",
         paddingBottom: "16px",
       }}
     >
-      <div style={{ padding: 0, background: LIGHTER_BG }}>
+      <SectionBox>
         <h3 style={sectionBar}>1. {title}</h3>
 
-        <div style={{ padding: "1.15rem 1rem" }}>
+        <div style={{ padding: "1.15rem 1rem", background: LIGHTER_BG }}>
           <div
             style={{
               display: "grid",
@@ -173,7 +182,7 @@ export function DrinksCategoryPanel({
                   onClick={() => setActive(opt)}
                   style={{
                     padding: "0.7rem",
-                    backgroundColor: selected ? PRIMARY_RED : "#f0f0f0",
+                    backgroundColor: selected ? MAROON : "#f0f0f0",
                     color: selected ? "#fff" : "#111",
                     border: "none",
                     borderRadius: "8px",
@@ -192,7 +201,7 @@ export function DrinksCategoryPanel({
             })}
           </div>
 
-          <div style={{ fontWeight: 800, marginBottom: 8, color: "#111" }}>
+          <div style={{ fontWeight: 800, marginBottom: 8 }}>
             Price: {currentPickPrice}
           </div>
 
@@ -249,7 +258,7 @@ export function DrinksCategoryPanel({
               type="button"
               onClick={addCurrent}
               style={{
-                background: PRIMARY_RED,
+                background: MAROON,
                 color: "#fff",
                 border: "none",
                 padding: "0.8rem 1.2rem",
@@ -265,98 +274,100 @@ export function DrinksCategoryPanel({
             </button>
           </div>
         </div>
-      </div>
+      </SectionBox>
 
-      <hr style={{ border: "none", borderTop: `1px solid ${LIGHT_BORDER}`, margin: 0 }} />
-
-      <div style={{ padding: "1.15rem 1rem", background: "#fff" }}>
+      <SectionBox>
         <h3 style={sectionBar}>2. Item</h3>
 
-        {items.length === 0 ? (
-          <p style={{ margin: "0.8rem 0 0 0", color: "#555" }}>
-            No items added yet.
-          </p>
-        ) : (
-          <div style={{ marginTop: "0.8rem" }}>
-            {items.map((it) => {
-              const linePrice = formatMoney(
-                priceLineItem({
-                  type: "drinks-dips",
-                  categoryId,
-                  items: [{ label: it.label, qty: it.qty }],
-                  qty: 1,
-                })
-              );
-              return (
-                <div
-                  key={it.label}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: "0.7rem",
-                    marginBottom: "0.65rem",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
-                    <span style={{ color: "green", fontWeight: "bold" }}>✔</span>
-                    <span style={{ fontWeight: 900 }}>({it.qty})</span>
-                    <span>{it.label}</span>
-                  </div>
+        <div style={{ padding: "1.15rem 1rem", background: LIGHTER_BG }}>
+          {items.length === 0 ? (
+            <p style={{ margin: 0, color: "#8a7256" }}>
+              No items added yet.
+            </p>
+          ) : (
+            <div>
+              {items.map((it) => {
+                const linePrice = formatMoney(
+                  priceLineItem({
+                    type: "drinks-dips",
+                    categoryId,
+                    items: [{ label: it.label, qty: it.qty }],
+                    qty: 1,
+                  })
+                );
+                return (
+                  <div
+                    key={it.label}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "0.7rem",
+                      marginBottom: "0.65rem",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
+                      <span style={{ color: "green", fontWeight: "bold" }}>✔</span>
+                      <span style={{ fontWeight: 900 }}>({it.qty})</span>
+                      <span>{it.label}</span>
+                    </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontWeight: 800 }}>{linePrice}</span>
-                    <button
-                      type="button"
-                      onClick={() => changeQty(it.label, -1)}
-                      style={it.qty > 1 ? circleButtonLg : circleButtonLgDisabled}
-                      disabled={it.qty <= 1}
-                      aria-label={`Decrease ${it.label}`}
-                    >
-                      −
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => changeQty(it.label, +1)}
-                      style={circleButtonLg}
-                      aria-label={`Increase ${it.label}`}
-                    >
-                      +
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeItem(it.label)}
-                      style={{
-                        background: "#fff",
-                        color: "#333",
-                        border: `1px solid ${LIGHT_BORDER}`,
-                        padding: "0.55rem 0.8rem",
-                        borderRadius: "8px",
-                        cursor: "pointer",
-                        fontWeight: 700,
-                      }}
-                    >
-                      Remove
-                    </button>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <span style={{ fontWeight: 800 }}>{linePrice}</span>
+                      <button
+                        type="button"
+                        onClick={() => changeQty(it.label, -1)}
+                        style={it.qty > 1 ? circleButtonLg : circleButtonLgDisabled}
+                        disabled={it.qty <= 1}
+                        aria-label={`Decrease ${it.label}`}
+                      >
+                        −
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => changeQty(it.label, +1)}
+                        style={circleButtonLg}
+                        aria-label={`Increase ${it.label}`}
+                      >
+                        +
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeItem(it.label)}
+                        style={{
+                          background: "#fff",
+                          color: TEXT_BROWN,
+                          border: `1px solid ${LIGHT_BORDER}`,
+                          padding: "0.55rem 0.8rem",
+                          borderRadius: "8px",
+                          cursor: "pointer",
+                          fontWeight: 700,
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </SectionBox>
 
       {/* Footer */}
-      <div style={{ display: "flex" }}>
+      <div style={{ display: "flex", border: `1px solid ${LIGHT_BORDER}`, borderRadius: BOX_RADIUS, overflow: "hidden" }}>
         <button
           type="button"
           onClick={onClose}
           style={{
             flex: 1,
             padding: "1.05rem",
-            background: "#fff",
-            border: `1px solid ${LIGHT_BORDER}`,
+            background: LIGHTER_BG,
+            color: TEXT_BROWN,
+            border: "none",
+            borderRight: `1px solid ${LIGHT_BORDER}`,
             fontWeight: 900,
             cursor: "pointer",
             textTransform: "uppercase",
@@ -371,7 +382,7 @@ export function DrinksCategoryPanel({
           style={{
             flex: 1,
             padding: "1.05rem",
-            background: PRIMARY_RED,
+            background: MAROON,
             color: "#fff",
             border: "none",
             fontWeight: 900,
@@ -386,9 +397,4 @@ export function DrinksCategoryPanel({
       </div>
     </div>
   );
-}
-
-/* You can still keep the old grid builder as default export if you need it elsewhere. */
-export default function DrinksDipsBuilder() {
-  return null; // not used anymore by the modal flow
 }

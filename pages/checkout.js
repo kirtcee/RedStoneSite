@@ -2,52 +2,78 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useCart } from "../components/CartSystem";
-import { priceLineItem, formatMoney } from "../components/Pricing";
+import { useCart, DealCodeEntry } from "../components/CartSystem";
+import { priceLineItem, formatMoney, describePizzaFull, describeByoPizzaTitle } from "../components/Pricing";
+import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
+import { dealNameFor, dealSlotLabel, findDealById } from "../utils/dealCatalog";
 import { saveOrder } from "../utils/saveOrder";
 
 const TAX_RATE = 0.13;
 const DELIVERY_FEE_CENTS = 499;
 
+// Recomputes from the item's raw fields rather than trusting a possibly
+// stale stored `.summary` string, so formatting stays consistent even for
+// items added before a summary-format change.
 function describeItem(item) {
   if (!item) return "";
-  if (item.type === "pizza-byo") {
-    const toppings = Array.isArray(item.toppings) ? item.toppings.join(", ") : "";
-    const size = item.size ? `${item.size}"` : "";
-    return [size, item.crust, toppings].filter(Boolean).join(" — ");
-  }
+  if (item.type === "pizza-byo") return describePizzaFull(item);
   if (item.type === "pizza-specialty") {
     const sizeLabel =
       ({ "10": "Small", "12": "Medium", "14": "Large", "16": "X-Large" }[String(item.size)] ||
         `${item.size}"`);
-    return [sizeLabel, item.crust].filter(Boolean).join(" • ");
+    return [sizeLabel, item.crust].filter(Boolean).join(" ");
   }
-  if (item.type === "wings") return `${item.count}-piece — ${item.sauce || ""}`;
-  if (item.type === "side") return item.name || "Side";
-  if (item.type === "special") return item.name || "Special";
-  if (item.type === "combo") return item.comboId || "Combo";
+  if (item.type === "wings") {
+    const dipBits = Object.entries(item.dips || {})
+      .filter(([, q]) => Number(q) > 0)
+      .map(([k, v]) => `${k} × ${v}`);
+    return [`${item.count}-piece`, item.sauce, item.serveStyle, dipBits.length ? `Dips: ${dipBits.join(", ")}` : ""]
+      .filter(Boolean)
+      .join(" • ");
+  }
+  if (item.type === "side") return item.summary || item.name || "Side";
+  if (item.type === "special") return item.summary || item.name || "Special";
   return item.summary || "";
 }
 
 function itemTitle(item) {
   return (
+    item?.pizzaName ||
     item?.name ||
-    item?.summary ||
-    (item?.type === "pizza-byo" ? "Build Your Own Pizza" : "Menu Item")
+    (item?.type === "pizza-byo" ? describeByoPizzaTitle(item) : null) ||
+    (item?.type === "combo" ? comboNameFor(item.comboId) : null) ||
+    (item?.type === "deal" ? dealNameFor(item.dealId) : null) ||
+    "Menu Item"
   );
+}
+
+function formatAddress(addr) {
+  if (!addr) return "Enter address";
+  const { street, suite, city, postal } = addr;
+  return [street, suite ? `Unit ${suite}` : "", city, postal]
+    .filter(Boolean)
+    .join(", ");
 }
 
 export default function CheckoutPage() {
   const router = useRouter();
   const cart = useCart();
   const items = cart?.items || [];
+  const {
+    service,
+    deliveryAddress,
+    isServiceConfirmed,
+    openServiceGate,
+    orderTiming,
+    setOrderTiming,
+    scheduleDate,
+    setScheduleDate,
+    scheduleTime,
+    setScheduleTime,
+  } = cart || {};
+  const serviceMethod = service === "delivery" ? "Delivery" : "Carryout";
 
-  const [serviceMethod, setServiceMethod] = useState("Carryout");
-  const [orderTiming, setOrderTiming] = useState("Now");
-  const [scheduleDate, setScheduleDate] = useState("");
-  const [scheduleTime, setScheduleTime] = useState("");
   const [showHours, setShowHours] = useState(false);
-  const [promo, setPromo] = useState("");
   const [location, setLocation] = useState("Red Stone Pizza — Hamilton (Main St)");
   const [changingLoc, setChangingLoc] = useState(false);
   const [newLoc, setNewLoc] = useState(location);
@@ -75,6 +101,7 @@ export default function CheckoutPage() {
 
   const canPlaceOrder =
     items.length > 0 &&
+    isServiceConfirmed &&
     contactName.trim().length > 0 &&
     contactPhone.trim().length > 0 &&
     !placing;
@@ -89,7 +116,7 @@ export default function CheckoutPage() {
       serviceMethod,
       orderTiming,
       schedule:
-        orderTiming === "Later"
+        orderTiming === "later"
           ? { date: scheduleDate, time: scheduleTime }
           : { date: null, time: null },
       location,
@@ -97,7 +124,6 @@ export default function CheckoutPage() {
       fees: { deliveryCents, taxCents },
       subtotalCents,
       totalCents,
-      promo: promo || null,
     };
 
     const id = await saveOrder(orderData);
@@ -112,13 +138,16 @@ export default function CheckoutPage() {
     router.push(`/order-confirmation?orderId=${id}`);
   };
 
-  const redHeader = (title) => (
+  const sectionHeader = (title) => (
     <div
       style={{
-        background: "#E91E28",
+        background: "#000",
         color: "white",
         padding: "0.6rem 0.9rem",
-        fontWeight: "bold",
+        fontWeight: 900,
+        textTransform: "uppercase",
+        letterSpacing: ".3px",
+        fontFamily: "var(--font-heading, Oswald, sans-serif)",
       }}
     >
       {title}
@@ -132,10 +161,14 @@ export default function CheckoutPage() {
           Checkout
         </h1>
 
-        {items.length === 0 ? (
-          <div className="card" style={{ padding: 24, textAlign: "center" }}>
+        {!cart?.isLoaded ? (
+          <div style={{ background: "#fdf7f0", border: "1px solid #d9c49c", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "#6b3f22" }}>
+            Loading your cart…
+          </div>
+        ) : items.length === 0 ? (
+          <div style={{ background: "#fdf7f0", border: "1px solid #d9c49c", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "#6b3f22" }}>
             Your cart is empty.{" "}
-            <Link href="/menu" style={{ color: "#0b61d6", textDecoration: "none" }}>
+            <Link href="/menu" style={{ color: "#6b3f22", fontWeight: 700, textDecoration: "underline" }}>
               Browse the menu
             </Link>
             .
@@ -151,36 +184,36 @@ export default function CheckoutPage() {
           >
             {/* LEFT COLUMN: contact + order summary */}
             <div>
-              <div className="card" style={{ marginBottom: 16, padding: 0, overflow: "hidden" }}>
-                {redHeader("Contact Information")}
+              <div style={{ marginBottom: 16, padding: 0, overflow: "hidden", background: "#fdf7f0", border: "1px solid #d9c49c", borderRadius: ".1875rem" }}>
+                {sectionHeader("Contact Information")}
                 <div style={{ padding: 12, display: "grid", gap: 10 }}>
                   <label style={{ display: "grid", gap: 4 }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "#333" }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#6b3f22" }}>
                       Name *
                     </span>
                     <input
                       value={contactName}
                       onChange={(e) => setContactName(e.target.value)}
                       placeholder="Your name"
-                      style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid #ccc" }}
+                      style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid #d9c49c" }}
                     />
                   </label>
                   <label style={{ display: "grid", gap: 4 }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "#333" }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#6b3f22" }}>
                       Phone *
                     </span>
                     <input
                       value={contactPhone}
                       onChange={(e) => setContactPhone(e.target.value)}
                       placeholder="Phone number"
-                      style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid #ccc" }}
+                      style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid #d9c49c" }}
                     />
                   </label>
                 </div>
               </div>
 
-              <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-                {redHeader("Order Summary")}
+              <div style={{ padding: 0, overflow: "hidden", background: "#fdf7f0", border: "1px solid #d9c49c", borderRadius: ".1875rem" }}>
+                {sectionHeader("Order Summary")}
                 <div style={{ padding: "0.75rem" }}>
                   <div
                     style={{
@@ -190,12 +223,12 @@ export default function CheckoutPage() {
                       marginBottom: 8,
                     }}
                   >
-                    <div style={{ color: "#666", fontSize: 13 }}>
+                    <div style={{ color: "#6b3f22", fontSize: 13 }}>
                       {items.length} item{items.length === 1 ? "" : "s"}
                     </div>
                     <Link
                       href="/cart"
-                      style={{ color: "#0b61d6", textDecoration: "none", fontSize: 13, fontWeight: 700 }}
+                      style={{ color: "#6b3f22", textDecoration: "underline", fontSize: 13, fontWeight: 700 }}
                     >
                       Edit Cart
                     </Link>
@@ -203,6 +236,9 @@ export default function CheckoutPage() {
 
                   {items.map((it) => {
                     const lineCents = priceLineItem(it);
+                    const isCombo = it.type === "combo" && it.meta?.items;
+                    const isDealBundle = it.type === "deal" && it.meta?.items;
+                    const isDealList = it.type === "deal" && it.meta?.builds;
                     return (
                       <div
                         key={it.id}
@@ -211,7 +247,7 @@ export default function CheckoutPage() {
                           justifyContent: "space-between",
                           gap: 12,
                           padding: "8px 0",
-                          borderBottom: "1px solid #eee",
+                          borderBottom: "1px solid #d9c49c",
                         }}
                       >
                         <div style={{ minWidth: 0 }}>
@@ -219,9 +255,42 @@ export default function CheckoutPage() {
                             {itemTitle(it)}{" "}
                             <span style={{ fontWeight: 400, color: "#777" }}>× {it.qty || 1}</span>
                           </div>
-                          <div style={{ fontSize: 12, color: "#555" }}>
-                            {it.summary || describeItem(it)}
-                          </div>
+                          {isCombo ? (
+                            <div style={{ marginTop: 3, display: "flex", flexDirection: "column", gap: 3 }}>
+                              {Object.entries(it.meta.items).map(([key, child]) => (
+                                <div key={key} style={{ display: "flex", gap: 6, fontSize: 12, color: "#555" }}>
+                                  <span style={{ fontWeight: 700, color: "#333", flex: "0 0 auto" }}>
+                                    {comboItemLabel(key)}:
+                                  </span>
+                                  <span>{child?.summary || "Not customized yet"}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : isDealBundle ? (
+                            <div style={{ marginTop: 3, display: "flex", flexDirection: "column", gap: 3 }}>
+                              {Object.entries(it.meta.items).map(([key, child]) => (
+                                <div key={key} style={{ display: "flex", gap: 6, fontSize: 12, color: "#555" }}>
+                                  <span style={{ fontWeight: 700, color: "#333", flex: "0 0 auto" }}>
+                                    {dealSlotLabel(findDealById(it.dealId), key)}:
+                                  </span>
+                                  <span>{child?.summary || "Not customized yet"}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : isDealList ? (
+                            <div style={{ marginTop: 3, display: "flex", flexDirection: "column", gap: 3 }}>
+                              {it.meta.builds.map((child, idx) => (
+                                <div key={idx} style={{ display: "flex", gap: 6, fontSize: 12, color: "#555" }}>
+                                  <span style={{ fontWeight: 700, color: "#333", flex: "0 0 auto" }}>
+                                    Item {idx + 1}:
+                                  </span>
+                                  <span>{child?.summary || "Not customized yet"}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div style={{ fontSize: 12, color: "#555" }}>{describeItem(it)}</div>
+                          )}
                         </div>
                         <div style={{ fontWeight: 700, whiteSpace: "nowrap" }}>
                           {formatMoney(lineCents)}
@@ -235,8 +304,8 @@ export default function CheckoutPage() {
 
             {/* RIGHT COLUMN: order settings / totals / place order */}
             <aside style={{ position: "sticky", top: 16 }}>
-              <div style={{ background: "#f8f8f8" }}>
-                {redHeader("Review Order Settings")}
+              <div style={{ background: "#fdf7f0", border: "1px solid #d9c49c", borderRadius: ".1875rem", overflow: "hidden" }}>
+                {sectionHeader("Review Order Settings")}
 
                 <div style={{ padding: 12 }}>
                   <div
@@ -252,7 +321,7 @@ export default function CheckoutPage() {
                       style={{
                         background: "none",
                         border: "none",
-                        color: "#0b61d6",
+                        color: "#6b3f22",
                         textDecoration: "underline",
                         cursor: "pointer",
                       }}
@@ -268,7 +337,7 @@ export default function CheckoutPage() {
                       <input
                         value={newLoc}
                         onChange={(e) => setNewLoc(e.target.value)}
-                        style={{ flex: 1, padding: "6px 8px", border: "1px solid #ccc", borderRadius: 6 }}
+                        style={{ flex: 1, padding: "6px 8px", border: "1px solid #d9c49c", borderRadius: 6 }}
                         placeholder="Enter address or postal code"
                       />
                       <button
@@ -279,7 +348,7 @@ export default function CheckoutPage() {
                         style={{
                           padding: "6px 10px",
                           borderRadius: 6,
-                          border: "1px solid #ccc",
+                          border: "1px solid #d9c49c",
                           background: "white",
                           cursor: "pointer",
                         }}
@@ -289,37 +358,49 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
-                  <div style={{ marginTop: 16, fontWeight: 700 }}>Service Method</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 6 }}>
-                    {["Carryout", "Delivery"].map((opt) => (
-                      <label
-                        key={opt}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                          background: "white",
-                          padding: 8,
-                          borderRadius: 8,
-                          border: "1px solid #ddd",
-                        }}
-                      >
-                        <input
-                          type="radio"
-                          name="serviceMethod"
-                          checked={serviceMethod === opt}
-                          onChange={() => setServiceMethod(opt)}
-                        />
-                        {opt}
-                      </label>
-                    ))}
+                  <div
+                    style={{
+                      marginTop: 16,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "baseline",
+                    }}
+                  >
+                    <div style={{ fontWeight: 700 }}>Service Method</div>
+                    <button
+                      onClick={() => openServiceGate?.()}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "#6b3f22",
+                        textDecoration: "underline",
+                        cursor: "pointer",
+                      }}
+                    >
+                      CHANGE
+                    </button>
                   </div>
+                  <div style={{ marginTop: 4 }}>
+                    {!service
+                      ? "Not selected yet"
+                      : service === "carryout"
+                      ? "Carryout"
+                      : `Delivery — ${formatAddress(deliveryAddress)}`}
+                  </div>
+                  {!isServiceConfirmed && (
+                    <div style={{ marginTop: 4, fontSize: 12, color: "#b00020" }}>
+                      Please choose carryout or delivery before placing your order.
+                    </div>
+                  )}
 
                   <div style={{ marginTop: 16, fontWeight: 700 }}>Order Timing</div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 6 }}>
-                    {["Now", "Later"].map((opt) => (
+                    {[
+                      { key: "now", label: "Now" },
+                      { key: "later", label: "Later" },
+                    ].map((opt) => (
                       <label
-                        key={opt}
+                        key={opt.key}
                         style={{
                           display: "flex",
                           alignItems: "center",
@@ -327,28 +408,28 @@ export default function CheckoutPage() {
                           background: "white",
                           padding: 8,
                           borderRadius: 8,
-                          border: "1px solid #ddd",
+                          border: "1px solid #d9c49c",
                         }}
                       >
                         <input
                           type="radio"
                           name="orderTiming"
-                          checked={orderTiming === opt}
-                          onChange={() => setOrderTiming(opt)}
+                          checked={orderTiming === opt.key}
+                          onChange={() => setOrderTiming(opt.key)}
                         />
-                        {opt}
+                        {opt.label}
                       </label>
                     ))}
                   </div>
 
-                  {orderTiming === "Later" && (
+                  {orderTiming === "later" && (
                     <div
                       style={{
                         marginTop: 10,
                         background: "white",
                         padding: 8,
                         borderRadius: 8,
-                        border: "1px solid #ddd",
+                        border: "1px solid #d9c49c",
                       }}
                     >
                       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -357,7 +438,7 @@ export default function CheckoutPage() {
                           type="date"
                           value={scheduleDate}
                           onChange={(e) => setScheduleDate(e.target.value)}
-                          style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #ccc" }}
+                          style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #d9c49c" }}
                         />
                         <input
                           type="time"
@@ -366,7 +447,7 @@ export default function CheckoutPage() {
                           min={hours.open}
                           max={hours.close}
                           step={300}
-                          style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #ccc" }}
+                          style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #d9c49c" }}
                         />
                       </div>
                       <div style={{ marginTop: 6, fontSize: 12, color: "#666" }}>
@@ -381,7 +462,7 @@ export default function CheckoutPage() {
                       marginTop: 8,
                       background: "none",
                       border: "none",
-                      color: "#0b61d6",
+                      color: "#6b3f22",
                       textDecoration: "underline",
                       cursor: "pointer",
                       padding: 0,
@@ -398,18 +479,11 @@ export default function CheckoutPage() {
                   )}
 
                   <div style={{ marginTop: 8 }}>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                      <div style={{ fontSize: 12 }}>Have a coupon or promotion code?</div>
-                      <input
-                        value={promo}
-                        onChange={(e) => setPromo(e.target.value)}
-                        placeholder="e.g. SAVE-10"
-                        style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #ccc" }}
-                      />
-                    </div>
+                    <div style={{ fontSize: 12, marginBottom: 4 }}>Have a coupon or promotion code?</div>
+                    <DealCodeEntry compact />
                   </div>
 
-                  <div style={{ marginTop: 16, borderTop: "1px solid #eee", paddingTop: 12 }}>
+                  <div style={{ marginTop: 16, borderTop: "1px solid #d9c49c", paddingTop: 12 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                       <div>Food &amp; Beverage:</div>
                       <div style={{ fontWeight: 700 }}>{formatMoney(subtotalCents)}</div>
@@ -452,11 +526,14 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
-                  {!canPlaceOrder && !placing && (
-                    <div style={{ marginTop: 10, fontSize: 12, color: "#b00020" }}>
-                      Please enter your name and phone number to place the order.
-                    </div>
-                  )}
+                  {!canPlaceOrder &&
+                    !placing &&
+                    isServiceConfirmed &&
+                    (!contactName.trim() || !contactPhone.trim()) && (
+                      <div style={{ marginTop: 10, fontSize: 12, color: "#b00020" }}>
+                        Please enter your name and phone number to place the order.
+                      </div>
+                    )}
 
                   <button
                     onClick={handlePlaceOrder}
@@ -465,7 +542,7 @@ export default function CheckoutPage() {
                       marginTop: 12,
                       width: "100%",
                       padding: "0.9rem 1rem",
-                      background: "#E91E28",
+                      background: "#8b1a1a",
                       color: "white",
                       border: "none",
                       borderRadius: 8,

@@ -3,87 +3,24 @@ import React, { useState, useMemo, useEffect } from "react";
 import PizzaBuilder from "./PizzaBuilder";
 import WingsBuilder from "./WingsBuilder";
 import SideBuilder from "./SideBuilder";
+import PopsPicker from "./PopsPicker";
 import { priceLineItem, formatMoney, describePizzaFull } from "./Pricing";
 import { useCart } from "./CartSystem";
 import DebugPizzaOverlay from "./modals/DebugPizzaOverlay";
+import {
+  comboSections,
+  comboThumbFor,
+  comboDefaultSize,
+  sizeLabelMap,
+  comboWingsPieces,
+  getWingsPieceOptions,
+  comboUpgradeOptions,
+  findComboById,
+  comboItemLabel,
+} from "../utils/comboCatalog";
 
-const comboData = [
-  {
-    type: "Two Pizzas",
-    combos: [
-      { id: "2med", name: "2 Medium Pizzas", subtitle: "3 toppings each, 2 dips", items: ["pizza1", "pizza2"] },
-      { id: "2lrg", name: "2 Large Pizzas",  subtitle: "3 toppings each, 2 dips", items: ["pizza1", "pizza2"] },
-      { id: "2xl",  name: "2 X-Large Pizzas", subtitle: "3 toppings each, 2 dips", items: ["pizza1", "pizza2"] },
-    ],
-  },
-  {
-    type: "Double Combo",
-    combos: [
-      { id: "medCombo", name: "2 Medium Pizzas + 16 Wings", subtitle: "3 toppings each, 2 dips", items: ["pizza1", "pizza2", "wings"] },
-      { id: "lrgCombo", name: "2 Large Pizzas + 20 Wings",  subtitle: "3 toppings each, 2 dips", items: ["pizza1", "pizza2", "wings"] },
-      { id: "xlCombo",  name: "2 X-Large Pizzas + 25 Wings", subtitle: "3 toppings each, 2 dips", items: ["pizza1", "pizza2", "wings"] },
-    ],
-  },
-  {
-    type: "Pizza & Wings",
-    combos: [
-      { id: "smallCombo", name: "1 Small Pizza + 6 Wings",  subtitle: "3 toppings, 1 dip (upgrade to Medium available)", items: ["pizza", "wings"] },
-      { id: "lrgCombo2",  name: "1 Large Pizza + 12 Wings", subtitle: "3 toppings, 1 dip (upgrade to XL available)",    items: ["pizza", "wings"] },
-    ],
-  },
-  {
-    type: "Take Care Combo",
-    combos: [
-      { id: "takecare", name: "2 Large Pizzas + Garlic Bread + 4 Pops", subtitle: "3 toppings each, 2 dips", items: ["pizza1", "pizza2", "side"] },
-    ],
-  },
-];
-
-// thumbnails (swap to real paths when ready)
-const comboImages = {
-  "2med": "/images/combos/2-medium.jpg",
-  "2lrg": "/images/combos/2-large.jpg",
-  "2xl": "/images/combos/2-xl.jpg",
-  medCombo: "/images/combos/2pizzas-wings.jpg",
-  lrgCombo: "/images/combos/2pizzas-wings.jpg",
-  xlCombo: "/images/combos/2pizzas-wings.jpg",
-  smallCombo: "/images/combos/pizza-wings.jpg",
-  lrgCombo2: "/images/combos/pizza-wings.jpg",
-  takecare: "/images/combos/takecare.jpg",
-};
-const fallbackImg = "/images/menu_combos.png";
-
-// ✅ export for menu cards
-export const comboSections = comboData;
-export const comboThumbFor = (id) => comboImages[id] || fallbackImg;
-
-const comboDefaultSize = {
-  "2med": "12", "2lrg": "14", "2xl": "16",
-  medCombo: "12", lrgCombo: "14", xlCombo: "16",
-  smallCombo: "10", lrgCombo2: "14", takecare: "14",
-};
-
-const sizeLabelMap = { "10":"Small", "12":"Medium", "14":"Large", "16":"X-Large" };
-const comboWingsPieces = { medCombo:16, lrgCombo:20, xlCombo:25, smallCombo:6, lrgCombo2:12 };
-
-function getWingsPieceOptions(comboId) {
-  const base = [6, 12, 20, 30];
-  if (comboId === "medCombo") return [16, 12, 20, 30];
-  if (comboId === "xlCombo")  return [6, 25, 20, 30];
-  return base;
-}
-function comboUpgradeOptions(comboId) {
-  if (comboId === "smallCombo") return [{ id: "toMedium", label: "Upgrade to Medium (+$2)" }];
-  if (comboId === "lrgCombo2")  return [{ id: "toXL",     label: "Upgrade to XL (+$3)" }];
-  return [];
-}
-function findComboById(id) {
-  for (const sec of comboData) {
-    const hit = sec.combos.find((c) => c.id === id);
-    if (hit) return hit;
-  }
-  return null;
-}
+// re-exported for existing consumers (e.g. pages/menu.js)
+export { comboSections, comboThumbFor };
 
 export default function ComboBuilder({
   openComboId = null,          // <- parent controls which combo to open
@@ -108,7 +45,7 @@ export default function ComboBuilder({
     setQty(1);
     setUpgrade(null);
     if (combo.id === "takecare") {
-      setSavedItems({ side: { summary: "Garlic Bread + 4 Pops", fixed: true } });
+      setSavedItems({ bread: { summary: "Garlic Bread", fixed: true } });
     } else {
       setSavedItems({});
     }
@@ -120,7 +57,13 @@ export default function ComboBuilder({
     setComboSize(item.meta?.sizeLocked || comboDefaultSize[combo.id] || "12");
     setQty(item.qty || 1);
     setUpgrade(item.upgrade || null);
-    setSavedItems(item.meta?.items || {});
+    const items = { ...(item.meta?.items || {}) };
+    // Self-heal older takecare cart entries saved before bread/pops were
+    // split out of the combined "side" slot.
+    if (combo.id === "takecare" && !items.bread) {
+      items.bread = { summary: "Garlic Bread", fixed: true };
+    }
+    setSavedItems(items);
     setIsDirty(false);
   };
 
@@ -172,16 +115,15 @@ export default function ComboBuilder({
     );
   }, [selectedCombo, upgrade, qty, comboSize, savedItems]);
 
+  // The item-by-item breakdown lives in meta.items and is rendered
+  // structurally wherever a combo appears (cart dropdown, full cart, etc.),
+  // so this stays a short header line rather than cramming every sub-item
+  // description into one string.
   const buildComboSummary = (combo, size, items, upg) => {
-    const bits = [];
-    bits.push(`${combo.name} — Size: ${sizeLabelMap[size] || `${size}"`}`);
+    const sizeLabel = sizeLabelMap[size] || `${size}"`;
+    const bits = [`${combo.name} (${sizeLabel})`];
     if (upg === "toMedium") bits.push("Upgraded to Medium");
     if (upg === "toXL") bits.push("Upgraded to XL");
-    const itemLines = combo.items.map((k) => {
-      if (combo.id === "takecare" && k === "side") return "Garlic Bread + 4 Pops";
-      return items[k]?.summary || `${k} not customized`;
-    });
-    bits.push(itemLines.join(" | "));
     return bits.join(" • ");
   };
 
@@ -226,6 +168,33 @@ export default function ComboBuilder({
     setPendingClose(() => discardFn);
   };
 
+  // ===== Theme (matches the Pizza Builder's cream-box makeover) =====
+  const MAROON = "#8b1a1a";
+  const LIGHT_BORDER = "#d9c49c"; // thin dark-brown-tan border (--menu-box-border)
+  const LIGHT_BG = "#fdf7f0";     // cream box fill (--menu-box-bg)
+  const TEXT_BROWN = "#6b3f22";   // body text color inside the boxes
+  const BOX_RADIUS = ".1875rem";
+
+  // Wraps a section (black header bar + cream body) in the same
+  // bordered/rounded box used by the Pizza Builder's Section component.
+  const Section = ({ title, children }) => (
+    <div style={{ border: `1px solid ${LIGHT_BORDER}`, borderRadius: BOX_RADIUS, overflow: "hidden", marginBottom: "1rem" }}>
+      <div
+        style={{
+          background: "#000",
+          color: "#fff",
+          padding: "0.5rem 0.75rem",
+          fontWeight: 900,
+          textTransform: "uppercase",
+          fontFamily: "var(--font-heading, Oswald, sans-serif)",
+        }}
+      >
+        {title}
+      </div>
+      <div style={{ padding: "1rem", background: LIGHT_BG }}>{children}</div>
+    </div>
+  );
+
   return (
     <>
       {/* MAIN COMBO MODAL */}
@@ -251,220 +220,172 @@ export default function ComboBuilder({
       >
         {selectedCombo && (
           <div className="modal-body" style={{ padding: 0 }}>
-            <div style={{ padding: "1rem 1rem 1.25rem 1rem" }}>
+            <div style={{ padding: "1rem 1rem 1.25rem 1rem", color: TEXT_BROWN }}>
               {/* ===== Section: Combo Details ===== */}
-              <div style={{ border: "1px solid #b8b8b8", background: "#fff", marginBottom: "1rem" }}>
-                <div
-                  style={{
-                    background: "#8b1a1a",
-                    color: "#fff",
-                    padding: "0.5rem 0.75rem",
-                    fontWeight: 900,
-                    textTransform: "uppercase",
-                    fontFamily: "var(--font-heading, Oswald, sans-serif)",
-                  }}
-                >
-                  Combo Details
-                </div>
-                <div style={{ padding: "1rem", background: "#f9f9f9" }}>
-                  <h2 style={{ margin: 0 }}>{selectedCombo.name}</h2>
-                  <p style={{ margin: "4px 0 8px 0", color: "#444" }}>{selectedCombo.subtitle}</p>
-                  <p style={{ margin: 0, color: "#444" }}>
-                    <strong>Size:</strong> {sizeLabelMap[comboSize] || `${comboSize}"`} (locked for this combo)
-                  </p>
-                </div>
-              </div>
+              <Section title="Combo Details">
+                <h2 style={{ margin: 0 }}>{selectedCombo.name}</h2>
+                <p style={{ margin: "4px 0 8px 0", color: TEXT_BROWN }}>{selectedCombo.subtitle}</p>
+                <p style={{ margin: 0, color: TEXT_BROWN }}>
+                  <strong>Size:</strong> {sizeLabelMap[comboSize] || `${comboSize}"`} (locked for this combo)
+                </p>
+              </Section>
 
               {/* ===== Section: Upgrade ===== */}
               {comboUpgradeOptions(selectedCombo.id).length > 0 && (
-                <div style={{ border: "1px solid #b8b8b8", background: "#fff", marginBottom: "1rem" }}>
-                  <div
-                    style={{
-                      background: "#8b1a1a",
-                      color: "#fff",
-                      padding: "0.5rem 0.75rem",
-                      fontWeight: 900,
-                      textTransform: "uppercase",
-                      fontFamily: "var(--font-heading, Oswald, sans-serif)",
-                    }}
-                  >
-                    Upgrade
-                  </div>
-                  <div style={{ padding: "1rem", background: "#f9f9f9" }}>
-                    <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                      <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
+                <Section title="Upgrade">
+                  <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                    <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
+                      <input
+                        type="radio"
+                        name="upgrade"
+                        value=""
+                        checked={!upgrade}
+                        onChange={() => setUpgrade(null)}
+                        style={{ accentColor: MAROON }}
+                      />
+                      <span>No upgrade</span>
+                    </label>
+                    {comboUpgradeOptions(selectedCombo.id).map((u) => (
+                      <label key={u.id} style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
                         <input
                           type="radio"
                           name="upgrade"
-                          value=""
-                          checked={!upgrade}
-                          onChange={() => setUpgrade(null)}
+                          value={u.id}
+                          checked={upgrade === u.id}
+                          onChange={() => setUpgrade(u.id)}
+                          style={{ accentColor: MAROON }}
                         />
-                        <span>No upgrade</span>
+                        <span>{u.label}</span>
                       </label>
-                      {comboUpgradeOptions(selectedCombo.id).map((u) => (
-                        <label key={u.id} style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
-                          <input
-                            type="radio"
-                            name="upgrade"
-                            value={u.id}
-                            checked={upgrade === u.id}
-                            onChange={() => setUpgrade(u.id)}
-                          />
-                          <span>{u.label}</span>
-                        </label>
-                      ))}
-                    </div>
+                    ))}
                   </div>
-                </div>
+                </Section>
               )}
 
               {/* ===== Section: Items ===== */}
-              <div style={{ border: "1px solid #b8b8b8", background: "#fff", marginBottom: "1rem" }}>
-                <div
-                  style={{
-                    background: "#8b1a1a",
-                    color: "#fff",
-                    padding: "0.5rem 0.75rem",
-                    fontWeight: 900,
-                    textTransform: "uppercase",
-                    fontFamily: "var(--font-heading, Oswald, sans-serif)",
-                  }}
-                >
-                  Items
-                </div>
-                <div style={{ padding: "1rem", background: "#f9f9f9" }}>
-                  {selectedCombo.items.map((item, idx) => {
-                    const isTakeCareSide = selectedCombo.id === "takecare" && item === "side";
-                    const isLast = idx === selectedCombo.items.length - 1;
-                    return (
-                      <div
-                        key={idx}
-                        style={{
-                          paddingBottom: isLast ? 0 : "0.85rem",
-                          marginBottom: isLast ? 0 : "0.85rem",
-                          borderBottom: isLast ? "none" : "1px solid #b8b8b8",
-                        }}
-                      >
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <strong>{item.toUpperCase()}</strong>
-                          {isTakeCareSide ? (
-                            <span style={{ fontSize: "0.9rem", color: "#555" }}>Included: Garlic Bread + 4 Pops</span>
-                          ) : (
-                            <button
-                              onClick={() =>
-                                setCustomizingItem({
-                                  type: item.includes("pizza") ? "pizza" : item === "wings" ? "wings" : "side",
-                                  id: item,
-                                })
-                              }
-                              style={{
-                                backgroundColor: "#E91E28",
-                                color: "white",
-                                border: "none",
-                                padding: "0.5rem 1rem",
-                                borderRadius: 0,
-                                cursor: "pointer",
-                                fontWeight: 900,
-                                textTransform: "uppercase",
-                                letterSpacing: ".3px",
-                                fontFamily: "var(--font-heading, Oswald, sans-serif)",
-                              }}
-                            >
-                              Customize
-                            </button>
-                          )}
-                        </div>
-
-                        <div style={{ marginTop: "0.5rem", fontSize: "0.9rem", color: "#444" }}>
-                          {isTakeCareSide ? (
-                            <span className="combo-item-status combo-item-status--ok">
-                              <span className="combo-item-status__check">✓</span>
-                              Garlic Bread + 4 Pops
-                            </span>
-                          ) : savedItems[item] ? (
-                            <span className="combo-item-status combo-item-status--ok">
-                              <span className="combo-item-status__check">✓</span>
-                              {savedItems[item].summary}
-                            </span>
-                          ) : (
-                            <span className="combo-item-status combo-item-status--warn">
-                              <span className="combo-item-status__dot" aria-hidden="true"></span>
-                              Not customized yet
-                            </span>
-                          )}
-                        </div>
+              <Section title="Items">
+                {selectedCombo.items.map((item, idx) => {
+                  const isFixedItem = selectedCombo.id === "takecare" && item === "bread";
+                  const isLast = idx === selectedCombo.items.length - 1;
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        paddingBottom: isLast ? 0 : "0.85rem",
+                        marginBottom: isLast ? 0 : "0.85rem",
+                        borderBottom: isLast ? "none" : `1px solid ${LIGHT_BORDER}`,
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <strong>{comboItemLabel(item)}</strong>
+                        {isFixedItem ? (
+                          <span style={{ fontSize: "0.9rem", color: TEXT_BROWN }}>Included: Garlic Bread</span>
+                        ) : (
+                          <button
+                            onClick={() =>
+                              setCustomizingItem({
+                                type: item.includes("pizza")
+                                  ? "pizza"
+                                  : item === "wings"
+                                  ? "wings"
+                                  : item === "pops"
+                                  ? "pops"
+                                  : "side",
+                                id: item,
+                              })
+                            }
+                            style={{
+                              backgroundColor: MAROON,
+                              color: "white",
+                              border: "none",
+                              padding: "0.5rem 1rem",
+                              borderRadius: BOX_RADIUS,
+                              cursor: "pointer",
+                              fontWeight: 900,
+                              textTransform: "uppercase",
+                              letterSpacing: ".3px",
+                              fontFamily: "var(--font-heading, Oswald, sans-serif)",
+                            }}
+                          >
+                            Customize
+                          </button>
+                        )}
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
+
+                      <div style={{ marginTop: "0.5rem", fontSize: "0.9rem", color: TEXT_BROWN }}>
+                        {isFixedItem ? (
+                          <span className="combo-item-status combo-item-status--ok">
+                            <span className="combo-item-status__check">✓</span>
+                            Garlic Bread
+                          </span>
+                        ) : savedItems[item] ? (
+                          <span className="combo-item-status combo-item-status--ok">
+                            <span className="combo-item-status__check">✓</span>
+                            {savedItems[item].summary}
+                          </span>
+                        ) : (
+                          <span className="combo-item-status combo-item-status--warn">
+                            <span className="combo-item-status__dot" aria-hidden="true"></span>
+                            Not customized yet
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </Section>
 
               {/* ===== Quantity & Total ===== */}
-              <div style={{ border: "1px solid #b8b8b8", background: "#fff", marginBottom: "1rem" }}>
-                <div
-                  style={{
-                    background: "#8b1a1a",
-                    color: "#fff",
-                    padding: "0.5rem 0.75rem",
-                    fontWeight: 900,
-                    textTransform: "uppercase",
-                    fontFamily: "var(--font-heading, Oswald, sans-serif)",
-                  }}
-                >
-                  Quantity &amp; Total
-                </div>
-                <div style={{ padding: "1rem", background: "#f9f9f9" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                    <button
-                      type="button"
-                      onClick={() => setQty((q) => Math.max(1, q - 1))}
-                      disabled={qty <= 1}
-                      aria-label="Decrease quantity"
-                      style={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: "50%",
-                        backgroundColor: qty > 1 ? "#8b1a1a" : "#ddd",
-                        color: qty > 1 ? "#fff" : "#999",
-                        border: "none",
-                        cursor: qty > 1 ? "pointer" : "default",
-                        fontWeight: 900,
-                        fontSize: 24,
-                        lineHeight: 1,
-                      }}
-                    >
-                      −
-                    </button>
-                    <span style={{ minWidth: 28, textAlign: "center", fontWeight: 900 }}>{qty}</span>
-                    <button
-                      type="button"
-                      onClick={() => setQty((q) => q + 1)}
-                      aria-label="Increase quantity"
-                      style={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: "50%",
-                        backgroundColor: "#8b1a1a",
-                        color: "#fff",
-                        border: "none",
-                        cursor: "pointer",
-                        fontWeight: 900,
-                        fontSize: 24,
-                        lineHeight: 1,
-                      }}
-                    >
-                      +
-                    </button>
+              <Section title="Quantity & Total">
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <button
+                    type="button"
+                    onClick={() => setQty((q) => Math.max(1, q - 1))}
+                    disabled={qty <= 1}
+                    aria-label="Decrease quantity"
+                    style={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: "50%",
+                      backgroundColor: qty > 1 ? MAROON : "#ddd",
+                      color: qty > 1 ? "#fff" : "#999",
+                      border: "none",
+                      cursor: qty > 1 ? "pointer" : "default",
+                      fontWeight: 900,
+                      fontSize: 24,
+                      lineHeight: 1,
+                    }}
+                  >
+                    −
+                  </button>
+                  <span style={{ minWidth: 28, textAlign: "center", fontWeight: 900 }}>{qty}</span>
+                  <button
+                    type="button"
+                    onClick={() => setQty((q) => q + 1)}
+                    aria-label="Increase quantity"
+                    style={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: "50%",
+                      backgroundColor: MAROON,
+                      color: "#fff",
+                      border: "none",
+                      cursor: "pointer",
+                      fontWeight: 900,
+                      fontSize: 24,
+                      lineHeight: 1,
+                    }}
+                  >
+                    +
+                  </button>
 
-                    <div style={{ marginLeft: "auto", fontWeight: 800 }}>{modalPrice}</div>
-                  </div>
+                  <div style={{ marginLeft: "auto", fontWeight: 800 }}>{modalPrice}</div>
                 </div>
-              </div>
+              </Section>
 
               {/* ===== CTA ===== */}
               {!comboIsComplete && (
-                <p style={{ margin: "0 0 0.5rem", fontSize: "0.85rem", color: "#8b1a1a", fontWeight: 700 }}>
+                <p style={{ margin: "0 0 0.5rem", fontSize: "0.85rem", color: MAROON, fontWeight: 700 }}>
                   Customize every item above before adding this combo to your cart.
                 </p>
               )}
@@ -474,11 +395,11 @@ export default function ComboBuilder({
                 style={{
                   width: "100%",
                   padding: "1rem",
-                  backgroundColor: comboIsComplete ? "#E91E28" : "#ccc",
+                  backgroundColor: comboIsComplete ? MAROON : "#ccc",
                   color: "white",
                   fontWeight: 900,
                   border: "none",
-                  borderRadius: 0,
+                  borderRadius: BOX_RADIUS,
                   cursor: comboIsComplete ? "pointer" : "not-allowed",
                   textTransform: "uppercase",
                   fontFamily: "var(--font-heading, Oswald, sans-serif)",
@@ -551,7 +472,7 @@ export default function ComboBuilder({
               allowCountChoice={false}
               pieceOptions={getWingsPieceOptions(selectedCombo?.id)}
               allowQtyChange={false}
-              autoIncludeBlueCheese={false}
+              autoIncludeDips={false}
               forceResponsiveStack
               addToCartDirect={false}  // 👈 important: do NOT push to cart when inside combo
               onClose={() => setCustomizingItem(null)}
@@ -589,6 +510,33 @@ export default function ComboBuilder({
                 ...data,
               })
             }
+          />
+        )}
+      </DebugPizzaOverlay>
+
+      {/* POPS PICKER INSIDE COMBO (Take Care Combo's 4 included pops) */}
+      <DebugPizzaOverlay
+        open={customizingItem?.type === "pops"}
+        onClose={() => {
+          if (isDirty) {
+            askToDiscard(() => {
+              resetAll();
+              onClose();
+            });
+            return;
+          }
+          setCustomizingItem(null);
+        }}
+        mode="portal"
+        blockRogue
+        title="Choose Your Pops"
+      >
+        {customizingItem?.type === "pops" && (
+          <PopsPicker
+            count={4}
+            initialData={savedItems[customizingItem.id] || {}}
+            onClose={() => setCustomizingItem(null)}
+            onSave={(data) => handleSave(customizingItem.id, data)}
           />
         )}
       </DebugPizzaOverlay>

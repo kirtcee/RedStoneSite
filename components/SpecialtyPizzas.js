@@ -16,10 +16,40 @@ const DEFAULT_SIZE = "12";
 const sizeLabel = (s) =>
   ({ "10": "Small", "12": "Medium", "14": "Large", "16": "X-Large" }[String(s)] || s);
 
+// Distinct colors per size — makes the split unmistakable even at a glance,
+// and the light-to-dark progression doubles as a size cue.
+const SIZE_CHOICES = [
+  { size: "10", abbr: "S",  color: "#e57373" },
+  { size: "12", abbr: "M",  color: "#e91e28" },
+  { size: "14", abbr: "L",  color: "#b71c1c" },
+  { size: "16", abbr: "XL", color: "#7e0f14" },
+];
+
 export default function SpecialtyPizzasPage() {
   const { addItem } = useCart();
   const [showBuilder, setShowBuilder] = useState(false);
   const [builderData, setBuilderData] = useState({});
+  const [sizePickerFor, setSizePickerFor] = useState(null);
+
+  const addAtSize = (pizza, size) => {
+    const payload = {
+      type: "pizza-specialty",
+      style: "classic",
+      name: pizza.name,
+      size,
+      qty: 1,
+      summary: `${sizeLabel(size)} • ${pizza.name}`,
+    };
+    payload.lineSubtotalCents = priceLineItem({
+      type: "pizza-specialty",
+      style: "classic",
+      name: pizza.name,
+      size,
+      qty: 1,
+    });
+    addItem(payload);
+    setSizePickerFor(null);
+  };
 
   const openCustomize = (pizza) => {
     const size = DEFAULT_SIZE;
@@ -65,30 +95,30 @@ export default function SpecialtyPizzasPage() {
               </button>
 
               {/* wide + short buttons */}
-              <button
-                type="button"
-                className="btn btn-add"
-                onClick={() => {
-                  const payload = {
-                    type: "pizza-specialty",
-                    style: "classic",
-                    name: pizza.name,
-                    size: DEFAULT_SIZE,
-                    qty: 1,
-                    summary: `${sizeLabel(DEFAULT_SIZE)} • ${pizza.name}`
-                  };
-                  payload.lineSubtotalCents = priceLineItem({
-                    type: "pizza-specialty",
-                    style: "classic",
-                    name: pizza.name,
-                    size: DEFAULT_SIZE,
-                    qty: 1
-                  });
-                  addItem(payload);
-                }}
-              >
-                ADD TO ORDER
-              </button>
+              {sizePickerFor === pizza.name ? (
+                <div className="btn btn-add btn-add--split" role="group" aria-label={`Choose a size for ${pizza.name}`}>
+                  {SIZE_CHOICES.map((s) => (
+                    <button
+                      key={s.size}
+                      type="button"
+                      className="btn-add__seg"
+                      style={{ background: s.color }}
+                      onClick={() => addAtSize(pizza, s.size)}
+                      title={sizeLabel(s.size)}
+                    >
+                      {s.abbr}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-add"
+                  onClick={() => setSizePickerFor(pizza.name)}
+                >
+                  ADD TO ORDER
+                </button>
+              )}
 
               <button
                 type="button"
@@ -123,8 +153,8 @@ export default function SpecialtyPizzasPage() {
 
       <style jsx>{`
         :global(:root){
-          --brand-blue: #006491;
-          --red: #e91e28;
+          --brand-blue: #000000;
+          --red: #8b1a1a;
         }
 
         /* Align left/right edges with .menu-title (account for card padding + 1px border) */
@@ -149,6 +179,10 @@ export default function SpecialtyPizzasPage() {
           flex-direction: column;
           align-items: stretch;
           min-width: 0;
+          background: #fdf7f0;
+          border: 1px solid #d9c49c;
+          border-radius: .1875rem;
+          padding: 12px;
         }
 
         /* STRETCHED IMAGE
@@ -159,11 +193,8 @@ export default function SpecialtyPizzasPage() {
           width: 100%;
           height: 133px;
           margin: 0 0 8px 0;
-          background: #fff;
           border-radius: 4px;
           overflow: hidden;
-          border: 1px solid #e9e9e9;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
         .feastCard__img{
           display: block;
@@ -206,6 +237,27 @@ export default function SpecialtyPizzasPage() {
         }
         .btn-add:hover{ filter: brightness(0.96); }
 
+        .btn-add--split{
+          display: flex;
+          gap: 6px;
+          padding: 0;
+          background: transparent;
+          overflow: visible;
+        }
+        .btn-add__seg{
+          flex: 1;
+          color: #fff;
+          border: none;
+          border-radius: 4px;
+          padding: 0.48rem 0.2rem;
+          font-family: var(--font-heading, Oswald, sans-serif);
+          font-weight: 900;
+          letter-spacing: .45px;
+          cursor: pointer;
+          transition: transform 0.08s ease, filter 0.12s ease;
+        }
+        .btn-add__seg:hover{ filter: brightness(1.1); transform: translateY(-1px); }
+
         .btn-outline{
           background: #fff;
           border: 3px solid var(--brand-blue);
@@ -215,7 +267,7 @@ export default function SpecialtyPizzasPage() {
 
         .feastCard__desc{
           margin: 8px 0 2px;
-          color: #333;
+          color: #6b3f22;
           font-size: .9rem;
           line-height: 1.33;
           text-align: left;

@@ -1,4 +1,5 @@
 // pricing.js — single source of truth for menu prices + helpers
+import { findDealById } from "../utils/dealCatalog";
 
 // 🔢 currency formatter (no tax logic here on purpose)
 // pricing.js
@@ -22,14 +23,6 @@ export const sizeMapUIToPrice = {
   "14": "12",  // Large 12"
   "16": "14",  // X-Large 14"
   // slab handled separately
-};
-
-export const SIZE_LABELS = {
-  "8":  "Small 8\"",
-  "10": "Medium 10\"",
-  "12": "Large 12\"",
-  "14": "X-Large 14\"",
-  "slab": "Pizza Slab",
 };
 
 // Toppings that count as TWO toppings toward the pricing tier (menu's "*Additional
@@ -71,16 +64,22 @@ export const PRICES = {
 
   wings: {
     "6":   899,
+    "8":  1199,
     "12": 1599,
+    "16": 2099,
     "20": 2599,
+    "25": 3199,
     "30": 3799,
-    // Note: 16 & 25 are "irregular" and only appear inside Double Combo (priced there)
+    // 8/16/25 only appear locked inside a combo/deal (priced flat there via
+    // PRICES.combos/deal price, not via this table) — these entries just
+    // keep that nested WingsBuilder popup's own subtotal display accurate
+    // instead of showing $0.00 while the customer picks sauce/style.
   },
 
-  // Wings order includes this many free Blue Cheese dips per order (per menu's
-  // "*Includes side of Blue Cheese"). Any other dip flavor, or Blue Cheese beyond
-  // this count, is charged via PRICES.dips.each.
-  wingsIncludedBlueCheese: { "6": 1, "12": 2, "20": 3, "30": 4 },
+  // Wings order includes this many free dips per order, in any mix of the
+  // available flavors (per menu's "*Includes side of dip"). Anything beyond
+  // this total count is charged via PRICES.dips.each.
+  wingsIncludedDips: { "6": 1, "8": 1, "12": 2, "16": 2, "20": 3, "25": 3, "30": 4 },
 
   sides: {
     "French Fries (Medium)": 599,
@@ -150,10 +149,12 @@ export const PRICES = {
     // "other" bucket varies by item — see priceDrinkItem below.
   },
 
-  // Gluten Free crust: single 13" size, its own 1/4-topping tier (not the byo 1/3 tier).
-  glutenFree: { base1: 1399, base4: 1599, extra: 199 },
+  // Gluten Free crust: single 13" size. $1.00/topping flat from 1-4 toppings
+  // (12.99/13.99/14.99/15.99), then $1.75/topping beyond 4.
+  glutenFree: { base1: 1299, perToppingUpTo4: 100, base4: 1599, extra: 175 },
 
   dairyFreeCheese: 300,
+  garlicCrust: 100,
 };
 
 // ===== TOPPING WEIGHTING =====
@@ -218,6 +219,33 @@ export function weightedToppingCount(item) {
   return Math.ceil(rawToppingWeight(item) + rawCheeseWeight(item));
 }
 
+// Topping count for customer-facing display (e.g. "3 Topping Pizza") — same
+// premium/placement/amount weighting as pricing, but cheese amount doesn't
+// count as a "topping" here the way it does for the pricing tier.
+export function toppingCountForDisplay(item) {
+  return Math.ceil(rawToppingWeight(item));
+}
+
+const BYO_SIZE_WORDS = { "10": "Small", "12": "Medium", "14": "Large", "16": "X-Large" };
+
+// Cart title for an un-named build-your-own pizza — e.g. "Large 3 Topping
+// Pizza" or "Gluten Free 2 Topping Pizza". Named recipe pizzas (Signature/
+// Specialty, customized or not) already carry their own pizzaName and never
+// call this.
+export function describeByoPizzaTitle(data = {}) {
+  const isGlutenFree = data.size === "gf" || data.crust === "Gluten Free";
+  const sizeWord = isGlutenFree ? "Gluten Free" : BYO_SIZE_WORDS[String(data.size)] || "";
+  const count = toppingCountForDisplay(data);
+
+  if (count > 0) {
+    return [sizeWord, `${count} Topping Pizza`].filter(Boolean).join(" ");
+  }
+  if (data.cheeseIncluded === false) {
+    return [sizeWord, "Pizza"].filter(Boolean).join(" ");
+  }
+  return [sizeWord, "Cheese Pizza"].filter(Boolean).join(" ");
+}
+
 function sumDipUnits(dipsObj) {
   if (!dipsObj || typeof dipsObj !== "object") return 0;
   return Object.values(dipsObj).reduce((sum, n) => sum + (Number(n) || 0), 0);
@@ -257,13 +285,12 @@ export function priceSignature(sizeKeyUI) {
   return PRICES.signature[bucket] || 0;
 }
 
-// Gluten Free crust: single size, 1/4-topping tiers (mirrors the byo tier shape, but
-// the bundle checkpoint is 4 toppings instead of 3).
+// Gluten Free crust: single size, flat $1.00/topping from 1-4 toppings
+// (12.99/13.99/14.99/15.99), then $1.75/topping beyond 4.
 export function priceGlutenFree(weightedCount) {
   const cfg = PRICES.glutenFree;
   if (weightedCount <= 1) return cfg.base1;
-  if (weightedCount < 4) return cfg.base1 + (weightedCount - 1) * cfg.extra;
-  if (weightedCount === 4) return cfg.base4;
+  if (weightedCount <= 4) return cfg.base1 + (weightedCount - 1) * cfg.perToppingUpTo4;
   return cfg.base4 + (weightedCount - 4) * cfg.extra;
 }
 
@@ -314,6 +341,47 @@ export function priceComboToppingBonus(comboItem) {
     if (w > 3) bonus += (w - 3) * extraRate;
   });
   return bonus;
+}
+
+// Extra-topping cost (in cents) for one deal unit's pizza build, beyond
+// whatever topping count that deal's slot/eligible-item entry includes for
+// free — same per-size "extra" rate as a standalone BYO pizza uses. `config`
+// is the deal's own itemType entry (has `size` + `includedToppings`); `build`
+// is the actual PizzaBuilder payload the customer produced for this unit.
+function priceDealPizzaOverage(config, build) {
+  if (!config || !build || !Array.isArray(build.toppings)) return 0;
+  const included = Number(config.includedToppings) || 0;
+  const w = weightedToppingCount(build);
+  if (w <= included) return 0;
+  const pricingSizeKey = sizeMapUIToPrice[String(config.size)] || String(config.size);
+  const extraRate = PRICES.byo[pricingSizeKey]?.extra || 0;
+  return (w - included) * extraRate;
+}
+
+// Full price (in cents) of one unit within a "list" mode deal (see
+// utils/dealCatalog.js) — the deal's flat per-unit price plus any topping
+// overage if that unit is a pizza built past its included-topping count.
+export function priceDealUnit(deal, unit) {
+  if (!deal || !unit) return 0;
+  const config = (deal.eligibleItems || []).find((e) => e.key === unit.itemKey);
+  const base = Number(deal.price) || 0;
+  if (config?.itemType === "pizza-byo") {
+    return base + priceDealPizzaOverage(config, unit);
+  }
+  return base;
+}
+
+// Full price (in cents) of a "bundle" mode deal — the deal's flat total plus
+// topping overage across every pizza slot, mirroring priceComboToppingBonus.
+export function priceDealBundle(deal, items) {
+  if (!deal) return 0;
+  const base = Number(deal.price) || 0;
+  let bonus = 0;
+  Object.entries(deal.build || {}).forEach(([slotKey, config]) => {
+    if (config?.itemType !== "pizza-byo") return;
+    bonus += priceDealPizzaOverage(config, items?.[slotKey]);
+  });
+  return base + bonus;
 }
 
 // Extra-dip cost (in cents) across every sub-item of a combo, beyond the combo's
@@ -401,7 +469,8 @@ export function priceLineItem(item) {
       }
       const dipCents = sumDipUnits(item.dips) * PRICES.dips.each;
       const dairyFreeCents = item.dairyFreeCheese ? PRICES.dairyFreeCheese : 0;
-      return (pizzaCents + dipCents + dairyFreeCents) * qty;
+      const garlicCrustCents = item.garlicCrust === "with" ? PRICES.garlicCrust : 0;
+      return (pizzaCents + dipCents + dairyFreeCents + garlicCrustCents) * qty;
     }
 
     case "pizza-specialty": {
@@ -413,19 +482,14 @@ export function priceLineItem(item) {
     }
 
     case "wings": {
-      const base = priceWings(item.count);
-      const includedBlueCheese = PRICES.wingsIncludedBlueCheese[String(item.count)] || 0;
-      const dips = item.dips || {};
-      let paidDipUnits = 0;
-      Object.entries(dips).forEach(([label, n]) => {
-        const units = Number(n) || 0;
-        if (label === "Blue Cheese") {
-          paidDipUnits += Math.max(0, units - includedBlueCheese);
-        } else {
-          paidDipUnits += units;
-        }
-      });
-      return (base + paidDipUnits * PRICES.dips.each) * qty;
+      // dips is a single running total across every order in this line (not
+      // per-order), so the included allotment scales with qty but the dip
+      // overage charge must NOT be multiplied by qty again below.
+      const base = priceWings(item.count) * qty;
+      const includedDips = (PRICES.wingsIncludedDips[String(item.count)] || 0) * qty;
+      const totalDipUnits = sumDipUnits(item.dips);
+      const paidDipUnits = Math.max(0, totalDipUnits - includedDips);
+      return base + paidDipUnits * PRICES.dips.each;
     }
 
     case "side": {
@@ -454,6 +518,16 @@ export function priceLineItem(item) {
     case "drinks-dips":
       return priceDrinksDips(item.categoryId, item.items) * qty;
 
+    case "deal": {
+      const deal = findDealById(item.dealId);
+      if (!deal) return 0;
+      if (deal.mode === "bundle") {
+        return priceDealBundle(deal, item.meta?.items) * qty;
+      }
+      const units = Array.isArray(item.meta?.builds) ? item.meta.builds : [];
+      return units.reduce((sum, u) => sum + priceDealUnit(deal, u), 0) * qty;
+    }
+
     default:
       return 0;
   }
@@ -472,10 +546,10 @@ function flattenSpecialToppings(toppings) {
 }
 
 const PIZZA_SIZE_LABELS_UI = {
-  "10": 'Small 8"',
-  "12": 'Medium 10"',
-  "14": 'Large 12"',
-  "16": 'X-Large 14"',
+  "10": 'Small 10"',
+  "12": 'Medium 12"',
+  "14": 'Large 14"',
+  "16": 'X-Large 16"',
   "gf": '13" (Gluten Free)',
 };
 
@@ -492,30 +566,58 @@ const PIZZA_DIP_LABELS = {
 // never fall back to a bare "No toppings" when there's still a real build
 // (cheese, sauce, etc.) behind it. Accepts the same shape PizzaBuilder's
 // onSave payload uses.
-export function describePizzaFull(data = {}) {
-  const bits = [];
-
+// Short identity line only — size and crust, nothing else. Used wherever a
+// pizza needs to be named at a glance (e.g. the cart dropdown), leaving
+// cheese/sauce/topping/instruction detail for the fuller views.
+export function describePizzaCompact(data = {}) {
   const sizeKey = data.size != null ? String(data.size) : "";
   const sizeLabel = PIZZA_SIZE_LABELS_UI[sizeKey] || (sizeKey ? `${sizeKey}"` : "");
-  bits.push([sizeLabel, data.crust].filter(Boolean).join(" "));
+  // The gluten-free size label already says "Gluten Free" — don't repeat it
+  // via the crust too.
+  const crust = sizeKey === "gf" ? null : data.crust;
+  return [sizeLabel, crust].filter(Boolean).join(" ");
+}
+
+const CHEESE_DEFAULT_COVERAGE = "full";
+const CHEESE_DEFAULT_AMOUNT = "Normal";
+const SAUCE_DEFAULT = "Pizza Sauce";
+const SAUCE_DEFAULT_AMOUNT = "Normal";
+
+// Full build description for a BYO pizza — only calls out what the customer
+// actually changed from the standard build (whole pizza, normal cheese,
+// plain pizza sauce, normal bake), so an unmodified pizza reads as just its
+// size/crust/toppings instead of restating every default setting.
+export function describePizzaFull(data = {}) {
+  const bits = [describePizzaCompact(data)];
 
   if (data.cheeseIncluded === false) {
-    bits.push("No Cheese");
+    bits.push("No cheese");
   } else {
-    const coverage = data.cheeseCoverage || "full";
-    const amount = data.cheeseAmount || "Normal";
-    let cheeseBit = `Cheese: ${coverage} - ${amount}`;
-    if (data.secondCoverage) {
-      cheeseBit += ` / ${data.secondCoverage} - ${data.secondAmount || "Normal"}`;
+    const coverage = data.cheeseCoverage || CHEESE_DEFAULT_COVERAGE;
+    const amount = data.cheeseAmount || CHEESE_DEFAULT_AMOUNT;
+    const isDefaultCheese =
+      coverage === CHEESE_DEFAULT_COVERAGE &&
+      amount === CHEESE_DEFAULT_AMOUNT &&
+      !data.secondCoverage &&
+      !data.dairyFreeCheese;
+    if (!isDefaultCheese) {
+      let cheeseBit = `Cheese: ${coverage} ${amount}`;
+      if (data.secondCoverage) {
+        cheeseBit += `, ${data.secondCoverage} ${data.secondAmount || CHEESE_DEFAULT_AMOUNT}`;
+      }
+      if (data.dairyFreeCheese) cheeseBit += " (dairy-free)";
+      bits.push(cheeseBit);
     }
-    if (data.dairyFreeCheese) cheeseBit += " (Dairy-Free)";
-    bits.push(cheeseBit);
   }
 
   if (data.sauceEnabled === false) {
-    bits.push("No Sauce");
+    bits.push("No sauce");
   } else if (data.sauce) {
-    bits.push(`Sauce: ${data.sauce}${data.sauceAmount ? ` (${data.sauceAmount})` : ""}`);
+    const amount = data.sauceAmount || SAUCE_DEFAULT_AMOUNT;
+    const isDefaultSauce = data.sauce === SAUCE_DEFAULT && amount === SAUCE_DEFAULT_AMOUNT;
+    if (!isDefaultSauce) {
+      bits.push(`Sauce: ${data.sauce}${amount ? ` (${amount})` : ""}`);
+    }
   }
 
   const toppings = Array.isArray(data.toppings)
@@ -529,11 +631,9 @@ export function describePizzaFull(data = {}) {
     const toppingBits = toppings.map((t) => {
       const p = placement[t] || "full";
       const a = amount[t] || "Normal";
-      return p === "full" && a === "Normal" ? t : `${t} (${p}/${a})`;
+      return p === "full" && a === "Normal" ? t : `${t} (${p}, ${a})`;
     });
-    bits.push(`Toppings: ${toppingBits.join(", ")}`);
-  } else {
-    bits.push("No Toppings");
+    bits.push(toppingBits.join(", "));
   }
 
   const dips = data.dips || {};
@@ -542,5 +642,16 @@ export function describePizzaFull(data = {}) {
     .map(([key, qty]) => `${PIZZA_DIP_LABELS[key] || key} × ${qty}`);
   if (dipBits.length) bits.push(`Dips: ${dipBits.join(", ")}`);
 
-  return bits.filter(Boolean).join(" — ");
+  const instructionBits = [];
+  if (data.bake && data.bake !== "normal") {
+    instructionBits.push(data.bake === "light" ? "Lightly done" : "Well done");
+  }
+  if (data.oregano === "with") instructionBits.push("With oregano");
+  if (data.crushedRedPepper === "with") instructionBits.push("With crushed red peppers");
+  if (data.coriander === "with") instructionBits.push("With coriander");
+  if (data.ginger === "with") instructionBits.push("With ginger");
+  if (data.garlicCrust === "with") instructionBits.push("Garlic crust");
+  if (instructionBits.length) bits.push(instructionBits.join(", "));
+
+  return bits.filter(Boolean).join(" • ");
 }

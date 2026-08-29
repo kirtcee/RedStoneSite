@@ -20,7 +20,7 @@ export default function WingsBuilder({
   allowCountChoice = true,
   forceResponsiveStack = false,
   allowQtyChange = true,
-  autoIncludeBlueCheese = true,
+  autoIncludeDips = true,
   sauceOptions   = DEFAULT_SAUCE_OPTIONS,
   pieceOptions   = DEFAULT_PIECE_OPTIONS,
   dipsOptions    = DEFAULT_DIPS_OPTIONS,
@@ -30,10 +30,12 @@ export default function WingsBuilder({
 }) {
   const { addItem } = useCart();
 
-  // ===== Theme (match Pizza Builder) =====
+  // ===== Theme (matches the Pizza Builder's cream-box makeover) =====
   const MAROON = "#8b1a1a";
-  const LIGHT_BORDER = "#b8b8b8";
-  const LIGHT_BG = "#f9f9f9";
+  const LIGHT_BORDER = "#d9c49c"; // thin dark-brown-tan border (--menu-box-border)
+  const LIGHT_BG = "#fdf7f0";     // cream box fill (--menu-box-bg)
+  const TEXT_BROWN = "#6b3f22";   // body text color inside the boxes
+  const BOX_RADIUS = ".1875rem";
 
   const [vw, setVw] = useState(
     typeof window !== "undefined" ? window.innerWidth : 1200
@@ -122,11 +124,24 @@ export default function WingsBuilder({
   const [dipQty, setDipQty] = useState(seededDips);
 
   const includedPerOrder = includedDipsMap[selectedCount] || 0;
+  // Tops up dips (defaulting new free credits to Blue Cheese) whenever the
+  // included allotment grows and hasn't already been fully claimed — it
+  // never takes dips away, so the customer is free to rebalance their
+  // included dips across any of the 3 flavors without losing them.
+  const prevIncludedRef = useRef(0);
   useEffect(() => {
-    if (!autoIncludeBlueCheese) return;
+    if (!autoIncludeDips) return;
     const included = includedPerOrder * wingsQty;
-    setDipQty((prev) => ({ ...prev, "Blue Cheese": included }));
-  }, [autoIncludeBlueCheese, includedPerOrder, wingsQty]);
+    const prevIncluded = prevIncludedRef.current;
+    prevIncludedRef.current = included;
+
+    if (included <= prevIncluded) return;
+    setDipQty((prev) => {
+      const total = Object.values(prev).reduce((sum, n) => sum + (Number(n) || 0), 0);
+      if (total >= included) return prev;
+      return { ...prev, "Blue Cheese": (prev["Blue Cheese"] || 0) + (included - total) };
+    });
+  }, [autoIncludeDips, includedPerOrder, wingsQty]);
 
   const increaseWingsQty = () =>
     setWingsQty((prev) => (allowQtyChange ? prev + 1 : 1));
@@ -148,10 +163,9 @@ export default function WingsBuilder({
 
   const buildSummary = () => {
     const dipsSummary = selectedDipsList.length
-      ? " | Dips: " +
-        selectedDipsList.map((d) => `${d.label} × ${d.qty}`).join(", ")
+      ? ` • Dips: ${selectedDipsList.map((d) => `${d.label} × ${d.qty}`).join(", ")}`
       : "";
-    return `${wingsQty} × ${selectedCount}-piece Wings — ${selectedSauce} (${serveStyle})${dipsSummary}`;
+    return `${wingsQty} × ${selectedCount}-piece Wings • ${selectedSauce} (${serveStyle})${dipsSummary}`;
   };
 
   const currentItem = useMemo(
@@ -173,10 +187,10 @@ export default function WingsBuilder({
   );
 
   const Section = ({ index, title, children }) => (
-    <div style={{ marginBottom: "1.0rem", border: `1px solid ${LIGHT_BORDER}`, background: "#fff" }}>
+    <div style={{ marginBottom: "1.0rem", border: `1px solid ${LIGHT_BORDER}`, borderRadius: BOX_RADIUS, overflow: "hidden", background: LIGHT_BG }}>
       <div
         style={{
-          background: MAROON,
+          background: "#000",
           color: "white",
           padding: "0.5rem 0.75rem",
           fontWeight: 900,
@@ -223,6 +237,7 @@ export default function WingsBuilder({
         maxWidth: isNarrow ? "100%" : "880px",
         margin: "0 auto",
         background: "white",
+        color: TEXT_BROWN,
         borderRadius: "0px",
         overflow: "visible",
         position: "relative",
@@ -238,7 +253,7 @@ export default function WingsBuilder({
           style={{
             fontWeight: 900,
             marginBottom: "0.35rem",
-            color: MAROON,
+            color: TEXT_BROWN,
             fontFamily: "var(--font-heading), Oswald, sans-serif",
             fontSize: "1rem"
           }}
@@ -286,7 +301,7 @@ export default function WingsBuilder({
           style={{
             fontWeight: 900,
             marginBottom: "0.35rem",
-            color: MAROON,
+            color: TEXT_BROWN,
             fontFamily: "var(--font-heading), Oswald, sans-serif",
             fontSize: "1rem"
           }}
@@ -330,7 +345,7 @@ export default function WingsBuilder({
           style={{
             fontWeight: 900,
             marginBottom: "0.35rem",
-            color: MAROON,
+            color: TEXT_BROWN,
             fontFamily: "var(--font-heading), Oswald, sans-serif",
             fontSize: "1rem"
           }}
@@ -418,8 +433,8 @@ export default function WingsBuilder({
       {/* 2. Dips */}
       <Section index={2} title="Dips">
         <p style={{ fontSize: ".95rem", margin: "0 0 .8rem 0", color: "#555" }}>
-          {autoIncludeBlueCheese
-            ? `Each ${selectedCount}-piece order includes ${includedPerOrder} Blue Cheese dip(s) per order.`
+          {autoIncludeDips
+            ? `Each ${selectedCount}-piece order includes ${includedPerOrder} dip(s) per order — mix and match any flavor. Additional dips are charged.`
             : "Choose any dip quantities you like."}
         </p>
 
@@ -504,15 +519,17 @@ export default function WingsBuilder({
       </Section>
 
       {/* Footer actions */}
-      <div style={{ display: "flex", gap: 0 }}>
+      <div style={{ display: "flex", gap: 0, border: `1px solid ${LIGHT_BORDER}`, borderRadius: BOX_RADIUS, overflow: "hidden" }}>
         <button
           type="button"
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClose(); }}
           style={{
             flex: 1,
             padding: "1rem",
-            background: "white",
-            border: `1px solid ${LIGHT_BORDER}`,
+            background: LIGHT_BG,
+            color: TEXT_BROWN,
+            border: "none",
+            borderRight: `1px solid ${LIGHT_BORDER}`,
             fontWeight: 900,
             cursor: "pointer"
           }}
@@ -543,7 +560,7 @@ export default function WingsBuilder({
           style={{
             flex: 1,
             padding: "1rem",
-            background: "#E91E28",
+            background: MAROON,
             color: "white",
             border: "none",
             fontWeight: 900,

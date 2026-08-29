@@ -26,6 +26,7 @@ export default function DebugPizzaOverlay({
   title = "Build Your Pizza",
   showTopbar = true,
   freezeChild = true,
+  noTopbarBorder = false,
 }) {
   // ---------- shared: blocker for anchors/submits ----------
   useEffect(() => {
@@ -118,6 +119,7 @@ export default function DebugPizzaOverlay({
       title={title}
       showTopbar={showTopbar}
       freezeChild={freezeChild}
+      noTopbarBorder={noTopbarBorder}
     >
       {children}
     </PortalMode>
@@ -125,7 +127,7 @@ export default function DebugPizzaOverlay({
 }
 
 /* ================== Portal mode ================== */
-function PortalMode({ open, onClose, children, title = "Build Your Pizza", showTopbar = true, freezeChild = true }) {
+function PortalMode({ open, onClose, children, title = "Build Your Pizza", showTopbar = true, freezeChild = true, noTopbarBorder = false }) {
   const [root, setRoot] = useState(null);
   const scrollerRef = useRef(null);
 
@@ -253,7 +255,7 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
           onMouseDown={(e) => e.stopPropagation()}
         >
           {showTopbar && (
-            <div style={topbarStyle}>
+            <div style={noTopbarBorder ? { ...topbarStyle, borderBottom: "none" } : topbarStyle}>
               <div style={titleStyle}>{title}</div>
               <button
                 type="button"

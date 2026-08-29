@@ -1,21 +1,30 @@
 // components/SideBuilder.js
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { priceLineItem, formatMoney } from "./Pricing";
 import { useCart } from "./CartSystem";
 
-export default function SideBuilder({ side, onClose, onAdd = () => {}, addToCartDirect = true, initialData = {} }) {
+export default function SideBuilder({
+  side,
+  onClose,
+  onAdd = () => {},
+  addToCartDirect = true,
+  initialData = {},
+  lockedSize = null,     // e.g. "Large" when embedded in a combo/deal that fixes the size
+  allowSizeChoice = true,
+}) {
   const { addItem } = useCart();
 
-  /* —— Theme: match Pizza/Wings builder —— */
+  /* —— Theme: matches the Pizza Builder's cream-box makeover —— */
   const PANEL_INNER_MAX = 840; // fits nicely inside your modal
   const MAROON = "#8b1a1a";
-  const PRIMARY_RED = "#E91E28";
-  const LIGHT_BORDER = "#c5c5c5";
-  const LIGHT_BG = "#f9f9f9";
+  const LIGHT_BORDER = "#d9c49c"; // thin dark-brown-tan border (--menu-box-border)
+  const LIGHT_BG = "#fdf7f0";     // cream box fill (--menu-box-bg)
+  const TEXT_BROWN = "#6b3f22";   // body text color inside the boxes
+  const BOX_RADIUS = ".1875rem";
   const PAD_Y = "1.25rem"; // extra vertical padding in sections
 
   const sectionBar = {
-    background: MAROON,
+    background: "#000",
     color: "#fff",
     padding: "0.55rem 0.8rem",
     fontFamily: "var(--font-heading, Oswald, sans-serif)",
@@ -26,7 +35,7 @@ export default function SideBuilder({ side, onClose, onAdd = () => {}, addToCart
   };
   const subHeader = {
     margin: "0.9rem 0 0.45rem",
-    color: MAROON,
+    color: TEXT_BROWN,
     fontFamily: "var(--font-heading, Oswald, sans-serif)",
     fontWeight: 900,
     textTransform: "uppercase",
@@ -37,8 +46,15 @@ export default function SideBuilder({ side, onClose, onAdd = () => {}, addToCart
     width: "calc(100% - 2rem)",
     margin: "12px auto",
   };
+  // Wraps a numbered section (black header bar + cream body) in the same
+  // bordered/rounded box used by the Pizza Builder's Section component.
+  const SectionBox = ({ children }) => (
+    <div style={{ border: `1px solid ${LIGHT_BORDER}`, borderRadius: BOX_RADIUS, overflow: "hidden", marginBottom: "1rem" }}>
+      {children}
+    </div>
+  );
   const circleButtonLg = {
-    background: PRIMARY_RED,
+    background: MAROON,
     color: "#fff",
     borderRadius: "50%",
     width: "48px",
@@ -62,7 +78,7 @@ export default function SideBuilder({ side, onClose, onAdd = () => {}, addToCart
     padding: ".7rem .9rem",
     borderRadius: 6,
     border: active ? "2px solid transparent" : `2px solid ${LIGHT_BORDER}`,
-    background: active ? PRIMARY_RED : "#fff",
+    background: active ? MAROON : "#fff",
     color: active ? "#fff" : "#111",
     fontWeight: 800,
     fontFamily: "var(--font-heading, Oswald, sans-serif)",
@@ -78,11 +94,16 @@ export default function SideBuilder({ side, onClose, onAdd = () => {}, addToCart
   const SIZE_OPTIONS = side === "Poutine" ? ["Small", "Regular", "Large"] : ["Regular", "Large"];
   const DIPS = ["Garlic", "Ranch", "Blue Cheese"];
   const isSizeSelectable = ["French Fries", "Poutine", "Shawarma Poutine", "Onion Rings"].includes(side);
+  const canPickSize = isSizeSelectable && allowSizeChoice && !lockedSize;
   const hasDips = ["Cheesy Garlic Bread", "Garlic Bread"].includes(side);
   const hasGravy = side === "French Fries";
   const hasHotSauceToggle = side === "Shawarma Poutine";
+  const itemSectionIndex = hasDips || hasGravy ? 3 : 2; // "Item" section number shifts when section 2 isn't shown
 
-  const [selectedSize, setSelectedSize] = useState(initialData.size || "Regular");
+  const [selectedSize, setSelectedSize] = useState(initialData.size || lockedSize || "Regular");
+  useEffect(() => {
+    if (lockedSize) setSelectedSize(lockedSize);
+  }, [lockedSize]);
   const [quantity, setQuantity] = useState(initialData.qty || 1);
   const [gravyQty, setGravyQty] = useState(initialData.gravy || 0);
   const [dipQty, setDipQty] = useState({
@@ -108,19 +129,19 @@ export default function SideBuilder({ side, onClose, onAdd = () => {}, addToCart
   }, [isSizeSelectable, side, selectedSize]);
 
   const currentItem = useMemo(
-    () => ({ type: "side", name: pricingName, qty: quantity }),
-    [pricingName, quantity]
+    () => ({ type: "side", name: pricingName, qty: quantity, gravy: gravyQty, dips: dipQty }),
+    [pricingName, quantity, gravyQty, dipQty]
   );
 
   const lineSubtotal = formatMoney(priceLineItem(currentItem));
 
   const buildSummary = () => {
     const bits = [];
-    bits.push(`${quantity} × ${side}${isSizeSelectable ? ` - ${selectedSize}` : ""}`);
+    bits.push(`${quantity} × ${side}${isSizeSelectable ? ` (${selectedSize})` : ""}`);
     if (hasHotSauceToggle) bits.push(`Hot Sauce Drizzle: ${hotSauce}`);
     if (hasGravy && gravyQty > 0) bits.push(`Gravy × ${gravyQty}`);
     if (selectedDipsList.length) bits.push(`Dips: ${selectedDipsList.map((d) => `${d.label} × ${d.qty}`).join(", ")}`);
-    return bits.join(" | ");
+    return bits.join(" • ");
   };
 
   /* —— Render —— */
@@ -131,15 +152,16 @@ export default function SideBuilder({ side, onClose, onAdd = () => {}, addToCart
         maxWidth: `${PANEL_INNER_MAX}px`,
         margin: "0 auto",
         background: "#fff",
+        color: TEXT_BROWN,
         padding: "0.9rem 0",            // EXTRA top/bottom padding for the whole popup
       }}
     >
       {/* Section 1 – Serving Options */}
-      <div style={{ padding: ".5rem 0", background: LIGHT_BG }}> {/* extra top/bottom */}
+      <SectionBox>
         <h3 style={sectionBar}>1. Serving Options</h3>
 
-        <div style={{ padding: `${PAD_Y} 1rem` }}>
-          {isSizeSelectable && (
+        <div style={{ padding: `${PAD_Y} 1rem`, background: LIGHT_BG }}>
+          {isSizeSelectable && canPickSize && (
             <>
               <h4 style={subHeader}>Choose Size</h4>
               <div style={{ display: "flex", gap: "0.7rem", marginBottom: ".9rem" }}>
@@ -161,6 +183,11 @@ export default function SideBuilder({ side, onClose, onAdd = () => {}, addToCart
                 })}
               </div>
             </>
+          )}
+          {isSizeSelectable && !canPickSize && (
+            <div style={{ marginBottom: ".9rem", fontWeight: 800, color: TEXT_BROWN }}>
+              Size: {selectedSize}
+            </div>
           )}
 
           {hasHotSauceToggle && (
@@ -217,95 +244,91 @@ export default function SideBuilder({ side, onClose, onAdd = () => {}, addToCart
             </div>
           </div>
         </div>
-      </div>
+      </SectionBox>
 
       {(hasDips || hasGravy) && (
-        <>
-          <hr style={{ border: "none", borderTop: `1px solid ${LIGHT_BORDER}`, margin: 0 }} />
-          <div style={{ padding: ".5rem 0", background: "#fff" }}> {/* extra top/bottom */}
-            <h3 style={sectionBar}>2. {hasGravy ? "Gravy" : "Dips"}</h3>
+        <SectionBox>
+          <h3 style={sectionBar}>2. {hasGravy ? "Gravy" : "Dips"}</h3>
 
-            <div style={{ padding: `${PAD_Y} 1rem` }}>
-              {hasGravy ? (
+          <div style={{ padding: `${PAD_Y} 1rem`, background: LIGHT_BG }}>
+            {hasGravy ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <p style={{ margin: 0, fontWeight: 600 }}>Gravy</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <button
+                    type="button"
+                    onClick={() => setGravyQty((g) => Math.max(0, g - 1))}
+                    style={gravyQty > 0 ? circleButtonLg : circleButtonLgDisabled}
+                    disabled={gravyQty <= 0}
+                  >
+                    −
+                  </button>
+                  <span style={{ padding: "0 0.6rem", minWidth: 28, textAlign: "center", fontWeight: 800 }}>
+                    {gravyQty}
+                  </span>
+                  <button type="button" onClick={() => setGravyQty((g) => g + 1)} style={circleButtonLg}>
+                    +
+                  </button>
+                </div>
+              </div>
+            ) : (
+              DIPS.map((dip) => (
                 <div
+                  key={dip}
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
+                    marginBottom: "0.9rem",
+                    gap: "0.7rem",
+                    flexWrap: "wrap",
                   }}
                 >
-                  <p style={{ margin: 0, fontWeight: 600 }}>Gravy</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", minWidth: 0 }}>
+                    <div
+                      style={{
+                        width: "42px",
+                        height: "42px",
+                        background: "#ddd",
+                        borderRadius: "8px",
+                        flex: "0 0 auto",
+                      }}
+                    />
+                    <p style={{ margin: 0, fontWeight: 500 }}>{dip}</p>
+                  </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <button
                       type="button"
-                      onClick={() => setGravyQty((g) => Math.max(0, g - 1))}
-                      style={gravyQty > 0 ? circleButtonLg : circleButtonLgDisabled}
-                      disabled={gravyQty <= 0}
+                      onClick={() => updateDipQty(dip, -1)}
+                      style={(dipQty[dip] || 0) > 0 ? circleButtonLg : circleButtonLgDisabled}
+                      disabled={(dipQty[dip] || 0) <= 0}
                     >
                       −
                     </button>
                     <span style={{ padding: "0 0.6rem", minWidth: 28, textAlign: "center", fontWeight: 800 }}>
-                      {gravyQty}
+                      {dipQty[dip] || 0}
                     </span>
-                    <button type="button" onClick={() => setGravyQty((g) => g + 1)} style={circleButtonLg}>
+                    <button type="button" onClick={() => updateDipQty(dip, 1)} style={circleButtonLg}>
                       +
                     </button>
                   </div>
                 </div>
-              ) : (
-                DIPS.map((dip) => (
-                  <div
-                    key={dip}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      marginBottom: "0.9rem",
-                      gap: "0.7rem",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", minWidth: 0 }}>
-                      <div
-                        style={{
-                          width: "42px",
-                          height: "42px",
-                          background: "#ddd",
-                          borderRadius: "8px",
-                          flex: "0 0 auto",
-                        }}
-                      />
-                      <p style={{ margin: 0, fontWeight: 500 }}>{dip}</p>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <button
-                        type="button"
-                        onClick={() => updateDipQty(dip, -1)}
-                        style={(dipQty[dip] || 0) > 0 ? circleButtonLg : circleButtonLgDisabled}
-                        disabled={(dipQty[dip] || 0) <= 0}
-                      >
-                        −
-                      </button>
-                      <span style={{ padding: "0 0.6rem", minWidth: 28, textAlign: "center", fontWeight: 800 }}>
-                        {dipQty[dip] || 0}
-                      </span>
-                      <button type="button" onClick={() => updateDipQty(dip, 1)} style={circleButtonLg}>
-                        +
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+              ))
+            )}
           </div>
-        </>
+        </SectionBox>
       )}
 
       {/* Summary */}
-      <hr style={{ border: "none", borderTop: `1px solid ${LIGHT_BORDER}`, margin: 0 }} />
-      <div style={{ padding: ".5rem 0", background: "#fff" }}> {/* extra top/bottom */}
-        <h3 style={sectionBar}>3. Item</h3>
-        <div style={{ padding: `${PAD_Y} 1rem` }}>
+      <SectionBox>
+        <h3 style={sectionBar}>{itemSectionIndex}. Item</h3>
+        <div style={{ padding: `${PAD_Y} 1rem`, background: LIGHT_BG }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.6rem" }}>
             <span style={{ color: "green", fontWeight: "bold" }}>✔</span>
             <span style={{ fontWeight: "bold" }}>({quantity})</span>
@@ -341,18 +364,20 @@ export default function SideBuilder({ side, onClose, onAdd = () => {}, addToCart
             </div>
           ))}
         </div>
-      </div>
+      </SectionBox>
 
-      {/* Footer actions with a little bottom padding from container */}
-      <div style={{ display: "flex", gap: 0, paddingBottom: ".6rem" }}>
+      {/* Footer actions */}
+      <div style={{ display: "flex", gap: 0, border: `1px solid ${LIGHT_BORDER}`, borderRadius: BOX_RADIUS, overflow: "hidden" }}>
         <button
           type="button"
           onClick={onClose}
           style={{
             flex: 1,
             padding: "1rem",
-            background: "#fff",
-            border: `1px solid ${LIGHT_BORDER}`,
+            background: LIGHT_BG,
+            color: TEXT_BROWN,
+            border: "none",
+            borderRight: `1px solid ${LIGHT_BORDER}`,
             fontWeight: 900,
             cursor: "pointer",
             textTransform: "uppercase",
@@ -381,7 +406,7 @@ export default function SideBuilder({ side, onClose, onAdd = () => {}, addToCart
           style={{
             flex: 1,
             padding: "1rem",
-            background: PRIMARY_RED,
+            background: MAROON,
             color: "#fff",
             border: "none",
             fontWeight: 900,

@@ -10,13 +10,19 @@
 /* 2) Brand + Layout Vars */
 :root {
   /* brand colors */
-  --color-primary: #006491;
-  --color-primary-dark: #005177;
+  --color-primary: #000000;
+  --color-primary-dark: #262626;
   --color-accent: #289c52;
   --color-dark: #1c1c1c;
   --color-bg: #f9f9f9;
   --color-light: #ffffff;
-  --brand-blue: #006491;
+  --brand-blue: #000000;
+
+  /* menu page card styling (matches Order Settings aside) */
+  --menu-box-bg: #fdf7f0;
+  --menu-box-bg-alt: #f0decc;
+  --menu-box-border: #d9c49c;
+  --menu-box-border-hover: #6b3f22;
 
   /* type */
   --font-heading: 'Oswald', sans-serif;
@@ -39,34 +45,6 @@
 
   /* components */
   --cart-panel-w: 520px;
-
-  /* design tokens (scaleable) */
-  --ui-scale: 1; /* controlled by .scale-90 on <body> */
-
-  /* spacing */
-  --space-1: calc(4px  * var(--ui-scale));
-  --space-2: calc(8px  * var(--ui-scale));
-  --space-3: calc(12px * var(--ui-scale));
-  --space-4: calc(16px * var(--ui-scale));
-  --space-5: calc(20px * var(--ui-scale));
-  --space-6: calc(24px * var(--ui-scale));
-
-  /* radius */
-  --radius-1: calc(4px * var(--ui-scale));
-  --radius-2: calc(6px * var(--ui-scale));
-
-  /* type scale */
-  --fs-xs:  calc(0.75rem  * var(--ui-scale));
-  --fs-sm:  calc(0.875rem * var(--ui-scale));
-  --fs-md:  calc(1rem     * var(--ui-scale));
-  --fs-lg:  calc(1.125rem * var(--ui-scale));
-  --fs-xl:  calc(1.25rem  * var(--ui-scale));
-  --fs-2xl: calc(1.5rem   * var(--ui-scale));
-
-  /* misc */
-  --btn-letter: calc(0.4px * var(--ui-scale));
-  --fixed-140: calc(140px * var(--ui-scale));
-  --circle-150: calc(150px * var(--ui-scale));
 }
 
 /* bigger gutters on desktop */
@@ -78,13 +56,12 @@
 /* When a subheader is visible, bump the offset used by modals/anchors */
 html.has-subheader { --header-offset: calc(var(--header-h) + var(--subheader-h)); }
 
-/* ====== Compact scaling — NO CSS zoom/transform ====== */
-.scale-90 { --ui-scale: 0.9; }
-/* .scale-100 { --ui-scale: 1; } */
-
-html {
-  /* Scale rem-based sizes cleanly across the app */
-  font-size: calc(100% * var(--ui-scale));
+/* Shrinks page content (everything inside <main id="page">) to ~90% size —
+   the header/subheader live outside <main> in pages/_app.js and are
+   untouched. zoom (not transform) so layout reflows normally instead of
+   leaving a stale gap where the unscaled box used to be. */
+.page-shell--compact {
+  zoom: 0.9;
 }
 
 /* 3) Reset / Base */
@@ -94,7 +71,7 @@ html { scroll-padding-top: calc(var(--header-offset) + 8px); }
 
 body {
   font-family: var(--font-body);
-  font-size: 0.9rem; /* base body still fine; rems scale via html font-size */
+  font-size: 0.9rem;
   line-height: 1.5;
   background: var(--color-bg);
   color: var(--color-dark);
@@ -220,6 +197,10 @@ h3 { font-size: 1.25rem; }
 .cart-item__thumb { width: 72px; height: 54px; object-fit: cover; border: 1px solid #eee; }
 .cart-item__name { background: none; border: none; padding: 0; margin: 0; cursor: pointer; text-align: left; color: #0b3d91; font-weight: 800; }
 .cart-item__subtitle { color: #666; font-size: 13px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cart-item__combo-children { margin-top: 4px; display: flex; flex-direction: column; gap: 2px; list-style: none; padding: 0; }
+.cart-item__combo-child { display: flex; gap: 5px; font-size: 12px; color: #666; align-items: baseline; }
+.cart-item__combo-child-label { font-weight: 700; color: #444; flex: 0 0 auto; }
+.cart-item__combo-child-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cart-item__price { justify-self: end; font-weight: 700; }
 .cart-item__controls { grid-column: 1 / 4; display: flex; align-items: center; gap: 10px; margin-top: 6px; }
 .cart-item__label { color: #444; font-size: 13px; }
@@ -227,9 +208,10 @@ h3 { font-size: 1.25rem; }
 .cart-item__btn { border: 1px solid #ddd; padding: 6px 10px; cursor: pointer; font-size: 13px; }
 .cart-item__btn--edit { margin-left: auto; background: #fafafa; }
 .cart-item__btn--remove { background: #fff; color: #e53935; }
-.cart-sidebar__footer { border-top: 1px solid #eee; padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
+.cart-sidebar__footer { border-top: 1px solid #eee; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+.cart-sidebar__footer-row { display: flex; align-items: center; gap: 12px; }
 .cart-sidebar__subtotal { color: #666; font-weight: 600; }
-.cart-sidebar__checkout { margin-left: auto; background: var(--color-primary); color: #fff; font-weight: 800; border: none; padding: 10px 14px; cursor: pointer; }
+.cart-sidebar__checkout { margin-left: auto; background: var(--color-primary); color: #fff; font-weight: 800; border: none; padding: 10px 14px; cursor: pointer; white-space: nowrap; }
 
 /* ===========================
    Header + Subheader
@@ -242,7 +224,19 @@ h3 { font-size: 1.25rem; }
   font-family: 'Oswald', sans-serif; /* Oswald for all header text */
 }
 .site-header__inner { height: var(--header-h); display: flex; align-items: stretch; }
-.header-row { display: flex; align-items: stretch; justify-content: space-between; gap: 0; }
+.header-row { display: flex; align-items: stretch; justify-content: space-between; gap: 0; width: 100%; }
+
+/* Decorative rosette icons filling the header's middle deadspace.
+   flex:1 stretches this row to consume all leftover width between the nav
+   and the order-method chip; the spacers (also flex:1) then split that
+   width into 5 mathematically equal gaps: contact-icon, icon-icon x3, icon-chip. */
+.header-ornaments { display: flex; align-items: center; flex: 1 1 auto; min-width: 0; }
+.header-ornament { width: 34px; height: 34px; display: block; flex: 0 0 auto; }
+.header-ornament-spacer { flex: 1 1 0; }
+/* Smaller share of the leftover space: compensates for the invisible
+   padding on the CONTACT/COMBOS nav button before it, whose box has no
+   visible background at rest. */
+.header-ornament-spacer--lead { flex: 0.4 1 0; }
 /* Two flush clusters (logo+nav, mode+cart) anchored to opposite edges of the
    centered .container, instead of every segment packed against the left
    edge with dead space on the right. Segment sizing/spacing is untouched —
@@ -270,13 +264,20 @@ h3 { font-size: 1.25rem; }
 
 
 /* Carryout/Delivery & Auth – wider */
-.header-seg--mode { flex: 0 0 calc(88px * 2.3); }
+.header-seg--mode { flex: 0 0 calc(88px * 2.3 + 22px); }
 .header-seg--mode .header-seg__label { padding: 8px 10px; border: 2px solid #fff; }
 .header-seg--auth { flex: 0 0 calc(88px * 2.3); background: var(--color-primary-dark); }
 
 /* Cart */
-.header-seg--cart { flex-direction: column; gap: 4px; }
-.site-header .header-seg--cart .cart-toggle svg path { fill: #fff; }
+.header-seg--cart { flex-direction: column; gap: 2px; }
+.header-seg--cart .cart-toggle { padding: 2px; }
+.site-header .header-seg--cart .cart-toggle svg {
+  stroke: #fff;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.site-header .header-seg--cart .cart-toggle svg circle { fill: #fff; }
 .header-cart__label {
   font-family: 'Oswald', sans-serif;
   font-size: 12px; font-weight: 700;
@@ -344,7 +345,7 @@ h3 { font-size: 1.25rem; }
   gap: 6px;                        /* tight spacing */
   padding: 6px 8px;               /* tighter horizontal padding */
   /* 🔧 fixed size */
-  width: 179px;
+  width: 200px;
   height: 42px;
   box-sizing: border-box;
   /* remove any forced width */
@@ -401,12 +402,15 @@ h3 { font-size: 1.25rem; }
 .header-seg--mode .carryout-text {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: stretch;
+  text-align: left;
   line-height: 1.05;
   text-transform: uppercase;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   white-space: nowrap;             /* keep on one line group */
+  flex: 1 1 auto;                  /* fill the remaining width in the chip */
+  min-width: 0;                    /* allow shrinking so ellipsis can kick in */
 }
 
 .header-seg--mode .carryout-line--sm {
@@ -415,12 +419,18 @@ h3 { font-size: 1.25rem; }
   letter-spacing: 0.04em;
   margin: 0;
   opacity: 0.98;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .header-seg--mode .carryout-line--lg {
   font-size: 16px;
   font-weight: 700;                /* bold */
   letter-spacing: 0.03em;
   margin-top: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 
@@ -465,7 +475,10 @@ h3 { font-size: 1.25rem; }
   display: grid;
   grid-template-columns: 240px 1fr;
   padding: 0;
-  border: 1px solid #e9e9e9; /* same subtle Domino’s border */
+  background: var(--menu-box-bg);
+  border: 1px solid var(--menu-box-border);
+  border-radius: .1875rem;
+  overflow: hidden;
 }
 
 /* kill hover pop */
@@ -478,10 +491,10 @@ h3 { font-size: 1.25rem; }
   justify-content: center;
 
   /* 👇 This is the key: match BYO image’s true left offset */
-  padding: 14px 18px 14px calc(6px + 1px); 
+  padding: 14px 18px 14px calc(6px + 1px);
   /* 6px image margin + 1px container border */
 
-  border-right: 2px solid #e6edf2;
+  border-right: 1px solid var(--menu-box-border);
   text-align: center;
 }
 
@@ -506,6 +519,21 @@ h3 { font-size: 1.25rem; }
   color: #333;
 }
 
+/* BYO box – cream card wrapping the CTA button + the size row beneath it,
+   so the two read as one connected unit (matches Order Settings aside). */
+.byo-box {
+  background: var(--menu-box-bg);
+  border: 1px solid var(--menu-box-border);
+  border-radius: .1875rem;
+  overflow: hidden;
+  margin-bottom: 16px;
+  transition: border-color 0.15s ease;
+}
+
+.byo-box:hover {
+  border-color: var(--menu-box-border-hover);
+}
+
 /* BYO CTA – full width, bigger height, image offset */
 .cta-byo {
   display: grid;
@@ -515,9 +543,10 @@ h3 { font-size: 1.25rem; }
   cursor: pointer;
 
   width: 100%;
-  border: 1px solid #dcdcdc;
-  background: #fff;
+  border: none;
+  background: transparent;
   box-shadow: none;
+  margin-bottom: 0;
 
   /* doubled height */
   min-height: 109px;   /* was ~100px before, now doubled */
@@ -555,57 +584,38 @@ h3 { font-size: 1.25rem; }
   font-size: 1rem;
 }
 
-/* Hover: blue background + white text */
-.cta-byo--dom:hover {
-  background: var(--brand-blue);
-}
 
-.cta-byo--dom:hover .cta-byo__title,
-.cta-byo--dom:hover .cta-byo__sub {
-  color: #fff;
-}
-
-/* Size links */
+/* Size links — the small/medium/large/xl row connected under the BYO CTA,
+   inside the same .byo-box card. Spread evenly across the full width. */
 .size-links {
-  margin: 40px 0; /* extra breathing room above & below */
-  display: grid;
-  grid-template-columns: repeat(4, auto); /* shrink to content */
-  gap: 12px;
-  justify-content: center;                
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
 
-  /* ultra-thin border, slightly darker for visibility */
-  border: 1px solid #dcdcdc;
+  border: none;
+  border-top: 1px solid var(--menu-box-border);
+  padding: 12px 18px;
 }
 
 .size-link.size-link--anchor {
+  flex: 1;
   background: none;
   border: none;
   cursor: pointer;
   text-align: center;
   color: var(--brand-blue);
-  font-weight: 800;
-  text-decoration: underline;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.92rem;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  text-decoration: none;
   padding: 6px 12px;
 }
 
 .size-link--anchor:hover {
-  text-decoration-thickness: 3px;
-}
-
-.size-link.size-link--anchor {
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-align: center;                     /* center text inside each button */
-  color: var(--brand-blue);
-  font-weight: 800;
-  font-size: 1rem;
-  text-decoration: underline;
-  padding: 6px 12px;
-}
-
-.size-link--anchor:hover {
-  text-decoration-thickness: 3px;
+  opacity: 0.65;
 }
 
 /* Category grid */
@@ -619,26 +629,32 @@ h3 { font-size: 1.25rem; }
   font-family: var(--font-heading);
   color: var(--brand-blue);    /* match big blue heading */
   font-weight: 900;
-  font-size: 1rem;           /* slightly smaller so it fits under image */
+  font-size: 1.15rem;
   line-height: 1.2;
-  margin-top: 10px;
+  margin-top: 14px;
 }
 
 .cat-card {
-  background: #fff;
-  border: 1px solid #e9e9e9;
+  background: var(--menu-box-bg);
+  border: 1px solid var(--menu-box-border);
+  border-radius: .1875rem;
   overflow: hidden;
   text-align: center;
-  padding-bottom: 12px;
+  padding: 14px 14px 16px;
   cursor: pointer;
+  transition: border-color 0.15s ease;
 }
 
-/* Responsive wrapper with fixed ratio */
+.cat-card:hover {
+  border-color: var(--menu-box-border-hover);
+}
+
+/* Responsive wrapper with fixed ratio — fills the card width so images
+   read as big as the reference, instead of being capped small. */
 .cat-card__imgWrap {
-  width: 100%;                          /* take full column width */
-  aspect-ratio: 188 / 99;               /* maintain perfect ratio */
-  max-width: 188px;                     /* cap at desktop size */
-  margin: 0 auto;                       /* center in column */
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  margin: 0 auto;
   overflow: hidden;
 }
 
@@ -670,76 +686,13 @@ h3 { font-size: 1.25rem; }
   }
 }
 
-/* Wide promos – aligned with BYO CTA text */
-.wide-promo.wide-promo--dom {
-  display: grid;
-  grid-template-columns: 152px 1fr auto; /* match BYO image width */
-  gap: 30px;                             /* match BYO gap */
-  align-items: center;
-
-  padding: 12px;
-  border: 1px solid #e5e5e5;
-  background: #fff;
-  margin-top: 16px;
-  cursor: pointer;
-  position: relative;
-}
-
-.wide-promo__img {
-  width: 152px;      /* same width as BYO image */
-  height: 100px;     /* same height as BYO image */
-  object-fit: cover;
-  margin-left: 6px;  /* same left offset as BYO image */
-}
-
-.wide-promo__title {
-  color: var(--brand-blue);
-  font-weight: 900;
-  font-size: 1.9rem; /* match BYO heading */
-  line-height: 1.2;
-}
-
-.wide-promo__sub {
-  color: #5a5a5a;    /* match BYO subtext */
-  margin-top: 6px;
-  font-size: 1rem;
-}
-
-/* Arrow (triangle) */
-.wide-promo__arrow {
-  width: 0;
-  height: 0;
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
-  border-left: 8px solid var(--brand-blue);
-  margin-left: auto;
-  margin-top: auto;
-}
-
 /* Aside */
 .menu-checkoutBtn {
   width: 100%; margin-bottom: 8px; padding: .9rem 1rem; border-radius: 3px;
   background: var(--color-primary); color: #fff; border: none;
   font-weight: 900; cursor: pointer;
 }
-.aside-card { background: #f8f8f8; overflow: hidden; border: 1px solid #e5e5e5; }
-.aside-card__title { background: var(--brand-blue); color: #fff; padding: .6rem .9rem; font-weight: 900; text-transform: uppercase; letter-spacing: .3px; }
-.aside-row { display: flex; justify-content: space-between; align-items: baseline; }
-.aside-label { font-weight: 700; }
-.aside-link { background: none; border: none; color: #0b61d6; text-decoration: underline; cursor: pointer; font-weight: 700; }
-.aside-input { flex: 1; padding: 6px 8px; border: 1px solid #ccc; }
-.aside-btn { padding: 6px 10px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
-.aside-sectionLabel { margin-top: 16px; font-weight: 700; }
-.aside-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
-.aside-choice { display: flex; align-items: center; gap: 8px; background: #fff; padding: 8px; border: 1px solid #ddd; }
-.aside-schedule { margin-top: 10px; background: #fff; padding: 8px; border: 1px solid #ddd; }
-.aside-scheduleRow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.aside-small { margin-top: 6px; font-size: 12px; color: #666; }
-.aside-hours { margin-top: 6px; font-size: 13px; color: #333; line-height: 1.4; }
-.aside-totals { margin-top: 16px; border-top: 1px solid #eee; padding-top: 12px; }
-.aside-totalRow { display: flex; justify-content: space-between; margin-bottom: 6px; }
-.aside-totalNum { font-weight: 700; }
-.aside-grandRow { display: flex; justify-content: space-between; margin-top: 8px; font-weight: 900; font-size: 18px; }
+.aside-card { background: #f8f8f8; overflow: hidden; border: 1px solid #e5e5e5; border-radius: .1875rem; }
 
 /* Sticky follower shell */
 .menu-aside__follower {
@@ -932,7 +885,7 @@ h3 { font-size: 1.25rem; }
 
 
 .header-seg--mode .carryout-chip:hover {
-  background: #005177;  /* fill inside */
+  background: #262626;  /* fill inside */
   color: #fff;          /* text/icon color inside */
 }
 
@@ -945,13 +898,23 @@ h3 { font-size: 1.25rem; }
   padding-right: 12px !important; /* same space both sides across all 5 */
 }
 
+/* Menu-page nav (HOME, ENTRÉES, SIDES, DRINKS, COMBOS) has shorter labels than
+   the homepage nav (ORDER ONLINE, MENU, DEALS, PIZZA CALCULATOR, CONTACT), so
+   its 5-tab cluster is narrower end-to-end by default. Widen just these tabs
+   a bit so the nav cluster's total width lines up with the homepage header. */
+.site-header .header-seg--nav.header-seg--nav-wide {
+  padding-left: 15px !important;
+  padding-right: 15px !important;
+}
+
 /* Optional: make nav labels render consistently */
 .site-header .header-seg--nav .header-seg__label {
   font-weight: 700;
   white-space: nowrap; /* keep labels on one line */
 }
 
-/* size/hover */
+/* size/hover — the white outer stroke is now baked directly into
+   storelogoRSP.svg as a pre-rendered halo layer, so this is just the logo. */
 .header-logo-mark {
   display: block;
   width: 90px;
@@ -966,10 +929,8 @@ h3 { font-size: 1.25rem; }
 
 .header-seg--logo:hover .header-logo-mark {
   transform: scale(1.05);
-
-  /* hover palette */
-  --logo-dark:  #0a0606;
-  --logo-light: #005177;
+  /* --logo-light is set to a fresh random bright color on each hover via
+     JS (Header.js's onMouseEnter) — this rule only handles the scale. */
 }
 
 /* soft white veil instead of dark */
@@ -1057,9 +1018,9 @@ body.modal-open {
 /* Optional: if your content inside already stretches, keep it from overflowing */
 .pb-left, .pb-right{ min-width: 0; }
 
-/* The red header bars (apply the class below to each section header element) */
+/* Section header bars (apply the class below to each section header element) */
 .pb-h{
-  background: var(--red, #7a1116);
+  background: #000;
   color: #fff;
   font-family: var(--font-heading, Oswald, sans-serif);
   font-weight: 900;

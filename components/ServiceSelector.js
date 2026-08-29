@@ -118,7 +118,7 @@ function StoreMap({ onCarryoutClick, mapsReady, storeLatLng }) {
         <div style="margin-bottom:4px;">576 Concession St, Hamilton, ON</div>
         <div style="margin-bottom:4px;">Phone: <a href="tel:+1-905-385-9888">905-385-9888</a></div>
         <div style="margin-bottom:8px;">Hours: 11:00–22:00</div>
-        <button id="map-carryout-btn" style="background:#e91e28;color:#fff;border:0;border-radius:4px;padding:.5rem .75rem;font-weight:800;cursor:pointer;width:100%;text-transform:uppercase">Carryout</button>
+        <button id="map-carryout-btn" style="background:#8b1a1a;color:#fff;border:0;border-radius:4px;padding:.5rem .75rem;font-weight:800;cursor:pointer;width:100%;text-transform:uppercase">Carryout</button>
       </div>
     `;
     const iw = new g.maps.InfoWindow({ content: infoDiv });
@@ -176,9 +176,9 @@ function StoreMap({ onCarryoutClick, mapsReady, storeLatLng }) {
  * both cases `onConfirmed` is called once the user has picked Carryout, or
  * entered and confirmed a Delivery address.
  */
-export default function ServiceSelector({ onConfirmed }) {
+export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
   const { confirmCarryout, confirmDelivery } = useCart();
-  const [choice, setChoice] = useState(null); // 'delivery' | 'carryout' | null
+  const [choice, setChoice] = useState(initialChoice); // 'delivery' | 'carryout' | null
   const [mapsReady, setMapsReady] = useState(false);
 
   // Keep store location in parent so Autocomplete can bias to it
@@ -578,8 +578,8 @@ export default function ServiceSelector({ onConfirmed }) {
 
       <style jsx>{`
         :global(:root) {
-          --brand-blue: #006491;
-          --red: #e91e28;
+          --brand-blue: #000000;
+          --red: #8b1a1a;
           --maroon: #7e0f14;
           --maroon-dark: #5f0b0f;
           --glow: #2ecc71;
@@ -623,7 +623,7 @@ export default function ServiceSelector({ onConfirmed }) {
           width: 120px;
           height: 120px;
           border-radius: 50%;
-          background: #0b6d97;
+          background: #000;
           color: #fff;
           border: 1px solid rgba(0, 0, 0, 0.06);
           display: flex;
@@ -639,7 +639,7 @@ export default function ServiceSelector({ onConfirmed }) {
           transform: translateY(-1px);
         }
         .methodBtn.is-selected {
-          background: #085a79;
+          background: #262626;
           box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.35),
             0 6px 16px rgba(0, 0, 0, 0.15);
         }

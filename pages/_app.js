@@ -1,24 +1,28 @@
 // pages/_app.js
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Head from "next/head";
 import Script from "next/script";
 import { useRouter } from "next/router";
 import "../styles/globals.css";
+import "../styles/feast.css";
 import Header from "../components/Header";
 import { CartProvider, CartSidebar } from "../components/CartSystem";
 import CartEditOverlay from "../components/CartEditOverlay";
 import ServiceGateOverlay from "../components/ServiceGateOverlay";
+import DealBuilder from "../components/DealBuilder";
 
 function RootApp({ Component, pageProps }) {
   const router = useRouter();
   const isStaffPage = router.pathname.startsWith("/kitchen");
   const [editingItem, setEditingItem] = useState(null);
 
-  // Enable compact scaling globally (no CSS zoom/transform)
-  useEffect(() => {
-    document.body.classList.add("scale-90"); // change to 'scale-100' or remove to go back to 100%
-    return () => document.body.classList.remove("scale-90");
-  }, []);
+  // Pages that render the two-column layout with the Order Settings aside
+  // (see components/OrderSettingsAside.js) have a narrower main content
+  // column than full-width pages like the homepage. page-shell--compact
+  // shrinks just those pages ~10% so their text/images read at the same
+  // visual size as the full-width pages, instead of looking cramped next
+  // to the sidebar. Pages without the aside stay at their natural 100%.
+  const hasOrderSettingsAside = ["/menu", "/coupons", "/cart"].includes(router.pathname);
 
   const siteHead = (
     <Head>
@@ -57,13 +61,19 @@ function RootApp({ Component, pageProps }) {
 
       <CartProvider onEditItem={setEditingItem}>
         <Header />
-        {/* Content always starts below the header (and subheader when present) */}
-        <main id="page" className="page-shell">
+        {/* Content always starts below the header (and subheader when present). */}
+        <main id="page" className={`page-shell${hasOrderSettingsAside ? " page-shell--compact" : ""}`}>
           <Component {...pageProps} />
         </main>
         <CartSidebar />
         <CartEditOverlay editingItem={editingItem} onClose={() => setEditingItem(null)} />
         <ServiceGateOverlay />
+        {/* Fresh-open instance — driven by CartProvider's openDealId, so a
+            code redeemed from anywhere (cart dropdown, /cart, checkout) or a
+            card clicked on /coupons opens the same builder. Editing an
+            existing "deal" cart item uses a separate instance inside
+            CartEditOverlay above. */}
+        <DealBuilder />
       </CartProvider>
     </>
   );

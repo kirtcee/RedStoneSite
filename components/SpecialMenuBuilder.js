@@ -14,15 +14,16 @@ export default function SpecialMenuBuilder({
 }) {
   const { addItem, updateItem } = useCart();
 
-  /* —— Fit + theme — mirrors Pizza/Wings builder —— */
+  /* —— Fit + theme — matches the Pizza Builder's cream-box makeover —— */
   const PANEL_INNER_MAX = 840;   // fits inside 880px modal with breathing room
   const MAROON = "#8b1a1a";
-  const PRIMARY_RED = "#E91E28";
-  const LIGHT_BORDER = "#c5c5c5";
-  const LIGHTER_BG = "#f9f9f9";
+  const LIGHT_BORDER = "#d9c49c"; // thin dark-brown-tan border (--menu-box-border)
+  const LIGHTER_BG = "#fdf7f0";   // cream box fill (--menu-box-bg)
+  const TEXT_BROWN = "#6b3f22";   // body text color inside the boxes
+  const BOX_RADIUS = ".1875rem";
 
   const sectionBar = {
-    background: MAROON,
+    background: "#000",
     color: "#fff",
     padding: "0.55rem 0.8rem",
     fontFamily: "var(--font-heading, Oswald, sans-serif)",
@@ -33,7 +34,7 @@ export default function SpecialMenuBuilder({
   };
   const subHeader = {
     margin: "0.9rem 0 0.45rem",
-    color: MAROON,
+    color: TEXT_BROWN,
     fontFamily: "var(--font-heading, Oswald, sans-serif)",
     fontWeight: 900,
     textTransform: "uppercase",
@@ -47,9 +48,17 @@ export default function SpecialMenuBuilder({
     margin: "10px auto",
   };
 
+  // Wraps a numbered section (black header bar + cream body) in the same
+  // bordered/rounded box used by the Pizza Builder's Section component.
+  const SectionBox = ({ children }) => (
+    <div style={{ border: `1px solid ${LIGHT_BORDER}`, borderRadius: BOX_RADIUS, overflow: "hidden", marginBottom: "1rem" }}>
+      {children}
+    </div>
+  );
+
   // big, but a touch smaller than before to fit better
   const circleButtonLg = {
-    background: PRIMARY_RED,
+    background: MAROON,
     color: "#fff",
     borderRadius: "50%",
     width: "48px",
@@ -118,6 +127,7 @@ export default function SpecialMenuBuilder({
   const isMeatball = itemKey === "meatball-sub";
   const showsToppings = !isMeatball;
   const showsDips = itemKey === "panzerotti";
+  const itemSectionIndex = showsDips ? 3 : 2; // "Item" section number shifts when the Dips section isn't shown
 
   const buildSummary = () => {
     if (isMeatball) return `${qty} × Meatball Sub`;
@@ -125,10 +135,10 @@ export default function SpecialMenuBuilder({
     if (selMeat.length) parts.push(`Meats: ${selMeat.join(", ")}`);
     if (selVeg.length) parts.push(`Veggies: ${selVeg.join(", ")}`);
     if (selCheese.length) parts.push(`Cheeses: ${selCheese.join(", ")}`);
-    const toppingStr = parts.length ? ` — ${parts.join(" | ")}` : "";
+    const toppingStr = parts.length ? ` • ${parts.join(" • ")}` : "";
     if (showsDips) {
       const dipsStr = selectedDipsList.length
-        ? " | Dips: " + selectedDipsList.map(d => `${d.label} × ${d.qty}`).join(", ")
+        ? ` • Dips: ${selectedDipsList.map(d => `${d.label} × ${d.qty}`).join(", ")}`
         : "";
       return `${qty} × Panzerotti${toppingStr}${dipsStr}`;
     }
@@ -210,13 +220,15 @@ export default function SpecialMenuBuilder({
           maxWidth: `${PANEL_INNER_MAX}px`,
           margin: "12px auto",
           background: "#fff",
+          color: TEXT_BROWN,
+          fontFamily: "var(--font-body), Inter, system-ui, sans-serif",
         }}
       >
-        <div style={{ padding: "12px 0 16px", background: LIGHTER_BG }}>
+        <SectionBox>
           <h3 style={sectionBar}>1. {selectedItem}</h3>
 
-          <div style={{ padding: "1rem" }}>
-            <div style={{ marginTop: 2, color: "#111", fontWeight: 800, fontSize: ".95rem" }}>
+          <div style={{ padding: "1rem", background: LIGHTER_BG }}>
+            <div style={{ marginTop: 2, fontWeight: 800, fontSize: ".95rem" }}>
               Price: {unitPrice}
             </div>
 
@@ -226,11 +238,10 @@ export default function SpecialMenuBuilder({
                   style={{
                     margin: "0.75rem 0",
                     padding: "0.5rem 0.65rem",
-                    background: isOverIncluded ? "#fff4e5" : "#f2f2f2",
+                    background: isOverIncluded ? "#fff4e5" : "#fff",
                     border: `1px solid ${isOverIncluded ? "#e0a951" : LIGHT_BORDER}`,
                     borderRadius: 4,
                     fontSize: ".85rem",
-                    color: "#333",
                   }}
                 >
                   3 toppings included.
@@ -246,6 +257,7 @@ export default function SpecialMenuBuilder({
                         type="checkbox"
                         checked={selMeat.includes(t)}
                         onChange={() => toggleIn(selMeat, t, setSelMeat)}
+                        style={{ accentColor: MAROON }}
                       />
                       {t}
                     </label>
@@ -262,6 +274,7 @@ export default function SpecialMenuBuilder({
                         type="checkbox"
                         checked={selVeg.includes(t)}
                         onChange={() => toggleIn(selVeg, t, setSelVeg)}
+                        style={{ accentColor: MAROON }}
                       />
                       {t}
                     </label>
@@ -278,67 +291,10 @@ export default function SpecialMenuBuilder({
                         type="checkbox"
                         checked={selCheese.includes(t)}
                         onChange={() => toggleIn(selCheese, t, setSelCheese)}
+                        style={{ accentColor: MAROON }}
                       />
                       {t}
                     </label>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {showsDips && (
-              <>
-                <div style={dividerInset} />
-                <h3 style={{ ...sectionBar, marginTop: "1rem" }}>2. Dips</h3>
-
-                <div style={{ paddingTop: "0.7rem" }}>
-                  {DIPS.map((dip) => (
-                    <div
-                      key={dip}
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: "0.7rem",
-                        gap: "0.7rem",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", minWidth: 0 }}>
-                        <div
-                          style={{
-                            width: "42px",
-                            height: "42px",
-                            background: "#ddd",
-                            borderRadius: "8px",
-                            flex: "0 0 auto",
-                          }}
-                        />
-                        <p style={{ margin: 0, fontWeight: 500 }}>{dip}</p>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <button
-                          type="button"
-                          onClick={() => updateDip(dip, -1)}
-                          style={(dipQty[dip] || 0) > 0 ? circleButtonLg : circleButtonLgDisabled}
-                          disabled={(dipQty[dip] || 0) <= 0}
-                          aria-label={`Decrease ${dip}`}
-                        >
-                          −
-                        </button>
-                        <span style={{ padding: "0 0.6rem", minWidth: 28, textAlign: "center", fontWeight: 800 }}>
-                          {dipQty[dip] || 0}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => updateDip(dip, 1)}
-                          style={circleButtonLg}
-                          aria-label={`Increase ${dip}`}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
                   ))}
                 </div>
               </>
@@ -380,14 +336,68 @@ export default function SpecialMenuBuilder({
               </div>
             </div>
           </div>
-        </div>
+        </SectionBox>
 
-        {/* Summary */}
-        <hr style={{ border: "none", borderTop: `1px solid ${LIGHT_BORDER}`, margin: 0 }} />
+        {showsDips && (
+          <SectionBox>
+            <h3 style={sectionBar}>2. Dips</h3>
 
-        <div style={{ padding: "1rem", background: "#fff" }}>
-          <h3 style={sectionBar}>3. Item</h3>
-          <div style={{ marginTop: "0.7rem" }}>
+            <div style={{ padding: "1rem", background: LIGHTER_BG }}>
+              {DIPS.map((dip) => (
+                <div
+                  key={dip}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "0.7rem",
+                    gap: "0.7rem",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", minWidth: 0 }}>
+                    <div
+                      style={{
+                        width: "42px",
+                        height: "42px",
+                        background: "#ddd",
+                        borderRadius: "8px",
+                        flex: "0 0 auto",
+                      }}
+                    />
+                    <p style={{ margin: 0, fontWeight: 500 }}>{dip}</p>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <button
+                      type="button"
+                      onClick={() => updateDip(dip, -1)}
+                      style={(dipQty[dip] || 0) > 0 ? circleButtonLg : circleButtonLgDisabled}
+                      disabled={(dipQty[dip] || 0) <= 0}
+                      aria-label={`Decrease ${dip}`}
+                    >
+                      −
+                    </button>
+                    <span style={{ padding: "0 0.6rem", minWidth: 28, textAlign: "center", fontWeight: 800 }}>
+                      {dipQty[dip] || 0}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => updateDip(dip, 1)}
+                      style={circleButtonLg}
+                      aria-label={`Increase ${dip}`}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SectionBox>
+        )}
+
+        <SectionBox>
+          <h3 style={sectionBar}>{itemSectionIndex}. Item</h3>
+          <div style={{ padding: "1rem", background: LIGHTER_BG }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
               <span style={{ color: "green", fontWeight: "bold" }}>✔</span>
               <span>{buildSummary()}</span>
@@ -403,18 +413,20 @@ export default function SpecialMenuBuilder({
                 </div>
               ))}
           </div>
-        </div>
+        </SectionBox>
 
         {/* Footer actions */}
-        <div style={{ display: "flex", gap: 0 }}>
+        <div style={{ display: "flex", gap: 0, border: `1px solid ${LIGHT_BORDER}`, borderRadius: BOX_RADIUS, overflow: "hidden" }}>
           <button
             type="button"
             onClick={onClose}
             style={{
               flex: 1,
               padding: "1rem",
-              background: "#fff",
-              border: `1px solid ${LIGHT_BORDER}`,
+              background: LIGHTER_BG,
+              color: TEXT_BROWN,
+              border: "none",
+              borderRight: `1px solid ${LIGHT_BORDER}`,
               fontWeight: 900,
               cursor: "pointer",
               textTransform: "uppercase",
@@ -429,7 +441,7 @@ export default function SpecialMenuBuilder({
             style={{
               flex: 1,
               padding: "1rem",
-              background: PRIMARY_RED,
+              background: MAROON,
               color: "#fff",
               border: "none",
               fontWeight: 900,

@@ -9,9 +9,9 @@ export default function Home() {
         <div className="start-row">
           <h1 className="home-title">START YOUR ORDER</h1>
 
-          <Link href="/order" className="button start-btn">Delivery</Link>
+          <Link href="/order?method=delivery" className="button start-btn">Delivery</Link>
           <span className="order-or" aria-hidden="true">or</span>
-          <Link href="/order" className="button start-btn">Carryout</Link>
+          <Link href="/order?method=carryout" className="button start-btn">Carryout</Link>
         </div>
 
         {/* ===== Deals collage ===== */}
