@@ -252,7 +252,7 @@ export default function CouponsPage() {
 
   return (
     <main className="page page--coupons">
-      <div className="container" style={{ padding: "1rem 0" }}>
+      <div className="container" style={{ paddingTop: "1rem", paddingBottom: "1rem" }}>
         <div className="menu-layout">
           <section className="menu-main">
             <h1 className="menu-title" style={{ margin: "0 0 4px" }}>

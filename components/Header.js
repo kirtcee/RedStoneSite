@@ -1,5 +1,5 @@
 // components/Header.js
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { CartToggle, useCart } from "./CartSystem";
@@ -195,6 +195,28 @@ export default function Header() {
     }
   }, [showSubheader]);
 
+  // /order is technically "menu mode" (so the header nav switches to
+  // HOME/ENTRÉES/SIDES.../COMBOS), but its category subnav doesn't fit the
+  // single-purpose "pick carryout or delivery" screen it actually shows.
+  // Scoped to a CSS class + mobile media query (not a JS width check) so it
+  // stays consistent with the rest of this mobile pass and only changes the
+  // mobile layout — desktop keeps its current behavior unless asked.
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.toggle(
+        "route-order",
+        router.pathname === "/order"
+      );
+    }
+  }, [router.pathname]);
+
+  // Mobile hamburger drawer — desktop never sets this true (the toggle button
+  // is CSS-hidden above the mobile breakpoint), and any navigation closes it.
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [router.pathname, tab, sub]);
+
   const carryoutAddressFull = "576 Concession Street";
   const carryoutAddress = carryoutAddressFull;
   const deliveryAddressDisplay = formatAddressFull(deliveryAddress) || "Enter Address";
@@ -220,6 +242,24 @@ export default function Header() {
       <header className="site-header site-header--red">
         <div className="container site-header__inner">
           <div className="header-row">
+            {/* Direct child of .header-row (not nested in header-row__end)
+                so the mobile 3-column grid (hamburger | logo | cart) can
+                place it first purely via DOM order — see the
+                @media (max-width: 860px) block in globals.css. Desktop
+                ignores it entirely (.header-hamburger is display:none
+                there), so moving it here has no visual effect on desktop. */}
+            <button
+              type="button"
+              className="header-hamburger"
+              onClick={() => setMobileNavOpen((v) => !v)}
+              aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileNavOpen}
+            >
+              <span className="header-hamburger__bar" />
+              <span className="header-hamburger__bar" />
+              <span className="header-hamburger__bar" />
+            </button>
+
             <div className="header-row__start">
               <Link
                 href="/"
@@ -319,6 +359,52 @@ export default function Header() {
           </div>
         </div>
       </header>
+
+      {/* Always rendered (not conditionally, per mobileNavOpen) so the
+          transform transition below has a real "closed" state to animate
+          from — a conditionally-mounted drawer would just appear instantly
+          with no slide-in. pointer-events is toggled with the class so the
+          off-screen drawer can't be tabbed/clicked into while closed. */}
+      <div
+        className={`mobile-drawer-backdrop ${mobileNavOpen ? "is-open" : ""}`}
+        aria-hidden="true"
+        onClick={() => setMobileNavOpen(false)}
+      />
+      <div
+        className={`mobile-drawer ${mobileNavOpen ? "is-open" : ""}`}
+        role="dialog"
+        aria-label="Site menu"
+        aria-hidden={!mobileNavOpen}
+      >
+        <nav className="mobile-drawer__nav">
+          {topItems.map((item) => (
+            <button
+              key={item.key}
+              className={`mobile-drawer__link ${activeTopKey === item.key ? "is-active" : ""}`}
+              onClick={item.onClick}
+              aria-current={activeTopKey === item.key ? "page" : undefined}
+              tabIndex={mobileNavOpen ? 0 : -1}
+            >
+              {item.label.replace(/\n/g, " ")}
+            </button>
+          ))}
+        </nav>
+        <button
+          type="button"
+          className="mobile-drawer__service"
+          tabIndex={mobileNavOpen ? 0 : -1}
+          onClick={() => {
+            setMobileNavOpen(false);
+            openServiceGate();
+          }}
+        >
+          {!service
+            ? "Select Order Method"
+            : service === "carryout"
+            ? `Carryout from ${carryoutAddress}`
+            : `Delivery to ${deliveryAddressDisplay}`}
+        </button>
+      </div>
 
       {showSubheader && (
         <div className="subheader">

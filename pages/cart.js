@@ -72,10 +72,17 @@ function ItemRow({ item, onQty, onRemove, onEdit }) {
   const qty = Math.max(1, Number(item?.qty) || 1);
   const title =
     item?.pizzaName ||
+    // Sides' .name is also the priceSide() lookup key (e.g. "Onion Rings
+    // (Medium)", an internal pricing label, not what the customer picked —
+    // see sideSizeToPricingLabel above) — build the customer-facing label
+    // from the raw .side/.size fields instead, before falling back to .name.
+    (item?.type === "side" && item?.side ? `${item.side}${item.size ? ` (${item.size})` : ""}` : null) ||
     item?.name ||
     (item?.type === "pizza-byo" ? describeByoPizzaTitle(item) : null) ||
     (item?.type === "combo" ? comboNameFor(item.comboId) : null) ||
     (item?.type === "deal" ? dealNameFor(item.dealId) : null) ||
+    (item?.type === "wings" ? `${item.count || ""} Wings`.trim() : null) ||
+    (item?.type === "drinks-dips" ? item.categoryLabel || "Drinks & Dips" : null) ||
     "Menu Item";
   const isCombo = item?.type === "combo" && item?.meta?.items;
   const isDealBundle = item?.type === "deal" && item?.meta?.items;
@@ -83,6 +90,7 @@ function ItemRow({ item, onQty, onRemove, onEdit }) {
 
   return (
     <div
+      className="cart-item-row"
       style={{
         display: "grid",
         gridTemplateColumns: "minmax(0,1fr) 220px",
@@ -338,6 +346,11 @@ function SidesUpsellRow({ addItem }) {
               label={side}
               sizes={sizes}
               onAdd={(size) => {
+                // .name doubles as the priceSide() lookup key (PRICES.sides
+                // uses "(Medium)"/"(Large)" keys, not "(Regular)") — must NOT
+                // change it to the display size or pricing breaks. The
+                // customer-facing label is fixed separately in ItemRow's
+                // title logic below, using .side/.size instead of .name.
                 const name = size ? `${side} (${sideSizeToPricingLabel(size)})` : side;
                 const payload = {
                   type: "side",
@@ -418,7 +431,7 @@ export default function CartPage() {
 
   return (
     <main className="page page--cart">
-      <div className="container" style={{ padding: "1rem 0" }}>
+      <div className="container" style={{ paddingTop: "1rem", paddingBottom: "1rem" }}>
         <div className="menu-layout">
           <section className="menu-main">
             <div
@@ -470,6 +483,7 @@ export default function CartPage() {
 
               <div style={{ padding: "0.75rem" }}>
                 <div
+                  className="cart-header-row"
                   style={{
                     display: "grid",
                     gridTemplateColumns: "minmax(0,1fr) 220px",

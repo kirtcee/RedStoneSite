@@ -5,13 +5,23 @@ export default function Home() {
   return (
     <div className="home">
       <div className="container">
-        {/* ===== Top: START YOUR ORDER + buttons (centered) ===== */}
+        {/* ===== Top: START YOUR ORDER + buttons (centered) =====
+            Two markups, one CSS-toggled pair (.start-row / .mobile-start-row)
+            — both always render; only visibility flips at the mobile
+            breakpoint. Kept this way (not a JS width check) because this
+            content is part of the page's initial server render, where a
+            JS-only decision would disagree with the server's guess and
+            cause a visible flash/hydration warning on real phones. */}
         <div className="start-row">
           <h1 className="home-title">START YOUR ORDER</h1>
 
           <Link href="/order?method=delivery" className="button start-btn">Delivery</Link>
           <span className="order-or" aria-hidden="true">or</span>
           <Link href="/order?method=carryout" className="button start-btn">Carryout</Link>
+        </div>
+
+        <div className="mobile-start-row">
+          <Link href="/order" className="button mobile-start-btn">Order Online</Link>
         </div>
 
         {/* ===== Deals collage ===== */}
@@ -95,6 +105,23 @@ export default function Home() {
           color: var(--brand-blue);
         }
         .start-btn { padding: 0.6rem 1.1rem; font-weight: 800; }
+
+        /* Mobile-only single CTA — hidden by default, swapped in for
+           .start-row at the same 640px breakpoint used elsewhere on this
+           page (see the existing @media (max-width: 640px) block below). */
+        .mobile-start-row {
+          display: none;
+          margin: 28px 0 24px;
+          text-align: center;
+        }
+        .mobile-start-btn {
+          display: inline-block;
+          width: 100%;
+          max-width: 360px;
+          padding: 0.9rem 1.1rem;
+          font-weight: 800;
+          font-size: 1.05rem;
+        }
         .order-or {
           font-family: "Hoefler Text", "Times New Roman", serif;
           color: #a9a9a9;
@@ -174,8 +201,8 @@ export default function Home() {
         }
 
         @media (max-width: 640px) {
-          .start-row { gap: 10px; }
-          .home-title { font-size: 1.6rem; margin-right: 0; }
+          .start-row { display: none; }
+          .mobile-start-row { display: block; }
           .deals-right { grid-template-columns: 1fr; row-gap: 12px; }
 
           .disclaimers { grid-template-columns: 1fr; text-align: center; }

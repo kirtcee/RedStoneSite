@@ -39,10 +39,16 @@ function describeItem(item) {
 function itemTitle(item) {
   return (
     item?.pizzaName ||
+    // See pages/cart.js's itemTitle for why: .name doubles as the
+    // priceSide() lookup key for sides ("Onion Rings (Medium)"), not the
+    // customer-facing size — build the label from .side/.size instead.
+    (item?.type === "side" && item?.side ? `${item.side}${item.size ? ` (${item.size})` : ""}` : null) ||
     item?.name ||
     (item?.type === "pizza-byo" ? describeByoPizzaTitle(item) : null) ||
     (item?.type === "combo" ? comboNameFor(item.comboId) : null) ||
     (item?.type === "deal" ? dealNameFor(item.dealId) : null) ||
+    (item?.type === "wings" ? `${item.count || ""} Wings`.trim() : null) ||
+    (item?.type === "drinks-dips" ? item.categoryLabel || "Drinks & Dips" : null) ||
     "Menu Item"
   );
 }
@@ -156,7 +162,7 @@ export default function CheckoutPage() {
 
   return (
     <main className="page page--checkout">
-      <div className="container" style={{ padding: "16px 0 32px" }}>
+      <div className="container" style={{ paddingTop: "16px", paddingBottom: "32px" }}>
         <h1 className="page-title" style={{ margin: "0 0 16px", textTransform: "uppercase" }}>
           Checkout
         </h1>
@@ -175,6 +181,7 @@ export default function CheckoutPage() {
           </div>
         ) : (
           <div
+            className="checkout-grid"
             style={{
               display: "grid",
               gridTemplateColumns: "minmax(0, 1.9fr) 360px",

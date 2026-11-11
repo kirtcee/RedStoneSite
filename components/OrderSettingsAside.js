@@ -385,6 +385,7 @@ export default function OrderSettingsAside() {
     setScheduleDate,
     scheduleTime,
     setScheduleTime,
+    isLoaded,
   } = useCart();
   const subtotalCents = cartSubtotalCents ?? 0;
 
@@ -457,7 +458,24 @@ export default function OrderSettingsAside() {
   }, []);
 
   return (
-    <aside className="menu-aside">
+    <>
+      {/* Mobile-only stand-in for the Checkout button inside .menu-aside,
+          which is display:none below 860px (see globals.css) — without
+          this there is no way to reach /checkout from a phone at all. */}
+      <div className="mobile-checkout-bar">
+        <div className="mobile-checkout-bar__total">
+          <span>Total</span>
+          <strong>{isLoaded ? formatMoney(totalCents) : "···"}</strong>
+        </div>
+        <button
+          type="button"
+          className="mobile-checkout-bar__btn"
+          onClick={() => router.push("/checkout")}
+        >
+          Checkout
+        </button>
+      </div>
+      <aside className="menu-aside">
       <div className="menu-aside__follower" ref={followerRef}>
         <button
           type="button"
@@ -507,8 +525,10 @@ export default function OrderSettingsAside() {
             )}
           </div>
 
-          {/* Service Method */}
-          <div className="os-box" style={{ background: DARK }}>
+          {/* Service Method — dimmed until the persisted service method has
+              loaded, so it reads as "still syncing" rather than "you have
+              no service method selected" during the brief hydration gap. */}
+          <div className="os-box" style={{ background: DARK, opacity: isLoaded ? 1 : 0.5 }}>
             <div className="os-label">Service Method</div>
             <div className="os-radios">
               <label className="os-radio">
@@ -565,25 +585,28 @@ export default function OrderSettingsAside() {
             )}
           </div>
 
-          {/* Totals */}
+          {/* Totals — while the cart is still hydrating, subtotalCents reads
+              0 (not yet "genuinely empty"); show a neutral placeholder
+              instead of a misleading "$0.00" that looks like the order was
+              wiped (see project memory: Order Settings $0.00 flash). */}
           <div className="os-box" style={{ background: DARK }}>
             <div className="os-totalRow">
               <div>Food &amp; Beverage:</div>
-              <div className="os-totalNum">{formatMoney(subtotalCents)}</div>
+              <div className="os-totalNum">{isLoaded ? formatMoney(subtotalCents) : "···"}</div>
             </div>
             {service === "delivery" && (
               <div className="os-totalRow">
                 <div>Delivery:</div>
-                <div className="os-totalNum">{formatMoney(DELIVERY_FEE_CENTS)}</div>
+                <div className="os-totalNum">{isLoaded ? formatMoney(DELIVERY_FEE_CENTS) : "···"}</div>
               </div>
             )}
             <div className="os-totalRow">
               <div>Taxes:</div>
-              <div className="os-totalNum">{formatMoney(taxCents)}</div>
+              <div className="os-totalNum">{isLoaded ? formatMoney(taxCents) : "···"}</div>
             </div>
             <div className="os-grandRow">
               <div>Order Total:</div>
-              <div>{formatMoney(totalCents)}</div>
+              <div>{isLoaded ? formatMoney(totalCents) : "···"}</div>
             </div>
           </div>
         </div>
@@ -742,5 +765,6 @@ export default function OrderSettingsAside() {
         }
       `}</style>
     </aside>
+    </>
   );
 }

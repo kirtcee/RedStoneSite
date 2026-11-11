@@ -175,7 +175,7 @@ function ItemThumb({ src, size = 44 }) {
 }
 
 export default function DealBuilder({ editingItem = null, onClose: onCloseProp }) {
-  const { addItem, updateItem, openDealId, closeDealBuilder } = useCart();
+  const { addItem, updateItem, openDealId, closeDealBuilder, openCart } = useCart();
   const onClose = onCloseProp || closeDealBuilder;
   const activeDealId = editingItem ? editingItem.dealId : openDealId;
   const deal = activeDealId ? findDealById(activeDealId) : null;
@@ -318,6 +318,7 @@ export default function DealBuilder({ editingItem = null, onClose: onCloseProp }
       else addItem(payload);
     }
     resetAll();
+    openCart?.();
     onClose();
   };
 

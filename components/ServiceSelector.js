@@ -577,24 +577,24 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
       )}
 
       <style jsx>{`
-        :global(:root) {
-          --brand-blue: #000000;
-          --red: #8b1a1a;
-          --maroon: #7e0f14;
-          --maroon-dark: #5f0b0f;
-          --glow: #2ecc71;
-          --border: #d4d4d4;
-        }
-
+        /* Reskin note: this used to define its own --red/--maroon/--glow/
+           --border custom properties on :global(:root) — a separate, older
+           palette than the rest of the site's cream-box look (cart.js,
+           checkout.js, DealBuilder.js), which is why this screen looked out
+           of place next to them. Replaced with the same literal values
+           those files use (no shared CSS vars for these — cart.js/
+           checkout.js don't use any either, they just repeat the hex
+           values), so it now matches instead of drifting independently.
+           --brand-blue is left alone since it's a real global token
+           (defined once in globals.css :root) already used correctly here. */
         .section {
-          background: #fff;
-          border: 1px solid #eaeaea;
-          border-radius: 4px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+          background: #fdf7f0;
+          border: 1px solid #d9c49c;
+          border-radius: .1875rem;
           overflow: hidden;
         }
         .section__title {
-          background: var(--maroon);
+          background: #000;
           color: #fff;
           font-family: var(--font-heading, Oswald, sans-serif);
           font-weight: 900;
@@ -640,7 +640,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
         }
         .methodBtn.is-selected {
           background: #262626;
-          box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.35),
+          box-shadow: 0 0 0 4px rgba(139, 26, 26, 0.35),
             0 6px 16px rgba(0, 0, 0, 0.15);
         }
         .methodIcon {
@@ -662,9 +662,10 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
         }
 
         .bigRedNarrow {
-          background: var(--red);
+          background: #8b1a1a;
           color: #fff;
           border: none;
+          border-radius: .1875rem;
           padding: 0.85rem 1.2rem;
           font-family: var(--font-heading, Oswald, sans-serif);
           font-weight: 900;
@@ -693,7 +694,8 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           margin-bottom: 8px;
         }
         .field__label {
-          font-weight: 500;
+          font-weight: 700;
+          color: #6b3f22;
           margin-bottom: 6px;
         }
         .googleField {
@@ -728,16 +730,16 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
         .lab {
           width: 170px;
           text-align: right;
-          font-weight: 500;
-          color: #333;
+          font-weight: 700;
+          color: #6b3f22;
         }
         .lab.req {
           font-weight: 800;
         }
 
         .textInput {
-          border: 1px solid var(--border);
-          border-radius: 0;
+          border: 1px solid #d9c49c;
+          border-radius: 6px;
           padding: 0.45rem 0.5rem;
           outline: none;
           width: 420px;
@@ -745,11 +747,11 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           background: #fff;
         }
         .textInput:focus {
-          border-color: #c9c9c9;
+          border-color: #8b1a1a;
         }
 
         .note {
-          color: #666;
+          color: #6b3f22;
           font-size: 0.9rem;
           margin: 6px 0 10px;
         }
@@ -772,7 +774,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
 
 /* Header stays flush edge-to-edge */
 .confirmTitle {
-  background: var(--maroon);
+  background: #000;
   color: #fff;
   font-family: var(--font-heading, Oswald, sans-serif);
   font-weight: 900;
@@ -792,7 +794,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
         }
         .k {
           width: 140px;
-          color: #666;
+          color: #6b3f22;
         }
         .v {
           flex: 1;
@@ -801,7 +803,8 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
         .linkBtn {
           background: none;
           border: none;
-          color: var(--brand-blue);
+          color: #6b3f22;
+          text-decoration: underline;
           padding: 0;
           cursor: pointer;
           font-weight: 700;
@@ -829,6 +832,76 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           z-index: 99999 !important;
           border-radius: 0px;
           box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+        }
+
+        /* Mobile only: this page's form rows were built as a fixed
+           170px-right-aligned-label + 420px-input pair, which on a phone
+           left almost no room for the input and dragged everything toward
+           the left edge. Stack label above input instead, and let
+           everything else size to the actual screen instead of desktop
+           pixel widths. */
+        @media (max-width: 640px) {
+          /* !important needed: the root div sets padding via an inline
+             style prop (style={{ padding: "1rem 0 2rem" }}), which already
+             zeroes out left/right padding on every screen size — that's the
+             real source of "content jammed against the left edge" on
+             mobile. A plain class rule can't out-rank an inline style. */
+          .container {
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+          }
+          .menu-title {
+            font-size: 1.5rem;
+          }
+          .section__body {
+            padding: 0.75rem;
+          }
+          .methodRow {
+            gap: 14px;
+          }
+          .methodBtn {
+            width: 92px;
+            height: 92px;
+          }
+          .deliveryBox {
+            padding: 4px 0 0;
+          }
+          .googleInput {
+            width: 100%;
+          }
+          .softDivider {
+            margin: 14px 0 18px;
+          }
+          .formRow {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 4px;
+          }
+          .lab {
+            width: auto;
+            text-align: left;
+          }
+          .textInput {
+            width: 100%;
+          }
+          .bigRedNarrow {
+            width: 100%;
+            font-size: 1rem;
+          }
+          .row {
+            flex-direction: column;
+            gap: 2px;
+          }
+          .k {
+            width: auto;
+            color: #888;
+            font-size: 0.8rem;
+          }
+          .addrModal-root {
+            padding-top: 40px;
+            padding-left: 12px;
+            padding-right: 12px;
+          }
         }
       `}</style>
     </div>

@@ -681,8 +681,12 @@ h3 { font-size: 1.25rem; }
 }
 
 @media (max-width: 480px) {
-  .cat-grid.cat-grid--tight {
-    grid-template-columns: 1fr;         /* 1 per row on very small screens */
+  /* Stays at 2 per row (same as the 768px tier, same 14px gap) instead of
+     dropping to 1 — a single full-width card here rendered each category
+     image edge-to-edge, effectively as tall as the screen, which read as
+     "stacked full-screen boxes" rather than a grid. */
+  .cat-card__label {
+    font-size: 1rem;
   }
 }
 
@@ -1091,4 +1095,265 @@ body.modal-open {
 
 html {
   overflow-y: scroll;
+}
+
+/* ===========================
+   Mobile header nav
+   =========================== */
+
+/* Hamburger: hidden on desktop, only ever visible/toggleable below the
+   breakpoint where the nav pills would otherwise overflow the header. */
+.header-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 44px;
+  height: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  flex: 0 0 44px;
+}
+.header-hamburger__bar {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: #fff;
+  border-radius: 1px;
+}
+
+.mobile-drawer {
+  display: none;
+}
+.mobile-drawer-backdrop {
+  display: none;
+}
+
+/* Mobile-only Checkout bar — see the 860px media query below for where it's
+   actually shown. Base state hidden so desktop (which has the full
+   OrderSettingsAside sidebar) never sees it. */
+.mobile-checkout-bar {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2600;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  background: #fff;
+  border-top: 1px solid #e5d9c3;
+  box-shadow: 0 -8px 20px rgba(0,0,0,0.12);
+}
+.mobile-checkout-bar__total {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  color: #6b3f22;
+}
+.mobile-checkout-bar__total span {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  opacity: 0.8;
+}
+.mobile-checkout-bar__total strong {
+  font-size: 1.15rem;
+  font-family: var(--font-heading, Oswald, sans-serif);
+}
+.mobile-checkout-bar__btn {
+  flex: 0 0 auto;
+  border: none;
+  background: #000;
+  color: #fff;
+  font-family: var(--font-heading, Oswald, sans-serif);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 0.85rem 1.4rem;
+  border-radius: .1875rem;
+  cursor: pointer;
+}
+
+@media (max-width: 860px) {
+  /* Collapse the desktop nav pills, decorative rosettes, and the
+     carryout/delivery chip entirely — the hamburger drawer's "Select Order
+     Method" button replaces it. (Previously this just shrank the chip to a
+     60px icon-only box, but the chip's icon/border markup wasn't built to
+     be squeezed that narrow and rendered overlapping the cart icon next to
+     it — removing it outright avoids that instead of patching the overlap.) */
+  .site-header .header-seg--nav,
+  .site-header .header-seg--mode,
+  .header-ornaments {
+    display: none !important;
+  }
+  .header-hamburger {
+    display: flex;
+  }
+
+  /* Logo centered, hamburger pinned left, cart pinned right. Auto-placement
+     puts the 3 visible direct children of .header-row (hamburger,
+     header-row__start, header-row__end — HeaderOrnaments and the mode chip
+     are display:none above, so they don't consume a track) into these 3
+     columns in DOM order; justify-self only fine-tunes each one's position
+     within its own column. */
+  .site-header .header-row {
+    display: grid !important;
+    grid-template-columns: auto 1fr auto;
+  }
+  .header-row__start {
+    justify-self: center;
+  }
+  .header-row__end {
+    justify-self: end;
+  }
+  .header-hamburger {
+    justify-self: start;
+  }
+
+  /* Dims the page behind the drawer and closes it on tap — needed now that
+     the drawer only covers the left half of the screen instead of the full
+     width, so the right half stays visibly "part of the page" underneath. */
+  .mobile-drawer-backdrop {
+    display: block;
+    position: fixed;
+    top: var(--header-h);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2490;
+    background: rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+  }
+  .mobile-drawer-backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Left-side slide-in panel, left edge to screen center, instead of a
+     full-width top-down dropdown. translateX(-100%) parks it fully
+     off-screen (and pointer-events:none keeps it untabbable/unclickable)
+     until .is-open slides it in. */
+  .mobile-drawer {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: var(--header-h);
+    left: 0;
+    bottom: 0;
+    width: 50%;
+    z-index: 2500;
+    background: #fff;
+    box-shadow: 4px 0 18px -6px rgba(0, 0, 0, 0.35);
+    overflow-y: auto;
+    transform: translateX(-100%);
+    pointer-events: none;
+    transition: transform 0.22s ease;
+  }
+  .mobile-drawer.is-open {
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+  .mobile-drawer__nav {
+    display: flex;
+    flex-direction: column;
+  }
+  .mobile-drawer__link {
+    background: #fff;
+    border: none;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+    padding: 14px 18px;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-size: 0.95rem;
+    color: #222;
+    cursor: pointer;
+  }
+  .mobile-drawer__link.is-active {
+    color: var(--color-primary);
+    background: #f7f7f7;
+  }
+  .mobile-drawer__service {
+    border: none;
+    background: var(--color-primary);
+    color: #fff;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 14px 18px;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  /* Subnav (category tabs under /menu, /order, /coupons): scroll
+     horizontally instead of wrapping to several rows. */
+  .subnav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    justify-content: flex-start;
+  }
+  .subnav__link {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  /* /order's category subnav (VIEW ALL / BUILD YOUR OWN / etc.) doesn't fit
+     the single-purpose carryout/delivery picker it actually shows — see the
+     route-order class toggle in Header.js. Desktop is untouched. */
+  html.route-order .subheader {
+    display: none !important;
+  }
+
+  /* Order Settings sidebar (menu/cart/coupons): dropped entirely on mobile
+     rather than stacked below the page content. Checkout itself is NOT
+     reachable any other way on mobile (the cart dropdown only links back
+     to /cart), so .mobile-checkout-bar below is the real replacement —
+     a persistent bottom bar with the running total and a Checkout button. */
+  .menu-aside {
+    display: none !important;
+  }
+
+  .mobile-checkout-bar {
+    display: flex !important;
+  }
+
+  /* Keep page content from ending up underneath the fixed bar. */
+  body {
+    padding-bottom: 64px;
+  }
+}
+
+/* ===========================
+   Mobile: cart + checkout
+   =========================== */
+@media (max-width: 640px) {
+  /* Cart line items: stack the item info above the qty/edit/price block
+     instead of squeezing a fixed 220px column next to it. */
+  .cart-item-row {
+    grid-template-columns: 1fr !important;
+    row-gap: 8px !important;
+  }
+  /* The "Your Items / Quantity / Price" column-label header only makes
+     sense when the columns are actually side by side; ItemRow already
+     labels its own quantity control once stacked. */
+  .cart-header-row {
+    display: none !important;
+  }
+  /* Checkout: order summary/place-order column drops below the form
+     instead of squeezing into a fixed 360px sidebar. */
+  .checkout-grid {
+    grid-template-columns: 1fr !important;
+  }
 }

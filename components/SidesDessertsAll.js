@@ -185,7 +185,7 @@ export default function SidesDessertsAll({
           .feast__grid--four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
         @media (max-width: 520px) {
-          .feast__grid--four { grid-template-columns: 1fr; }
+          .feast__grid--four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
 
         .feastCard {

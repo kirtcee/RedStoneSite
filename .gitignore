@@ -13,3 +13,8 @@ node_modules/
 # Env files (contain API keys)
 .env.local
 .env*.local
+
+# Claude Code local-machine settings (permissions, locks) — not shared
+# across machines; .claude/launch.json (the dev-server config) IS tracked.
+.claude/settings.local.json
+.claude/scheduled_tasks.lock

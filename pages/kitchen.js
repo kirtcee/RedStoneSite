@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { db, auth } from "../utils/firebaseConfig";
 import { onAuthStateChanged, signOut } from "firebase/auth";
@@ -44,6 +44,68 @@ export default function KitchenDashboard() {
   const [orders, setOrders] = useState([]);
   const [isStaff, setIsStaff] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [ordersError, setOrdersError] = useState(null);
+
+  // New-order sound + visual alert. Browsers block audio until a real user
+  // gesture unlocks it, so staff click "Enable Order Alerts" once per page
+  // load (it stays open on a tablet all shift) — see enableAlerts below.
+  const [alertsEnabled, setAlertsEnabled] = useState(false);
+  const alertsEnabledRef = useRef(false);
+  const audioCtxRef = useRef(null);
+  const knownIdsRef = useRef(null); // null until the first snapshot lands
+  const [newOrderIds, setNewOrderIds] = useState(() => new Set());
+  const flashTimeoutsRef = useRef({});
+
+  // Manual print fallback (no automatic kitchen printer hooked up yet —
+  // see printingOrder effect below, which fires window.print() for just
+  // this one order via the .print-receipt/@media print rules).
+  const [printingOrder, setPrintingOrder] = useState(null);
+
+  useEffect(() => {
+    alertsEnabledRef.current = alertsEnabled;
+  }, [alertsEnabled]);
+
+  const enableAlerts = () => {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!audioCtxRef.current) audioCtxRef.current = new Ctx();
+      audioCtxRef.current.resume();
+      setAlertsEnabled(true);
+    } catch (err) {
+      console.error("Could not enable order alerts:", err);
+    }
+  };
+
+  const playNewOrderChime = () => {
+    const ctx = audioCtxRef.current;
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    [880, 1320].forEach((freq, i) => {
+      const start = now + i * 0.18;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.3, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.35);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + 0.4);
+    });
+  };
+
+  useEffect(() => {
+    if (!printingOrder) return;
+    const timer = setTimeout(() => window.print(), 50);
+    const onAfterPrint = () => setPrintingOrder(null);
+    window.addEventListener("afterprint", onAfterPrint);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("afterprint", onAfterPrint);
+    };
+  }, [printingOrder]);
 
   // Anonymous customers are also "signed in" (see firebaseConfig.js), so
   // staff access requires the specific staff account, not just any user.
@@ -66,13 +128,45 @@ export default function KitchenDashboard() {
       orderBy("createdAt", "desc")
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const liveOrders = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setOrders(liveOrders);
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const liveOrders = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setOrders(liveOrders);
+        setOrdersError(null);
+
+        const currentIds = new Set(liveOrders.map((o) => o.id));
+        // Skip the very first snapshot — every already-open order would
+        // otherwise read as "new" the moment the dashboard loads.
+        if (knownIdsRef.current) {
+          const arrivedIds = liveOrders
+            .map((o) => o.id)
+            .filter((id) => !knownIdsRef.current.has(id));
+          if (arrivedIds.length > 0) {
+            if (alertsEnabledRef.current) playNewOrderChime();
+            setNewOrderIds((prev) => new Set([...prev, ...arrivedIds]));
+            arrivedIds.forEach((id) => {
+              clearTimeout(flashTimeoutsRef.current[id]);
+              flashTimeoutsRef.current[id] = setTimeout(() => {
+                setNewOrderIds((prev) => {
+                  const next = new Set(prev);
+                  next.delete(id);
+                  return next;
+                });
+              }, 10000);
+            });
+          }
+        }
+        knownIdsRef.current = currentIds;
+      },
+      (err) => {
+        console.error("Kitchen orders listener failed:", err);
+        setOrdersError(err.message || "Failed to load orders.");
+      }
+    );
 
     return () => unsubscribe();
   }, [isStaff]);
@@ -94,6 +188,13 @@ export default function KitchenDashboard() {
             <span className="kitchen-count">
               {orders.length} order{orders.length === 1 ? "" : "s"} open
             </span>
+            {alertsEnabled ? (
+              <span className="kitchen-alerts kitchen-alerts--on">🔔 Alerts On</span>
+            ) : (
+              <button className="kitchen-alerts kitchen-alerts--off" onClick={enableAlerts}>
+                🔔 Enable Order Alerts
+              </button>
+            )}
             <button
               className="kitchen-logout"
               onClick={() => signOut(auth).then(() => router.push("/kitchen-login"))}
@@ -105,7 +206,14 @@ export default function KitchenDashboard() {
       </header>
 
       <main className="kitchen-body">
-        {orders.length === 0 && <p className="kitchen-empty">No orders yet.</p>}
+        {ordersError && (
+          <p className="kitchen-error">
+            ⚠ Couldn't load live orders ({ordersError}). This dashboard needs a Firestore
+            index on "orders" for completed + createdAt — check the Firebase console, or
+            reload once it's fixed.
+          </p>
+        )}
+        {!ordersError && orders.length === 0 && <p className="kitchen-empty">No orders yet.</p>}
 
         <div className="kitchen-grid">
           {orders.map((order) => {
@@ -113,7 +221,9 @@ export default function KitchenDashboard() {
             return (
             <article
               key={order.id}
-              className={`order-card ${scheduledLabel ? "order-card--scheduled" : ""}`}
+              className={`order-card ${scheduledLabel ? "order-card--scheduled" : ""} ${
+                newOrderIds.has(order.id) ? "order-card--new" : ""
+              }`}
             >
               <div className="order-card__top">
                 <div>
@@ -166,21 +276,82 @@ export default function KitchenDashboard() {
                 <div className="order-total">
                   {order.totalCents != null ? formatMoney(order.totalCents) : "N/A"}
                 </div>
-                <button
-                  className="complete-btn"
-                  onClick={async () => {
-                    const orderRef = doc(db, "orders", order.id);
-                    await updateDoc(orderRef, { completed: true });
-                  }}
-                >
-                  Mark Completed
-                </button>
+                <div className="order-card__actions">
+                  <button className="print-btn" onClick={() => setPrintingOrder(order)}>
+                    🖨️ Print Receipt
+                  </button>
+                  <button
+                    className="complete-btn"
+                    onClick={async () => {
+                      const orderRef = doc(db, "orders", order.id);
+                      await updateDoc(orderRef, { completed: true });
+                    }}
+                  >
+                    Mark Completed
+                  </button>
+                </div>
               </div>
             </article>
             );
           })}
         </div>
       </main>
+
+      {/* Hidden on screen; shown (and isolated) only inside @media print
+          below, for the one order the staff clicked "Print Receipt" on —
+          see printingOrder's effect, which triggers window.print(). This is
+          the manual fallback until a real networked kitchen printer is set
+          up; see the project notes for the recommended hardware. */}
+      {printingOrder && (
+        <div className="print-receipt">
+          <h2>Red Stone Pizza</h2>
+          <p>576 Concession Street · 905-385-9888</p>
+          <hr />
+          <p>
+            Order: {printingOrder.id}
+            <br />
+            Placed:{" "}
+            {printingOrder.createdAt?.toDate
+              ? printingOrder.createdAt.toDate().toLocaleString()
+              : "—"}
+            <br />
+            Service: {printingOrder.serviceMethod || "N/A"}
+            {formatScheduled(printingOrder) ? (
+              <>
+                <br />
+                Scheduled: {formatScheduled(printingOrder)}
+              </>
+            ) : null}
+          </p>
+          <hr />
+          <p>
+            {printingOrder.contact?.name || "N/A"}
+            <br />
+            {printingOrder.contact?.phone || "N/A"}
+          </p>
+          <hr />
+          <ul>
+            {(printingOrder.items || []).map((it, i) => (
+              <li key={i}>
+                {it.qty || 1}× {describeItem(it)}
+                {it.type === "combo" && it.meta?.items && (
+                  <ul>
+                    {Object.entries(it.meta.items).map(([key, child]) => (
+                      <li key={key}>
+                        {comboItemLabel(key)}: {child?.summary || "Not customized yet"}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+          <hr />
+          <p className="print-receipt__total">
+            Total: {printingOrder.totalCents != null ? formatMoney(printingOrder.totalCents) : "N/A"}
+          </p>
+        </div>
+      )}
 
       <style jsx>{`
         .kitchen {
@@ -229,6 +400,27 @@ export default function KitchenDashboard() {
         .kitchen-logout:hover {
           background: rgba(255, 255, 255, 0.25);
         }
+        .kitchen-alerts {
+          font-size: 0.85rem;
+          font-weight: 700;
+          padding: 6px 12px;
+          border-radius: 20px;
+          border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .kitchen-alerts--off {
+          background: #c0392b;
+          color: #fff;
+          cursor: pointer;
+          animation: alertPulse 1.6s ease-in-out infinite;
+        }
+        .kitchen-alerts--on {
+          background: rgba(255, 255, 255, 0.12);
+          color: #9be39b;
+        }
+        @keyframes alertPulse {
+          0%, 100% { filter: brightness(1); }
+          50% { filter: brightness(1.35); }
+        }
         .kitchen-body {
           max-width: 1200px;
           margin: 0 auto;
@@ -237,6 +429,16 @@ export default function KitchenDashboard() {
         .kitchen-empty {
           color: #777;
           font-size: 1rem;
+        }
+        .kitchen-error {
+          background: #fdecea;
+          border: 1px solid #f5c2c0;
+          color: #a12622;
+          padding: 12px 16px;
+          border-radius: 6px;
+          font-size: 0.9rem;
+          font-weight: 600;
+          margin-bottom: 1rem;
         }
         .kitchen-grid {
           display: grid;
@@ -367,6 +569,60 @@ export default function KitchenDashboard() {
         }
         .complete-btn:hover {
           filter: brightness(0.92);
+        }
+        .order-card--new {
+          animation: newOrderFlash 1s ease-in-out 5;
+        }
+        @keyframes newOrderFlash {
+          0%, 100% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
+          50% { box-shadow: 0 0 0 4px #c0392b; }
+        }
+        .order-card__actions {
+          display: flex;
+          gap: 8px;
+        }
+        .print-btn {
+          background: #fff;
+          color: #333;
+          border: 1px solid #ccc;
+          padding: 8px 12px;
+          border-radius: 6px;
+          font-weight: 700;
+          font-size: 0.85rem;
+          cursor: pointer;
+        }
+        .print-btn:hover {
+          background: #f5f5f5;
+        }
+        .print-receipt {
+          display: none;
+        }
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          .print-receipt,
+          .print-receipt * {
+            visibility: visible;
+          }
+          .print-receipt {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 12px;
+            font-family: "Courier New", monospace;
+            font-size: 13px;
+          }
+          .print-receipt h2 {
+            text-align: center;
+            margin: 0 0 4px;
+          }
+          .print-receipt__total {
+            font-weight: 800;
+            font-size: 15px;
+          }
         }
       `}</style>
     </div>

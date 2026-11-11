@@ -7,10 +7,9 @@
 // place that decides "yes, this code is good" instead of trusting whatever
 // the client's own JS happens to compute.
 //
-// Scope note: this only validates the coupon + its restrictions. It does not
-// re-verify the rest of the cart/order total — this whole app still saves
-// orders straight from client-computed data (see utils/saveOrder.js), which
-// is a separate, pre-existing gap outside this feature's scope.
+// Scope note: this only validates the coupon + its restrictions. The rest of
+// the order total is re-derived server-side from item structure in
+// pages/api/placeOrder.js, which never trusts a client-sent total.
 import { findDealByCode, dealAllowsService } from "../../utils/dealCatalog";
 
 export default function handler(req, res) {

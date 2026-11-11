@@ -1,0 +1,4 @@
+# Normalize line endings to LF in the repo regardless of which OS checks
+# a file out or edits it — avoids noisy whole-file diffs now that this
+# project is worked on from both Windows and macOS.
+* text=auto eol=lf

@@ -246,17 +246,19 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
       <div style={backdropStyle} aria-hidden onMouseDown={onClose} />
       <div
         ref={scrollerRef}
+        className="rs-modal-viewport"
         style={viewportStyle}
         onMouseDown={onViewportMouseDown}
       >
         <div
           data-modal-panel
+          className="rs-modal-panel"
           style={panelStyle}
           onMouseDown={(e) => e.stopPropagation()}
         >
           {showTopbar && (
-            <div style={noTopbarBorder ? { ...topbarStyle, borderBottom: "none" } : topbarStyle}>
-              <div style={titleStyle}>{title}</div>
+            <div className="rs-modal-titlebar" style={noTopbarBorder ? { ...topbarStyle, borderBottom: "none" } : topbarStyle}>
+              <div className="rs-modal-title" style={titleStyle}>{title}</div>
               <button
                 type="button"
                 aria-label="Close"
@@ -268,7 +270,7 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
             </div>
           )}
 
-          <div style={panelBodyStyle}>
+          <div className="rs-modal-body" style={panelBodyStyle}>
             <div style={contentStyle}>
               {freezeChild
                 ? (frozenChildRef.current || null)
@@ -277,6 +279,19 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
           </div>
         </div>
       </div>
+      <style jsx global>{`
+        /* Shrink the modal shell's own chrome (outer viewport padding, panel
+           body padding, title size) on phones so builders get closer to the
+           full screen width instead of losing ~80px total to modal padding.
+           Uses !important because the desktop values above are inline
+           styles, which otherwise always win over external CSS. */
+        @media (max-width: 640px) {
+          .rs-modal-viewport { padding: 14px !important; }
+          .rs-modal-panel { margin-top: 12px !important; }
+          .rs-modal-body { padding: 4px 12px 12px !important; }
+          .rs-modal-title { font-size: 1.5rem !important; padding-right: 40px !important; }
+        }
+      `}</style>
     </div>,
     root
   );

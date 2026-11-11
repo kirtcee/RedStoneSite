@@ -276,7 +276,7 @@ export default function SpecialtyPizzasPage() {
 
         @media (max-width: 1100px){ .feast__grid{ grid-template-columns: repeat(3, minmax(0,1fr)); } }
         @media (max-width: 800px){  .feast__grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
-        @media (max-width: 520px){  .feast__grid{ grid-template-columns: 1fr; } }
+        @media (max-width: 520px){  .feast__grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
       `}</style>
     </div>
   );

@@ -29,7 +29,13 @@ function getNameAndSubtitle(item) {
       .join(" • ");
     return { name: `${item.count} Wings`, subtitle };
   }
-  if (item.type === "side") return { name: item.name || "Side", subtitle: item.summary || "" };
+  if (item.type === "side") {
+    // .name doubles as the priceSide() lookup key ("Onion Rings (Medium)",
+    // an internal pricing label) — build the customer-facing name from the
+    // raw .side/.size fields instead (see pages/cart.js's itemTitle).
+    const name = item.side ? `${item.side}${item.size ? ` (${item.size})` : ""}` : item.name || "Side";
+    return { name, subtitle: item.summary || "" };
+  }
   if (item.type === "special") return { name: item.name || "Special", subtitle: item.summary || "" };
   if (item.type === "combo") return { name: comboNameFor(item.comboId), subtitle: "" };
   return { name: item.summary || "Item", subtitle: "" };
@@ -48,36 +54,61 @@ export default function OrderConfirmation() {
     // URL doesn't get mistaken for "not found" during that gap.
     if (!router.isReady) return;
 
-    if (!orderId) {
+    // Firestore doc IDs can't contain "/" and can't be "." or ".." — a URL
+    // with anything else in orderId is never going to match a real order,
+    // so treat it as "not found" immediately rather than issuing a lookup.
+    const isPlausibleId =
+      typeof orderId === "string" &&
+      orderId.length > 0 &&
+      orderId.length <= 1500 &&
+      !orderId.includes("/") &&
+      orderId !== "." &&
+      orderId !== "..";
+
+    if (!orderId || !isPlausibleId) {
       setOrder(null);
       setLoading(false);
       return;
     }
 
     setLoading(true);
+    let cancelled = false;
+    const timeout = setTimeout(() => {
+      if (!cancelled) {
+        cancelled = true;
+        setOrder(null);
+        setLoading(false);
+      }
+    }, 15000);
+
     const fetchOrder = async () => {
       try {
         const docRef = doc(db, "orders", orderId);
         const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setOrder(docSnap.data());
-        } else {
-          setOrder(null);
-        }
+        if (cancelled) return;
+        setOrder(docSnap.exists() ? docSnap.data() : null);
       } catch (error) {
         console.error("Error fetching order:", error);
-        setOrder(null);
+        if (!cancelled) setOrder(null);
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          cancelled = true;
+          clearTimeout(timeout);
+          setLoading(false);
+        }
       }
     };
 
     fetchOrder();
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
   }, [router.isReady, orderId]);
 
   if (loading) {
     return (
-      <main className="container" style={{ padding: "32px 0" }}>
+      <main className="container" style={{ paddingTop: "32px", paddingBottom: "32px" }}>
         <p>Loading your order...</p>
       </main>
     );
@@ -85,7 +116,7 @@ export default function OrderConfirmation() {
 
   if (!order) {
     return (
-      <main className="container" style={{ padding: "32px 0" }}>
+      <main className="container" style={{ paddingTop: "32px", paddingBottom: "32px" }}>
         <div style={{ background: "#fdf7f0", border: "1px solid #d9c49c", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "#6b3f22" }}>
           <p>Order not found. Please call the store.</p>
           <Link href="/menu" style={{ color: "#6b3f22", fontWeight: 700, textDecoration: "underline" }}>
@@ -109,15 +140,15 @@ export default function OrderConfirmation() {
   );
 
   return (
-    <main className="container" style={{ padding: "16px 0 32px" }}>
-      <h1 className="page-title" style={{ margin: "0 0 4px", textTransform: "uppercase" }}>
-        Order Confirmed
-      </h1>
-      <p style={{ color: "#289c52", fontWeight: 700, margin: "0 0 16px" }}>
-        Thank you for ordering from Red Stone Pizza!
-      </p>
-
+    <main className="container" style={{ paddingTop: "16px", paddingBottom: "32px" }}>
       <div style={{ maxWidth: 640, margin: "0 auto" }}>
+        <h1 className="page-title" style={{ margin: "0 0 4px", textTransform: "uppercase" }}>
+          Order Confirmed
+        </h1>
+        <p style={{ color: "#289c52", fontWeight: 700, margin: "0 0 16px" }}>
+          Thank you for ordering from Red Stone Pizza!
+        </p>
+
         <div style={{ marginBottom: 16, padding: 0, overflow: "hidden", background: "#fdf7f0", border: "1px solid #d9c49c", borderRadius: ".1875rem" }}>
           {sectionHeader("Order Details")}
           <div style={{ padding: 12 }}>

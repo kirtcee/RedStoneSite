@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function RewardsPage() {
   return (
-    <main className="container" style={{ padding: "32px 0" }}>
+    <main className="container" style={{ paddingTop: "32px", paddingBottom: "32px" }}>
       <h1 className="page-title" style={{ textTransform: "uppercase", marginBottom: 12 }}>
         Red Stone Rewards
       </h1>

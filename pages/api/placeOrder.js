@@ -22,6 +22,36 @@ const DELIVERY_FEE_CENTS = 499;
 const MAX_ITEMS = 100;
 const MAX_QTY_PER_ITEM = 50;
 
+// ---- Basic per-IP rate limiting ----
+// A single-location shop doesn't need anything elaborate here — just enough
+// to stop a script from flooding real orders into Firestore (kitchen
+// dashboard spam + billing). In-memory, so it resets on cold start/across
+// serverless instances; that's an acceptable tradeoff for this app's scale
+// rather than standing up a separate rate-limiting service.
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RATE_LIMIT_MAX = 5;
+const rateLimitHits = new Map(); // ip -> timestamps[]
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const hits = (rateLimitHits.get(ip) || []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+  hits.push(now);
+  rateLimitHits.set(ip, hits);
+  // Opportunistic cleanup so the map doesn't grow unbounded on a long-lived instance.
+  if (rateLimitHits.size > 5000) {
+    for (const [key, timestamps] of rateLimitHits) {
+      if (timestamps.every((t) => now - t >= RATE_LIMIT_WINDOW_MS)) rateLimitHits.delete(key);
+    }
+  }
+  return hits.length > RATE_LIMIT_MAX;
+}
+
+function clientIp(req) {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (typeof forwarded === "string" && forwarded.length > 0) return forwarded.split(",")[0].trim();
+  return req.socket?.remoteAddress || "unknown";
+}
+
 // Every type priceLineItem() knows how to price. Anything else is rejected
 // outright rather than silently priced at $0.
 const KNOWN_ITEM_TYPES = new Set([
@@ -42,6 +72,11 @@ function reject(res, status, reason) {
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     reject(res, 405, "method_not_allowed");
+    return;
+  }
+
+  if (isRateLimited(clientIp(req))) {
+    reject(res, 429, "too_many_requests");
     return;
   }
 

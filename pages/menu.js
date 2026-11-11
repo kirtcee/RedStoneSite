@@ -34,6 +34,7 @@ function EntreesView({
   selectedSpecialItem,
   setSelectedSpecialItem,
   onAddToCart,
+  openCart,
 }) {
   useEffect(() => {
     if (sub === "build") {
@@ -140,7 +141,7 @@ function EntreesView({
           .feast__grid{ display:grid; column-gap:16px; row-gap:14px; align-items:start; }
           .feast__grid--three{ grid-template-columns:repeat(3,minmax(0,1fr)); }
           @media (max-width:800px){ .feast__grid--three{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
-          @media (max-width:520px){ .feast__grid--three{ grid-template-columns:1fr; } }
+          @media (max-width:520px){ .feast__grid--three{ grid-template-columns:repeat(2, minmax(0,1fr)); } }
           .feastCard{ display:flex; flex-direction:column; background:#fdf7f0; border:1px solid var(--light-border); border-radius:.1875rem; padding:12px; }
           .feastCard__imgWrap{
             width:100%; height:133px; border-radius:4px; overflow:hidden;
@@ -167,7 +168,11 @@ function EntreesView({
         {/* mount the modal/logic controller */}
         <ComboBuilder
           openComboId={openComboId}
-          onAdd={(payload) => onAddToCart?.(payload)}
+          // ComboBuilder adds/updates the cart itself (it holds its own
+          // useCart() handle) — onAdd here is just "now open the cart
+          // dropdown", NOT a second add. Routing this through onAddToCart
+          // instead would call addItem() again and double the combo in cart.
+          onAdd={() => openCart?.()}
           onClose={() => setOpenComboId(null)}
         />
       </div>
@@ -270,7 +275,7 @@ function EntreesView({
           }
           @media (max-width: 520px) {
             .feast__grid--three {
-              grid-template-columns: 1fr;
+              grid-template-columns: repeat(2, minmax(0, 1fr));
             }
           }
           .feastCard { display: flex; flex-direction: column; background:#fdf7f0; border:1px solid var(--light-border); border-radius:.1875rem; padding:12px; }
@@ -431,7 +436,7 @@ function SidesView({ selectedSide, setSelectedSide }) {
         .feast__grid--four{ grid-template-columns:repeat(4,minmax(0,1fr)); }
         @media (max-width:1000px){ .feast__grid--four{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
         @media (max-width:800px){  .feast__grid--four{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
-        @media (max-width:520px){  .feast__grid--four{ grid-template-columns:1fr; } }
+        @media (max-width:520px){  .feast__grid--four{ grid-template-columns:repeat(2, minmax(0,1fr)); } }
 
         .feastCard{ display:flex; flex-direction:column; background:#fdf7f0; border:1px solid var(--light-border); border-radius:.1875rem; padding:12px; }
         .feastCard__imgWrap{
@@ -532,7 +537,7 @@ function DrinksView() {
         .feast__grid--four{ grid-template-columns:repeat(4,minmax(0,1fr)); }
         @media (max-width:1000px){ .feast__grid--four{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
         @media (max-width:800px){  .feast__grid--four{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
-        @media (max-width:520px){  .feast__grid--four{ grid-template-columns:1fr; } }
+        @media (max-width:520px){  .feast__grid--four{ grid-template-columns:repeat(2, minmax(0,1fr)); } }
 
         .feastCard{ display:flex; flex-direction:column; background:#fdf7f0; border:1px solid var(--light-border); border-radius:.1875rem; padding:12px; }
         .feastCard__imgWrap{
@@ -680,7 +685,7 @@ function MenuBody() {
   }, [tab, sub]);
 
   return (
-    <div className="container" style={{ padding: "1rem 0" }}>
+    <div className="container" style={{ paddingTop: "1rem", paddingBottom: "1rem" }}>
       <div className="menu-layout">
         <section className="menu-main" key={`${tab}-${sub}-panel`}>
           <h1 className="menu-title">{pageTitle}</h1>
@@ -772,6 +777,7 @@ function MenuBody() {
                 selectedSpecialItem={selectedSpecialItem}
                 setSelectedSpecialItem={setSelectedSpecialItem}
                 onAddToCart={handleAddToCart}
+                openCart={openCart}
               />
             </div>
           )}

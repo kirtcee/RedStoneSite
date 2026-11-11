@@ -10,7 +10,8 @@ export default function PizzaBuilder({
   onSave = () => {},
   includedToppings = null, // informational only — e.g. 3 for combo pizzas ("3 included, extra cost more")
   lockedSize = null,
-  allowSizeChoice = true
+  allowSizeChoice = true,
+  forceResponsiveStack = false
 }) {
   const { addItem } = useCart();
   const drawVersionRef = useRef(0);
@@ -18,6 +19,19 @@ export default function PizzaBuilder({
 
   // ===== refs for scroll control =====
   const rootRef = useRef(null);
+
+  // ===== Responsive: stack the two columns below the builder's natural
+  // 846px width instead of overflowing/forcing horizontal scroll. Mirrors
+  // the same isNarrow pattern already used in WingsBuilder.js. =====
+  const [vw, setVw] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1024
+  );
+  useEffect(() => {
+    const onResize = () => setVw(window.innerWidth);
+    window.addEventListener("resize", onResize, { passive: true });
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  const isNarrow = forceResponsiveStack || vw < 900;
 
   // ===== Theme (matches the menu/deals page cream-box makeover) =====
   const MAROON = "#8b1a1a";
@@ -389,6 +403,81 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
 
   const stop = (e) => { e.preventDefault(); e.stopPropagation(); };
 
+  // Shared by the desktop "Add To Order" button and the mobile sticky
+  // bottom bar's button — both must build the exact same payload.
+  const handleAddToOrder = (e) => {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    const payload = {
+      type: "pizza-byo",
+      // Left empty for a true build-your-own — display layers
+      // compute a "Large 3 Topping Pizza"-style title from the
+      // build itself. Named recipe pizzas keep their own name.
+      pizzaName: pizzaName || "",
+      size: String(selectedSize),
+      crust: selectedCrust,
+      toppings: selectedToppings.slice(),
+      sauceEnabled,
+      sauce: selectedSauce,
+      sauceAmount,
+      cheeseIncluded,
+      cheeseCoverage,
+      cheeseAmount,
+      secondCoverage,
+      secondAmount,
+      dairyFreeCheese,
+      toppingPlacement,
+      toppingAmount,
+      dipQty: dipsQty.garlic || 0, // legacy
+      dips: dipsQty,
+      bake,
+      oregano,
+      crushedRedPepper,
+      coriander,
+      ginger,
+      garlicCrust,
+      qty,
+      summary: describePizzaFull({
+        size: selectedSize,
+        crust: selectedCrust,
+        cheeseIncluded,
+        cheeseCoverage,
+        cheeseAmount,
+        secondCoverage,
+        secondAmount,
+        dairyFreeCheese,
+        sauceEnabled,
+        sauce: selectedSauce,
+        sauceAmount,
+        toppings: selectedToppings,
+        toppingPlacement,
+        toppingAmount,
+        dips: dipsQty,
+        bake,
+        oregano,
+        crushedRedPepper,
+        coriander,
+        ginger,
+        garlicCrust,
+      }),
+      lineSubtotalCents: priceLineItem({
+        type: "pizza-byo",
+        size: String(selectedSize),
+        toppings: selectedToppings,
+        toppingPlacement,
+        toppingAmount,
+        cheeseIncluded,
+        cheeseAmount,
+        cheeseCoverage,
+        secondAmount,
+        dairyFreeCheese,
+        dips: dipsQty,
+        garlicCrust,
+        qty
+      })
+    };
+    onSave(payload);
+  };
+
   return (
     <div
       ref={rootRef}
@@ -402,15 +491,27 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
 
 
 <div
-  style={{
-    display: "grid",
-    gridTemplateColumns: `${LEFT_COL}px ${RIGHT_COL}px`, // 475px 355px
-    columnGap: `${PB_GAP}px`,                            // 16px
-    width: `${PB_TOTAL}px`,                              // 846px total
-    margin: "0 auto",
-    padding: "0 0 16px 0",                               // remove side padding so widths are true
-    alignItems: "start"
-  }}
+  style={
+    isNarrow
+      ? {
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          maxWidth: `${LEFT_COL}px`,
+          margin: "0 auto",
+          padding: "0 0 16px 0",
+          paddingBottom: 84, // clears the fixed mobile Add-to-Order bar
+        }
+      : {
+          display: "grid",
+          gridTemplateColumns: `${LEFT_COL}px ${RIGHT_COL}px`, // 475px 355px
+          columnGap: `${PB_GAP}px`,                            // 16px
+          width: `${PB_TOTAL}px`,                              // 846px total
+          margin: "0 auto",
+          padding: "0 0 16px 0",                               // remove side padding so widths are true
+          alignItems: "start"
+        }
+  }
 >
 
 
@@ -1179,7 +1280,14 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
 
         {/* ===== Right (My Pizza) ===== */}
 {/* ===== Right (My Pizza) ===== */}
-<aside className="pb-right" style={{ position: "sticky", top: -10, overflowAnchor: 'none' }}>
+<aside
+  className="pb-right"
+  style={
+    isNarrow
+      ? { position: "static", width: "100%", marginTop: "1.25rem", overflowAnchor: 'none' }
+      : { position: "sticky", top: -10, overflowAnchor: 'none' }
+  }
+>
 
 
           {/* Bordered box ends under the button */}
@@ -1268,110 +1376,62 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                 </label>
               </div>
 
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault(); e.stopPropagation();
-                  const payload = {
-                    type: "pizza-byo",
-                    // Left empty for a true build-your-own — display layers
-                    // compute a "Large 3 Topping Pizza"-style title from the
-                    // build itself. Named recipe pizzas keep their own name.
-                    pizzaName: pizzaName || "",
-                    size: String(selectedSize),
-                    crust: selectedCrust,
-                    toppings: selectedToppings.slice(),
-                    sauceEnabled,
-                    sauce: selectedSauce,
-                    sauceAmount,
-                    cheeseIncluded,
-                    cheeseCoverage,
-                    cheeseAmount,
-                    secondCoverage,
-                    secondAmount,
-                    dairyFreeCheese,
-                    toppingPlacement,
-                    toppingAmount,
-                    dipQty: dipsQty.garlic || 0, // legacy
-                    dips: dipsQty,
-                    bake,
-                    oregano,
-                    crushedRedPepper,
-                    coriander,
-                    ginger,
-                    garlicCrust,
-                    qty,
-                    summary: describePizzaFull({
-                      size: selectedSize,
-                      crust: selectedCrust,
-                      cheeseIncluded,
-                      cheeseCoverage,
-                      cheeseAmount,
-                      secondCoverage,
-                      secondAmount,
-                      dairyFreeCheese,
-                      sauceEnabled,
-                      sauce: selectedSauce,
-                      sauceAmount,
-                      toppings: selectedToppings,
-                      toppingPlacement,
-                      toppingAmount,
-                      dips: dipsQty,
-                      bake,
-                      oregano,
-                      crushedRedPepper,
-                      coriander,
-                      ginger,
-                      garlicCrust,
-                    }),
-                    lineSubtotalCents: priceLineItem({
-                      type: "pizza-byo",
-                      size: String(selectedSize),
-                      toppings: selectedToppings,
-                      toppingPlacement,
-                      toppingAmount,
-                      cheeseIncluded,
-                      cheeseAmount,
-                      cheeseCoverage,
-                      secondAmount,
-                      dairyFreeCheese,
-                      dips: dipsQty,
-                      garlicCrust,
-                      qty
-                    })
-                  };
-                  onSave(payload);
-                }}
-                style={{
-                  width: "100%",
-                  padding: "1rem",
-                  backgroundColor: MAROON,
-                  color: "white",
-                  fontWeight: 900,
-                  border: "none",
-                  borderRadius: BOX_RADIUS,
-                  fontSize: "1rem",
-                  cursor: "pointer",
-                  textTransform: "uppercase",
-                  fontFamily: "var(--font-heading), Oswald, sans-serif"
-                }}
-              >
-                Add To Order
-              </button>
+              {!isNarrow && (
+                <button
+                  type="button"
+                  onClick={handleAddToOrder}
+                  style={{
+                    width: "100%",
+                    padding: "1rem",
+                    backgroundColor: MAROON,
+                    color: "white",
+                    fontWeight: 900,
+                    border: "none",
+                    borderRadius: BOX_RADIUS,
+                    fontSize: "1rem",
+                    cursor: "pointer",
+                    textTransform: "uppercase",
+                    fontFamily: "var(--font-heading), Oswald, sans-serif"
+                  }}
+                >
+                  Add To Order
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Canvas lives OUTSIDE the border box now */}
-          <div style={{ position: "relative", width: 300, height: 315, margin: "1rem auto 0" }}>
+          {/* Canvas lives OUTSIDE the border box now. width:100%/maxWidth:300
+              + aspectRatio (instead of a fixed height) lets it shrink to fit
+              narrow screens while keeping its proportions; the canvas element
+              itself stretches to fill via width/height:100% (its internal
+              300x315 drawing buffer is unaffected, so the art doesn't blur
+              at this scale). */}
+          <div style={{ position: "relative", width: "100%", maxWidth: 300, aspectRatio: "300 / 315", margin: "1rem auto 0" }}>
             <canvas
               ref={canvasRef}
               width="300"
               height="315"
-              style={{ position: "absolute", top: 0, left: 0, zIndex: 0 }}
+              style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 0 }}
             />
           </div>
         </aside>
       </div>
+
+      {/* Mobile-only sticky CTA — on desktop the "Add To Order" button inside
+          the My Pizza card (above) is used instead. Fixed to the real
+          viewport (not the scrollable modal), so it's reachable at any
+          scroll position through the options list. */}
+      {isNarrow && (
+        <div className="pb-mobile-bar">
+          <div className="pb-mobile-bar__subtotal">
+            <span className="pb-mobile-bar__subtotal-label">Item Subtotal</span>
+            <span className="pb-mobile-bar__subtotal-value">{formatMoney(lineSubtotalCents)}</span>
+          </div>
+          <button type="button" className="pb-mobile-bar__btn" onClick={handleAddToOrder}>
+            Add To Order
+          </button>
+        </div>
+      )}
 
       {/* Close X as a decal (no layout impact, never moves with scroll) */}
       <style jsx global>{`
@@ -1391,6 +1451,51 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
           line-height: 1 !important;
           box-shadow: none !important;
           pointer-events: auto !important;
+        }
+        .pb-mobile-bar {
+          position: fixed;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 3100;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+          background: #fff;
+          border-top: 1px solid #d9c49c;
+          box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.12);
+        }
+        .pb-mobile-bar__subtotal {
+          display: flex;
+          flex-direction: column;
+          line-height: 1.15;
+          flex: 0 0 auto;
+        }
+        .pb-mobile-bar__subtotal-label {
+          font-size: 0.7rem;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+          color: #6b3f22;
+          font-weight: 700;
+        }
+        .pb-mobile-bar__subtotal-value {
+          font-weight: 900;
+          font-size: 1.05rem;
+          color: #000;
+        }
+        .pb-mobile-bar__btn {
+          flex: 1 1 auto;
+          padding: 0.85rem 1rem;
+          background-color: #8b1a1a;
+          color: #fff;
+          font-weight: 900;
+          border: none;
+          border-radius: .1875rem;
+          font-size: 1rem;
+          cursor: pointer;
+          text-transform: uppercase;
+          font-family: var(--font-heading, Oswald, sans-serif);
         }
       `}</style>
     </div>

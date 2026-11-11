@@ -824,7 +824,11 @@ function getNameAndSubtitle(item) {
       .map(([k, q]) => `${k} × ${q}`);
     if (dipBits.length) bits.push(`Dips: ${dipBits.join(", ")}`);
     if (item.hotSauce === "Yes") bits.push("Hot Sauce Drizzle");
-    return { name: item.name || "Side", subtitle: bits.join(" • ") };
+    // .name doubles as the priceSide() lookup key ("Onion Rings (Medium)",
+    // an internal pricing label) — build the customer-facing name from the
+    // raw .side/.size fields instead (see pages/cart.js's itemTitle).
+    const name = item.side ? `${item.side}${item.size ? ` (${item.size})` : ""}` : item.name || "Side";
+    return { name, subtitle: bits.join(" • ") };
   }
   if (item.type === "special") {
     const bits = [];
