@@ -82,18 +82,30 @@ function StoreMap({ onCarryoutClick, mapsReady, storeLatLng }) {
     });
     markerRef.current = marker;
 
+    // Title goes in the InfoWindow's header row, beside the close (X)
+    // button, instead of below it (which left an empty gap at the top).
+    const infoHeader = document.createElement("div");
+    infoHeader.style.cssText =
+      "font-family:system-ui,sans-serif;font-weight:700;font-size:16px;line-height:1.2;padding-top:2px;";
+    infoHeader.textContent = "Red Stone Pizza";
+
+    // No fixed min-width, and the button uses border-box sizing so its
+    // padding can't push it wider than the popup (that was what caused the
+    // sideways scrolling on phones). The address is split over two lines.
     const infoDiv = document.createElement("div");
-    infoDiv.style.fontFamily = "system-ui,sans-serif";
+    infoDiv.style.cssText =
+      "font-family:system-ui,sans-serif;font-size:14px;line-height:1.35;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;";
     infoDiv.innerHTML = `
-      <div style="min-width:220px">
-        <div style="font-weight:700;margin-bottom:6px;">Redstone Pizza</div>
-        <div style="margin-bottom:4px;">576 Concession St, Hamilton, ON</div>
-        <div style="margin-bottom:4px;">Phone: <a href="tel:+1-905-385-9888">905-385-9888</a></div>
-        <div style="margin-bottom:8px;">Hours: 11:00–22:00</div>
-        <button id="map-carryout-btn" style="background:#8b1a1a;color:#fff;border:0;border-radius:4px;padding:.5rem .75rem;font-weight:800;cursor:pointer;width:100%;text-transform:uppercase">Carryout</button>
-      </div>
+      <div style="margin-bottom:4px;">576 Concession St<br />Hamilton, ON</div>
+      <div style="margin-bottom:4px;">Phone: <a href="tel:+1-905-385-9888">905-385-9888</a></div>
+      <div style="margin-bottom:10px;">Hours: 11:00–22:00</div>
+      <button id="map-carryout-btn" style="display:block;box-sizing:border-box;width:100%;background:#8b1a1a;color:#fff;border:0;border-radius:4px;padding:.5rem .75rem;font-weight:800;cursor:pointer;text-transform:uppercase">Carryout</button>
     `;
-    const iw = new g.maps.InfoWindow({ content: infoDiv });
+    const iw = new g.maps.InfoWindow({
+      headerContent: infoHeader,
+      content: infoDiv,
+      maxWidth: 230,
+    });
     infowinRef.current = iw;
 
     marker.addListener("click", () => iw.open({ anchor: marker, map }));
