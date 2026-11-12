@@ -20,3 +20,6 @@ node_modules/
 .claude/scheduled_tasks.lock
 .vercel
 .env*
+
+# macOS Finder metadata
+.DS_Store
