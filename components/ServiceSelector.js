@@ -141,6 +141,16 @@ function StoreMap({ onCarryoutClick, mapsReady, storeLatLng }) {
       if (domReadyListenerRef.current) {
         g.maps.event.removeListener(domReadyListenerRef.current);
       }
+      // Tear the map down explicitly so Google Maps stops tracking the
+      // container once React removes it.
+      iw.close();
+      g.maps.event.clearInstanceListeners(iw);
+      marker.setMap(null);
+      g.maps.event.clearInstanceListeners(marker);
+      g.maps.event.clearInstanceListeners(map);
+      mapObjRef.current = null;
+      markerRef.current = null;
+      infowinRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapsReady]);
@@ -181,6 +191,17 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
   const [choice, setChoice] = useState(initialChoice); // 'delivery' | 'carryout' | null
   const [mapsReady, setMapsReady] = useState(false);
 
+  // Once a view has been opened, keep it mounted and only hide it when the
+  // user switches away. Unmounting tore the map / autocomplete DOM out from
+  // under Google Maps while it still had async work pending, which crashed
+  // Safari ("IntersectionObserver.observe must be an instance of Element").
+  const [carryoutOpened, setCarryoutOpened] = useState(initialChoice === "carryout");
+  const [deliveryOpened, setDeliveryOpened] = useState(initialChoice === "delivery");
+  useEffect(() => {
+    if (choice === "carryout") setCarryoutOpened(true);
+    if (choice === "delivery") setDeliveryOpened(true);
+  }, [choice]);
+
   // Keep store location in parent so Autocomplete can bias to it
   const [storeLatLng, setStoreLatLng] = useState({
     lat: STORE_LAT,
@@ -220,12 +241,13 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
 
   const autoRef = useRef(null);
   const autoObjRef = useRef(null);
+  const localBoundsRef = useRef(null);
 
   // Init Places Autocomplete with strong local bias
   useEffect(() => {
     if (
       !mapsReady ||
-      choice !== "delivery" ||
+      !deliveryOpened ||
       !autoRef.current ||
       !window.google
     )
@@ -239,6 +261,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
       center: storeLatLng,
       radius: 20000,
     }).getBounds();
+    localBoundsRef.current = localBounds;
 
     const ac = new g.maps.places.Autocomplete(inputEl, {
       fields: ["address_components", "formatted_address", "geometry", "name"],
@@ -257,7 +280,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
       ac.setOptions({ strictBounds: n < 6 });
       if (n >= 6) {
         // keep a (weaker) bias so Hamilton still ranks well
-        ac.setBounds(localBounds);
+        ac.setBounds(localBoundsRef.current);
       }
     };
     inputEl.addEventListener("input", handleInput);
@@ -324,9 +347,29 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
       inputEl.removeEventListener("focus", onFocus);
       window.removeEventListener("resize", fixPacPosition);
       document.removeEventListener("scroll", fixPacPosition, true);
+      g.maps.event.clearInstanceListeners(ac);
       autoObjRef.current = null;
     };
-  }, [mapsReady, choice, storeLatLng]);
+    // Created once per mounted input; storeLatLng updates are applied below
+    // instead of rebuilding the Autocomplete.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapsReady, deliveryOpened]);
+
+  // Re-bias the existing Autocomplete when geocoding refines the store location
+  useEffect(() => {
+    const ac = autoObjRef.current;
+    if (!ac || !window.google) return;
+    const g = window.google;
+    const localBounds = new g.maps.Circle({
+      center: storeLatLng,
+      radius: 20000,
+    }).getBounds();
+    localBoundsRef.current = localBounds;
+    ac.setBounds(localBounds);
+    ac.setOptions({
+      origin: new g.maps.LatLng(storeLatLng.lat, storeLatLng.lng),
+    });
+  }, [storeLatLng]);
 
   const canSubmitDelivery = street.trim() && city.trim() && postal.trim();
 
@@ -399,8 +442,11 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           </div>
 
           {/* Carryout view */}
-          {choice === "carryout" && (
-            <div className="stack">
+          {carryoutOpened && (
+            <div
+              className="stack"
+              style={choice === "carryout" ? undefined : { display: "none" }}
+            >
               <StoreMap
                 mapsReady={mapsReady}
                 onCarryoutClick={goCarryout}
@@ -413,8 +459,11 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           )}
 
           {/* Delivery view */}
-          {choice === "delivery" && (
-            <div className="deliveryBox">
+          {deliveryOpened && (
+            <div
+              className="deliveryBox"
+              style={choice === "delivery" ? undefined : { display: "none" }}
+            >
               {/* Google location (centered & wider) */}
               <label className="field googleField">
                 <span className="field__label">Enter Location</span>
