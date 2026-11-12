@@ -25,60 +25,29 @@ const addressTypes = [
   "Other",
 ];
 
-function CarIcon({ filled }) {
+// Custom service-method icons. Single solid shape filled with
+// currentColor, so they take the button's text color (white). The viewBoxes
+// are cropped to the artwork so both icons render at the same visual size.
+function CarIcon() {
   return (
-    <svg
-      width="44"
-      height="44"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{ color: "currentColor" }}
-    >
-      <path d="M3 13l1-3 1-3a2 2 0 0 1 2-1h9a2 2 0 0 1 2 1l2 6" />
-      <path d="M5 16h14" />
-      <circle
-        cx="7.5"
-        cy="16.5"
-        r="1.5"
-        fill={filled ? "currentColor" : "none"}
+    <svg width="44" height="44" viewBox="8 14 61 59" aria-hidden="true">
+      <path
+        fill="currentColor"
+        fillRule="evenodd"
+        d="M53.33 62.83 L53 63.33 L53 67.83 L53.33 68.67 L54 69.67 L55.33 70.67 L57 70.83 L58.17 70.33 L59.33 69.33 L59.83 68.5 L60 63.33 L59.5 62.83 Z M16.5 63.33 L16.5 67.17 L17.17 69.17 L18.17 70.17 L19.67 70.83 L21.17 70.67 L22.67 69.67 L23.67 68 L23.67 64.17 L23.83 64 L23.67 63.17 L23.17 62.83 L17.17 62.83 Z M9.83 42.67 L9.83 56.83 L10.17 57.67 L11 58.67 L13.17 59.67 L63.33 59.67 L65.33 58.83 L65.83 58.33 L66.83 56.5 L66.83 43.17 L66 41.5 L65.33 40.83 L63.83 40 L12.67 40 L11 41 L10.17 41.83 Z M32.83 51.67 L33.33 51 L43.17 51 L43.67 51.5 L43.83 52.17 L43.33 52.83 L42.83 53 L33.5 53 L33 52.67 Z M32.83 47.33 L33.5 46.67 L42.83 46.67 L43.33 46.83 L43.83 47.33 L43.83 47.67 L43.17 48.5 L34 48.5 L33.67 48.67 L33 48.17 Z M56.17 45.17 L57 45.17 L59.17 46.17 L60.33 47.5 L61 48.83 L60.83 51.17 L60 52.5 L58.33 53.83 L57 54.17 L55.17 54 L53.67 53.17 L52 51.17 L51.83 50.17 L52 48.5 L52.67 47.33 L54 46 Z M19.67 45.17 L21 45.33 L22.5 46 L24 47.5 L24.5 49.17 L24.5 50.33 L23.67 52.5 L22.17 53.67 L20.5 54.17 L18.67 54 L17.67 53.5 L16.17 52.17 L15.67 50.83 L15.67 48.67 L16 47.5 L17.83 45.83 Z M19.17 27.5 L19.17 36.83 L19.83 37.5 L21.33 37.5 L21.83 37.17 L22 36.67 L22 27.83 L22.67 26.67 L23.5 25.83 L24.83 25.17 L25.83 25 L26.17 25.17 L49.67 25.17 L49.83 25 L51.5 25.17 L53 25.83 L53.83 26.67 L54.17 27.5 L54.5 37.17 L55.17 37.5 L56.5 37.5 L57 37.33 L57.33 36.83 L57.33 27.5 L56.83 25.83 L55.83 24.33 L54.17 23 L52 22.5 L46.5 22.5 L45.5 22 L40 16.83 L38.5 15.83 L37.5 16 L32.17 21 L30.17 22.5 L24.5 22.5 L22.17 23.17 L20.17 25 Z"
       />
-      <circle
-        cx="16.5"
-        cy="16.5"
-        r="1.5"
-        fill={filled ? "currentColor" : "none"}
-      />
-      <path d="M6 10h12" />
     </svg>
   );
 }
 
-function RunnerIcon({ filled }) {
+function RunnerIcon() {
   return (
-    <svg
-      width="44"
-      height="44"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{ color: "currentColor" }}
-    >
-      <circle
-        cx="13"
-        cy="4"
-        r="2"
-        fill={filled ? "currentColor" : "none"}
+    <svg width="44" height="44" viewBox="11 18 61 67" aria-hidden="true">
+      <path
+        fill="currentColor"
+        fillRule="evenodd"
+        d="M43 42.5 L43 43.75 L43.5 44.75 L44.5 45.75 L45.75 46.25 L67.25 46.25 L69.25 45.25 L70 43.5 L69.75 41.5 L67.75 40 L45.5 40 L44.75 40.25 L43.25 41.75 Z M27.5 37 L26 38.25 L25.5 39.75 L25.5 57.5 L22.5 62.5 L21.75 64.25 L20.25 66.25 L20 67.25 L19.25 68 L17.75 71 L16 73.5 L16 74 L13 78.75 L13 80.5 L14.5 82.5 L15.25 82.75 L17.25 82.75 L17.75 82.5 L19.75 80.25 L20 79.25 L21.5 77.25 L27.75 66.25 L28.5 65.5 L29 65.5 L30.25 66.5 L43.25 81.75 L44.5 82.5 L46.5 82.5 L48.5 80.5 L48.75 79.75 L48.5 78.25 L47.5 76.75 L32 58.75 L31.75 58.25 L31.75 50.25 L32.25 49.75 L32.75 49.75 L36.5 54.25 L39.25 55.75 L46.25 55.75 L47.25 55.5 L48.75 54.5 L49.5 53.25 L49.5 51.75 L48.75 50.5 L47 49.25 L41.25 49.25 L40.25 48.75 L37.75 45.5 L30.25 37.25 L29.75 37 Z M58.75 23 L58.25 23.5 L58.25 24.25 L59.75 26.75 L57 31.25 L57 32.5 L58 33.75 L58.5 35 L59 35.5 L59.75 35.5 L60 35.25 L60 33.75 L59 32.25 L59 31.5 L59.75 30.5 L60 29.5 L61.5 27.5 L61.75 26.5 L60 23.5 L59.5 23 Z M53.5 23 L53 23.5 L53 24.25 L53.75 25.25 L54.25 26.75 L53.5 28.5 L52 30.5 L51.75 32.5 L53 34.75 L53.5 35.25 L54.5 35.5 L54.75 35.25 L54.75 34 L53.75 32.5 L53.75 31.25 L55.75 28.25 L56.25 26.25 L54.75 23.5 L54.25 23 Z M30.5 19.75 L29 19.75 L28.75 19.5 L25.5 20.25 L22.75 22.5 L22 23.5 L21.5 25.5 L21.5 28.25 L22.25 30.5 L23.75 32.25 L25.75 33.5 L27.5 34 L31 33.75 L33 32.75 L34.75 31 L35.75 29.25 L36 25.75 L35.5 23.75 L34.75 22.5 L33.25 21 Z"
       />
-      <path d="M4 17l5-4 2-4" />
-      <path d="M12 8l4 1 4 2" />
-      <path d="M7 22l2-5 5-3 3 3" />
     </svg>
   );
 }
@@ -426,7 +395,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
               aria-pressed={choice === "delivery"}
             >
               <span className="methodIcon">
-                <CarIcon filled={choice === "delivery"} />
+                <CarIcon />
               </span>
               <span className="methodLabel">DELIVERY</span>
             </button>
@@ -441,7 +410,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
               aria-pressed={choice === "carryout"}
             >
               <span className="methodIcon">
-                <RunnerIcon filled={choice === "carryout"} />
+                <RunnerIcon />
               </span>
               <span className="methodLabel">CARRYOUT</span>
             </button>
