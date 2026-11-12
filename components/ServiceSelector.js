@@ -397,10 +397,10 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
               <span className="methodCircle">
                 <CarIcon />
               </span>
-              <span className="methodLabel">Delivery</span>
+              <span className="methodLabel">DELIVERY</span>
             </button>
 
-            <span className="or">— OR —</span>
+            <span className="or">OR</span>
 
             <button
               className={`methodBtn ${
@@ -412,7 +412,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
               <span className="methodCircle">
                 <RunnerIcon />
               </span>
-              <span className="methodLabel">Carryout</span>
+              <span className="methodLabel">CARRYOUT</span>
             </button>
           </div>
 
@@ -640,8 +640,8 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           flex-wrap: wrap;
         }
         .or {
-          color: #777;
-          font-weight: 700;
+          color: var(--text-brown);
+          font-weight: 800; /* a step bolder than the 700 labels */
           /* line up with the middle of the circles, not circle + label */
           line-height: 1.2;
           margin-top: calc(var(--method-circle) / 2 - 0.6em);
