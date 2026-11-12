@@ -155,7 +155,7 @@ export default function SidesDessertsAll({
         :global(:root) {
           --brand-blue: #000000;
           --red: #8b1a1a;
-          --light-border: #d9c49c;
+          --light-border: var(--menu-box-border);
         }
 
         .feast--edge {

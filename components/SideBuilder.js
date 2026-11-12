@@ -17,7 +17,7 @@ export default function SideBuilder({
   /* —— Theme: matches the Pizza Builder's cream-box makeover —— */
   const PANEL_INNER_MAX = 840; // fits nicely inside your modal
   const MAROON = "#8b1a1a";
-  const LIGHT_BORDER = "#d9c49c"; // thin dark-brown-tan border (--menu-box-border)
+  const LIGHT_BORDER = "var(--menu-box-border)"; // thin dark-brown-tan border (--menu-box-border)
   const LIGHT_BG = "var(--menu-box-bg)";     // cream box fill (--menu-box-bg)
   const TEXT_BROWN = "#6b3f22";   // body text color inside the boxes
   const BOX_RADIUS = ".1875rem";

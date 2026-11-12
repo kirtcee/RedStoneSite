@@ -168,11 +168,11 @@ export default function CheckoutPage() {
         </h1>
 
         {!cart?.isLoaded ? (
-          <div style={{ background: "var(--menu-box-bg)", border: "1px solid #d9c49c", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "#6b3f22" }}>
+          <div style={{ background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "#6b3f22" }}>
             Loading your cart…
           </div>
         ) : items.length === 0 ? (
-          <div style={{ background: "var(--menu-box-bg)", border: "1px solid #d9c49c", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "#6b3f22" }}>
+          <div style={{ background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "#6b3f22" }}>
             Your cart is empty.{" "}
             <Link href="/menu" style={{ color: "#6b3f22", fontWeight: 700, textDecoration: "underline" }}>
               Browse the menu
@@ -191,7 +191,7 @@ export default function CheckoutPage() {
           >
             {/* LEFT COLUMN: contact + order summary */}
             <div>
-              <div style={{ marginBottom: 16, padding: 0, overflow: "hidden", background: "var(--menu-box-bg)", border: "1px solid #d9c49c", borderRadius: ".1875rem" }}>
+              <div style={{ marginBottom: 16, padding: 0, overflow: "hidden", background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem" }}>
                 {sectionHeader("Contact Information")}
                 <div style={{ padding: 12, display: "grid", gap: 10 }}>
                   <label style={{ display: "grid", gap: 4 }}>
@@ -202,7 +202,7 @@ export default function CheckoutPage() {
                       value={contactName}
                       onChange={(e) => setContactName(e.target.value)}
                       placeholder="Your name"
-                      style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid #d9c49c" }}
+                      style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid var(--menu-box-border)" }}
                     />
                   </label>
                   <label style={{ display: "grid", gap: 4 }}>
@@ -213,13 +213,13 @@ export default function CheckoutPage() {
                       value={contactPhone}
                       onChange={(e) => setContactPhone(e.target.value)}
                       placeholder="Phone number"
-                      style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid #d9c49c" }}
+                      style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid var(--menu-box-border)" }}
                     />
                   </label>
                 </div>
               </div>
 
-              <div style={{ padding: 0, overflow: "hidden", background: "var(--menu-box-bg)", border: "1px solid #d9c49c", borderRadius: ".1875rem" }}>
+              <div style={{ padding: 0, overflow: "hidden", background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem" }}>
                 {sectionHeader("Order Summary")}
                 <div style={{ padding: "0.75rem" }}>
                   <div
@@ -254,7 +254,7 @@ export default function CheckoutPage() {
                           justifyContent: "space-between",
                           gap: 12,
                           padding: "8px 0",
-                          borderBottom: "1px solid #d9c49c",
+                          borderBottom: "1px solid var(--menu-box-border)",
                         }}
                       >
                         <div style={{ minWidth: 0 }}>
@@ -311,7 +311,7 @@ export default function CheckoutPage() {
 
             {/* RIGHT COLUMN: order settings / totals / place order */}
             <aside style={{ position: "sticky", top: 16 }}>
-              <div style={{ background: "var(--menu-box-bg)", border: "1px solid #d9c49c", borderRadius: ".1875rem", overflow: "hidden" }}>
+              <div style={{ background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem", overflow: "hidden" }}>
                 {sectionHeader("Review Order Settings")}
 
                 <div style={{ padding: 12 }}>
@@ -344,7 +344,7 @@ export default function CheckoutPage() {
                       <input
                         value={newLoc}
                         onChange={(e) => setNewLoc(e.target.value)}
-                        style={{ flex: 1, padding: "6px 8px", border: "1px solid #d9c49c", borderRadius: 6 }}
+                        style={{ flex: 1, padding: "6px 8px", border: "1px solid var(--menu-box-border)", borderRadius: 6 }}
                         placeholder="Enter address or postal code"
                       />
                       <button
@@ -355,7 +355,7 @@ export default function CheckoutPage() {
                         style={{
                           padding: "6px 10px",
                           borderRadius: 6,
-                          border: "1px solid #d9c49c",
+                          border: "1px solid var(--menu-box-border)",
                           background: "white",
                           cursor: "pointer",
                         }}
@@ -415,7 +415,7 @@ export default function CheckoutPage() {
                           background: "white",
                           padding: 8,
                           borderRadius: 8,
-                          border: "1px solid #d9c49c",
+                          border: "1px solid var(--menu-box-border)",
                         }}
                       >
                         <input
@@ -436,7 +436,7 @@ export default function CheckoutPage() {
                         background: "white",
                         padding: 8,
                         borderRadius: 8,
-                        border: "1px solid #d9c49c",
+                        border: "1px solid var(--menu-box-border)",
                       }}
                     >
                       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -445,7 +445,7 @@ export default function CheckoutPage() {
                           type="date"
                           value={scheduleDate}
                           onChange={(e) => setScheduleDate(e.target.value)}
-                          style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #d9c49c" }}
+                          style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid var(--menu-box-border)" }}
                         />
                         <input
                           type="time"
@@ -454,7 +454,7 @@ export default function CheckoutPage() {
                           min={hours.open}
                           max={hours.close}
                           step={300}
-                          style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #d9c49c" }}
+                          style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid var(--menu-box-border)" }}
                         />
                       </div>
                       <div style={{ marginTop: 6, fontSize: 12, color: "#666" }}>
@@ -490,7 +490,7 @@ export default function CheckoutPage() {
                     <DealCodeEntry compact />
                   </div>
 
-                  <div style={{ marginTop: 16, borderTop: "1px solid #d9c49c", paddingTop: 12 }}>
+                  <div style={{ marginTop: 16, borderTop: "1px solid var(--menu-box-border)", paddingTop: 12 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                       <div>Food &amp; Beverage:</div>
                       <div style={{ fontWeight: 700 }}>{formatMoney(subtotalCents)}</div>

@@ -644,7 +644,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
            (defined once in globals.css :root) already used correctly here. */
         .section {
           background: var(--menu-box-bg);
-          border: 1px solid #d9c49c;
+          border: 1px solid var(--menu-box-border);
           border-radius: .1875rem;
           overflow: hidden;
         }
@@ -793,7 +793,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
         }
 
         .textInput {
-          border: 1px solid #d9c49c;
+          border: 1px solid var(--menu-box-border);
           border-radius: 6px;
           padding: 0.45rem 0.5rem;
           outline: none;

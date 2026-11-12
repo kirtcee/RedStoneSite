@@ -12,7 +12,7 @@ import { formatMoney } from "./Pricing";
 const DELIVERY_FEE_CENTS = 499;
 const TAX_RATE = 0.13;
 const STORE_HOURS = { open: "11:00", close: "22:00" };
-const BORDER = "#d9c49c";
+const BORDER = "var(--menu-box-border)";
 const LIGHT = "#faf2e9";
 const DARK = "#f0decc";
 const BROWN = "#6b3f22";

@@ -35,7 +35,7 @@ export default function PizzaBuilder({
 
   // ===== Theme (matches the menu/deals page cream-box makeover) =====
   const MAROON = "#8b1a1a";
-  const LIGHT_BORDER = "#d9c49c"; // thin dark-brown-tan border (--menu-box-border)
+  const LIGHT_BORDER = "var(--menu-box-border)"; // thin dark-brown-tan border (--menu-box-border)
   const LIGHT_BG = "var(--menu-box-bg)";     // cream box fill (--menu-box-bg)
   const LIGHT_RED_INACTIVE = "#ffb0b0"; // a tad darker
   const TEXT_BROWN = "#6b3f22";   // body text color inside the boxes
@@ -1463,7 +1463,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
           gap: 10px;
           padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
           background: #fff;
-          border-top: 1px solid #d9c49c;
+          border-top: 1px solid var(--menu-box-border);
           box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.12);
         }
         .pb-mobile-bar__subtotal {

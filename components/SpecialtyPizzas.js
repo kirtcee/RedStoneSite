@@ -180,7 +180,7 @@ export default function SpecialtyPizzasPage() {
           align-items: stretch;
           min-width: 0;
           background: var(--menu-box-bg);
-          border: 1px solid #d9c49c;
+          border: 1px solid var(--menu-box-border);
           border-radius: .1875rem;
           padding: 12px;
         }

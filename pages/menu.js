@@ -135,7 +135,7 @@ function EntreesView({
         </div>
 
         <style jsx>{`
-          :global(:root){ --brand-blue:#000000; --red:#8b1a1a; --light-border:#d9c49c; }
+          :global(:root){ --brand-blue:#000000; --red:#8b1a1a; --light-border:var(--menu-box-border); }
           .feast--edge{ margin-left:calc(-1rem - 1px); margin-right:calc(-1rem - 1px); }
           @media (max-width:520px){ .feast--edge{ margin-left:-1rem; margin-right:-1rem; } }
           .feast__grid{ display:grid; column-gap:16px; row-gap:14px; align-items:start; }
@@ -247,7 +247,7 @@ function EntreesView({
           :global(:root) {
             --brand-blue: #000000;
             --red: #8b1a1a;
-            --light-border: #d9c49c;
+            --light-border: var(--menu-box-border);
           }
           .feast--edge {
             margin-left: calc(-1rem - 1px);
@@ -427,7 +427,7 @@ function SidesView({ selectedSide, setSelectedSide }) {
       </div>
 
       <style jsx>{`
-        :global(:root){ --brand-blue:#000000; --red:#8b1a1a; --light-border:#d9c49c; }
+        :global(:root){ --brand-blue:#000000; --red:#8b1a1a; --light-border:var(--menu-box-border); }
 
         .feast--edge{ margin-left:calc(-1rem - 1px); margin-right:calc(-1rem - 1px); }
         @media (max-width:520px){ .feast--edge{ margin-left:-1rem; margin-right:-1rem; } }
@@ -528,7 +528,7 @@ function DrinksView() {
       </div>
 
       <style jsx>{`
-        :global(:root){ --brand-blue:#000000; --red:#8b1a1a; --light-border:#d9c49c; }
+        :global(:root){ --brand-blue:#000000; --red:#8b1a1a; --light-border:var(--menu-box-border); }
 
         .feast--edge{ margin-left:calc(-1rem - 1px); margin-right:calc(-1rem - 1px); }
         @media (max-width:520px){ .feast--edge{ margin-left:-1rem; margin-right:-1rem; } }
