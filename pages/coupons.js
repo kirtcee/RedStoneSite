@@ -237,7 +237,7 @@ function DealCard({ deal, onAdd }) {
           margin: 0;
           font-size: 0.82rem;
           line-height: 1.4;
-          color: #6b3f22;
+          color: var(--text-brown);
         }
       `}</style>
     </article>

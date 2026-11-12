@@ -117,9 +117,9 @@ export default function OrderConfirmation() {
   if (!order) {
     return (
       <main className="container" style={{ paddingTop: "32px", paddingBottom: "32px" }}>
-        <div style={{ background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "#6b3f22" }}>
+        <div style={{ background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "var(--text-brown)" }}>
           <p>Order not found. Please call the store.</p>
-          <Link href="/menu" style={{ color: "#6b3f22", fontWeight: 700, textDecoration: "underline" }}>
+          <Link href="/menu" style={{ color: "var(--text-brown)", fontWeight: 700, textDecoration: "underline" }}>
             Back to menu
           </Link>
         </div>
@@ -258,7 +258,7 @@ export default function OrderConfirmation() {
         </div>
 
         <div style={{ textAlign: "center", marginTop: 20 }}>
-          <Link href="/menu" style={{ color: "#6b3f22", textDecoration: "underline", fontWeight: 700 }}>
+          <Link href="/menu" style={{ color: "var(--text-brown)", textDecoration: "underline", fontWeight: 700 }}>
             Order Something Else
           </Link>
         </div>

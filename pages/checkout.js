@@ -168,13 +168,13 @@ export default function CheckoutPage() {
         </h1>
 
         {!cart?.isLoaded ? (
-          <div style={{ background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "#6b3f22" }}>
+          <div style={{ background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "var(--text-brown)" }}>
             Loading your cart…
           </div>
         ) : items.length === 0 ? (
-          <div style={{ background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "#6b3f22" }}>
+          <div style={{ background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "var(--text-brown)" }}>
             Your cart is empty.{" "}
-            <Link href="/menu" style={{ color: "#6b3f22", fontWeight: 700, textDecoration: "underline" }}>
+            <Link href="/menu" style={{ color: "var(--text-brown)", fontWeight: 700, textDecoration: "underline" }}>
               Browse the menu
             </Link>
             .
@@ -195,7 +195,7 @@ export default function CheckoutPage() {
                 {sectionHeader("Contact Information")}
                 <div style={{ padding: 12, display: "grid", gap: 10 }}>
                   <label style={{ display: "grid", gap: 4 }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "#6b3f22" }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-brown)" }}>
                       Name *
                     </span>
                     <input
@@ -206,7 +206,7 @@ export default function CheckoutPage() {
                     />
                   </label>
                   <label style={{ display: "grid", gap: 4 }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "#6b3f22" }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-brown)" }}>
                       Phone *
                     </span>
                     <input
@@ -230,12 +230,12 @@ export default function CheckoutPage() {
                       marginBottom: 8,
                     }}
                   >
-                    <div style={{ color: "#6b3f22", fontSize: 13 }}>
+                    <div style={{ color: "var(--text-brown)", fontSize: 13 }}>
                       {items.length} item{items.length === 1 ? "" : "s"}
                     </div>
                     <Link
                       href="/cart"
-                      style={{ color: "#6b3f22", textDecoration: "underline", fontSize: 13, fontWeight: 700 }}
+                      style={{ color: "var(--text-brown)", textDecoration: "underline", fontSize: 13, fontWeight: 700 }}
                     >
                       Edit Cart
                     </Link>
@@ -328,7 +328,7 @@ export default function CheckoutPage() {
                       style={{
                         background: "none",
                         border: "none",
-                        color: "#6b3f22",
+                        color: "var(--text-brown)",
                         textDecoration: "underline",
                         cursor: "pointer",
                       }}
@@ -379,7 +379,7 @@ export default function CheckoutPage() {
                       style={{
                         background: "none",
                         border: "none",
-                        color: "#6b3f22",
+                        color: "var(--text-brown)",
                         textDecoration: "underline",
                         cursor: "pointer",
                       }}
@@ -469,7 +469,7 @@ export default function CheckoutPage() {
                       marginTop: 8,
                       background: "none",
                       border: "none",
-                      color: "#6b3f22",
+                      color: "var(--text-brown)",
                       textDecoration: "underline",
                       cursor: "pointer",
                       padding: 0,

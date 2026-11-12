@@ -750,7 +750,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
         }
         .field__label {
           font-weight: 700;
-          color: #6b3f22;
+          color: var(--text-brown);
           margin-bottom: 6px;
         }
         .googleField {
@@ -786,7 +786,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           width: 170px;
           text-align: right;
           font-weight: 700;
-          color: #6b3f22;
+          color: var(--text-brown);
         }
         .lab.req {
           font-weight: 800;
@@ -806,7 +806,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
         }
 
         .note {
-          color: #6b3f22;
+          color: var(--text-brown);
           font-size: 0.9rem;
           margin: 6px 0 10px;
         }
@@ -849,7 +849,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
         }
         .k {
           width: 140px;
-          color: #6b3f22;
+          color: var(--text-brown);
         }
         .v {
           flex: 1;
@@ -858,7 +858,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
         .linkBtn {
           background: none;
           border: none;
-          color: #6b3f22;
+          color: var(--text-brown);
           text-decoration: underline;
           padding: 0;
           cursor: pointer;

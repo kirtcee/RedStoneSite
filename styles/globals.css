@@ -24,6 +24,7 @@
   --menu-box-bg-alt: #f0decc;
   --menu-box-border: #c0a58b;
   --menu-box-border-hover: #6b3f22;
+  --text-brown: #8f6c49;          /* brown body text inside the cream boxes */
 
   /* type */
   --font-heading: 'Oswald', sans-serif;
@@ -1155,7 +1156,7 @@ html {
   display: flex;
   flex-direction: column;
   line-height: 1.15;
-  color: #6b3f22;
+  color: var(--text-brown);
 }
 .mobile-checkout-bar__total span {
   font-size: 0.7rem;

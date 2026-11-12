@@ -19,7 +19,7 @@ export default function SpecialMenuBuilder({
   const MAROON = "#8b1a1a";
   const LIGHT_BORDER = "var(--menu-box-border)"; // thin dark-brown-tan border (--menu-box-border)
   const LIGHTER_BG = "var(--menu-box-bg)";   // cream box fill (--menu-box-bg)
-  const TEXT_BROWN = "#6b3f22";   // body text color inside the boxes
+  const TEXT_BROWN = "var(--text-brown)";   // body text color inside the boxes
   const BOX_RADIUS = ".1875rem";
 
   const sectionBar = {

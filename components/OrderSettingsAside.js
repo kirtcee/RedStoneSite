@@ -15,7 +15,7 @@ const STORE_HOURS = { open: "11:00", close: "22:00" };
 const BORDER = "var(--menu-box-border)";
 const LIGHT = "#faf2e9";
 const DARK = "#f0decc";
-const BROWN = "#6b3f22";
+const BROWN = "var(--text-brown)";
 
 function formatAddress(addr) {
   if (!addr) return "Enter address";

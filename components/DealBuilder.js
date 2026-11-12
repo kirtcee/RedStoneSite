@@ -27,7 +27,7 @@ const RED = "#E91E28"; // kept only for the destructive "Discard coupon" button
 const MAROON = "#8b1a1a";
 const BORDER = "var(--menu-box-border)";
 const BG = "var(--menu-box-bg)";
-const BROWN = "#6b3f22";
+const BROWN = "var(--text-brown)";
 const EDGE_BLEED = 8; // partially cancels DebugPizzaOverlay's fixed 16px side padding, leaving a smaller gap
 
 const sectionBar = {

@@ -11,7 +11,7 @@ import OrderSettingsAside from "../components/OrderSettingsAside";
 const MAROON = "#8b1a1a";
 const LIGHT_BORDER = "var(--menu-box-border)"; // thin dark-brown-tan border (--menu-box-border)
 const LIGHT_BG = "var(--menu-box-bg)";     // cream box fill (--menu-box-bg)
-const TEXT_BROWN = "#6b3f22";   // body text color inside the boxes
+const TEXT_BROWN = "var(--text-brown)";   // body text color inside the boxes
 const BOX_RADIUS = ".1875rem";
 
 // Sides with a real size choice get an inline segmented picker (same S/R/L

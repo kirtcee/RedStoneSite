@@ -38,7 +38,7 @@ export default function PizzaBuilder({
   const LIGHT_BORDER = "var(--menu-box-border)"; // thin dark-brown-tan border (--menu-box-border)
   const LIGHT_BG = "var(--menu-box-bg)";     // cream box fill (--menu-box-bg)
   const LIGHT_RED_INACTIVE = "#ffb0b0"; // a tad darker
-  const TEXT_BROWN = "#6b3f22";   // body text color inside the boxes
+  const TEXT_BROWN = "var(--text-brown)";   // body text color inside the boxes
   const BOX_RADIUS = ".1875rem";
   // ===== Layout constants to match your screenshots =====
 const PB_TOTAL = 846;           // total builder width
@@ -1476,7 +1476,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
           font-size: 0.7rem;
           text-transform: uppercase;
           letter-spacing: 0.3px;
-          color: #6b3f22;
+          color: var(--text-brown);
           font-weight: 700;
         }
         .pb-mobile-bar__subtotal-value {
