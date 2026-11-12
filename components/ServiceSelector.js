@@ -643,7 +643,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
            --brand-blue is left alone since it's a real global token
            (defined once in globals.css :root) already used correctly here. */
         .section {
-          background: #fdf7f0;
+          background: var(--menu-box-bg);
           border: 1px solid #d9c49c;
           border-radius: .1875rem;
           overflow: hidden;

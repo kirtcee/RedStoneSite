@@ -142,7 +142,7 @@ function EntreesView({
           .feast__grid--three{ grid-template-columns:repeat(3,minmax(0,1fr)); }
           @media (max-width:800px){ .feast__grid--three{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
           @media (max-width:520px){ .feast__grid--three{ grid-template-columns:repeat(2, minmax(0,1fr)); } }
-          .feastCard{ display:flex; flex-direction:column; background:#fdf7f0; border:1px solid var(--light-border); border-radius:.1875rem; padding:12px; }
+          .feastCard{ display:flex; flex-direction:column; background:var(--menu-box-bg); border:1px solid var(--light-border); border-radius:.1875rem; padding:12px; }
           .feastCard__imgWrap{
             width:100%; height:133px; border-radius:4px; overflow:hidden;
           }
@@ -278,7 +278,7 @@ function EntreesView({
               grid-template-columns: repeat(2, minmax(0, 1fr));
             }
           }
-          .feastCard { display: flex; flex-direction: column; background:#fdf7f0; border:1px solid var(--light-border); border-radius:.1875rem; padding:12px; }
+          .feastCard { display: flex; flex-direction: column; background:var(--menu-box-bg); border:1px solid var(--light-border); border-radius:.1875rem; padding:12px; }
           .feastCard__imgWrap{
             width:100%; height:133px; border-radius:4px; overflow:hidden;
           }
@@ -438,7 +438,7 @@ function SidesView({ selectedSide, setSelectedSide }) {
         @media (max-width:800px){  .feast__grid--four{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
         @media (max-width:520px){  .feast__grid--four{ grid-template-columns:repeat(2, minmax(0,1fr)); } }
 
-        .feastCard{ display:flex; flex-direction:column; background:#fdf7f0; border:1px solid var(--light-border); border-radius:.1875rem; padding:12px; }
+        .feastCard{ display:flex; flex-direction:column; background:var(--menu-box-bg); border:1px solid var(--light-border); border-radius:.1875rem; padding:12px; }
         .feastCard__imgWrap{
           width:100%; height:133px; border-radius:4px; overflow:hidden;
         }
@@ -539,7 +539,7 @@ function DrinksView() {
         @media (max-width:800px){  .feast__grid--four{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
         @media (max-width:520px){  .feast__grid--four{ grid-template-columns:repeat(2, minmax(0,1fr)); } }
 
-        .feastCard{ display:flex; flex-direction:column; background:#fdf7f0; border:1px solid var(--light-border); border-radius:.1875rem; padding:12px; }
+        .feastCard{ display:flex; flex-direction:column; background:var(--menu-box-bg); border:1px solid var(--light-border); border-radius:.1875rem; padding:12px; }
         .feastCard__imgWrap{
           width:100%; height:133px; border-radius:4px; overflow:hidden;
         }

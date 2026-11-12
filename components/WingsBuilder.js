@@ -33,7 +33,7 @@ export default function WingsBuilder({
   // ===== Theme (matches the Pizza Builder's cream-box makeover) =====
   const MAROON = "#8b1a1a";
   const LIGHT_BORDER = "#d9c49c"; // thin dark-brown-tan border (--menu-box-border)
-  const LIGHT_BG = "#fdf7f0";     // cream box fill (--menu-box-bg)
+  const LIGHT_BG = "var(--menu-box-bg)";     // cream box fill (--menu-box-bg)
   const TEXT_BROWN = "#6b3f22";   // body text color inside the boxes
   const BOX_RADIUS = ".1875rem";
 

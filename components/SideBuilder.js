@@ -18,7 +18,7 @@ export default function SideBuilder({
   const PANEL_INNER_MAX = 840; // fits nicely inside your modal
   const MAROON = "#8b1a1a";
   const LIGHT_BORDER = "#d9c49c"; // thin dark-brown-tan border (--menu-box-border)
-  const LIGHT_BG = "#fdf7f0";     // cream box fill (--menu-box-bg)
+  const LIGHT_BG = "var(--menu-box-bg)";     // cream box fill (--menu-box-bg)
   const TEXT_BROWN = "#6b3f22";   // body text color inside the boxes
   const BOX_RADIUS = ".1875rem";
   const PAD_Y = "1.25rem"; // extra vertical padding in sections

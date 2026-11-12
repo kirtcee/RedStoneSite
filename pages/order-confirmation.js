@@ -117,7 +117,7 @@ export default function OrderConfirmation() {
   if (!order) {
     return (
       <main className="container" style={{ paddingTop: "32px", paddingBottom: "32px" }}>
-        <div style={{ background: "#fdf7f0", border: "1px solid #d9c49c", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "#6b3f22" }}>
+        <div style={{ background: "var(--menu-box-bg)", border: "1px solid #d9c49c", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "#6b3f22" }}>
           <p>Order not found. Please call the store.</p>
           <Link href="/menu" style={{ color: "#6b3f22", fontWeight: 700, textDecoration: "underline" }}>
             Back to menu
@@ -149,7 +149,7 @@ export default function OrderConfirmation() {
           Thank you for ordering from Red Stone Pizza!
         </p>
 
-        <div style={{ marginBottom: 16, padding: 0, overflow: "hidden", background: "#fdf7f0", border: "1px solid #d9c49c", borderRadius: ".1875rem" }}>
+        <div style={{ marginBottom: 16, padding: 0, overflow: "hidden", background: "var(--menu-box-bg)", border: "1px solid #d9c49c", borderRadius: ".1875rem" }}>
           {sectionHeader("Order Details")}
           <div style={{ padding: 12 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
@@ -185,7 +185,7 @@ export default function OrderConfirmation() {
           </div>
         </div>
 
-        <div style={{ padding: 0, overflow: "hidden", background: "#fdf7f0", border: "1px solid #d9c49c", borderRadius: ".1875rem" }}>
+        <div style={{ padding: 0, overflow: "hidden", background: "var(--menu-box-bg)", border: "1px solid #d9c49c", borderRadius: ".1875rem" }}>
           {sectionHeader("Items")}
           <div style={{ padding: "0.75rem" }}>
             {items.map((it, i) => {

@@ -181,7 +181,7 @@ export default function SignaturePizzasPage() {
           flex-direction: column;
           align-items: stretch;
           min-width: 0;
-          background: #fdf7f0;
+          background: var(--menu-box-bg);
           border: 1px solid #d9c49c;
           border-radius: .1875rem;
           padding: 12px;

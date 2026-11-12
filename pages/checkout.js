@@ -168,11 +168,11 @@ export default function CheckoutPage() {
         </h1>
 
         {!cart?.isLoaded ? (
-          <div style={{ background: "#fdf7f0", border: "1px solid #d9c49c", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "#6b3f22" }}>
+          <div style={{ background: "var(--menu-box-bg)", border: "1px solid #d9c49c", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "#6b3f22" }}>
             Loading your cart…
           </div>
         ) : items.length === 0 ? (
-          <div style={{ background: "#fdf7f0", border: "1px solid #d9c49c", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "#6b3f22" }}>
+          <div style={{ background: "var(--menu-box-bg)", border: "1px solid #d9c49c", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "#6b3f22" }}>
             Your cart is empty.{" "}
             <Link href="/menu" style={{ color: "#6b3f22", fontWeight: 700, textDecoration: "underline" }}>
               Browse the menu
@@ -191,7 +191,7 @@ export default function CheckoutPage() {
           >
             {/* LEFT COLUMN: contact + order summary */}
             <div>
-              <div style={{ marginBottom: 16, padding: 0, overflow: "hidden", background: "#fdf7f0", border: "1px solid #d9c49c", borderRadius: ".1875rem" }}>
+              <div style={{ marginBottom: 16, padding: 0, overflow: "hidden", background: "var(--menu-box-bg)", border: "1px solid #d9c49c", borderRadius: ".1875rem" }}>
                 {sectionHeader("Contact Information")}
                 <div style={{ padding: 12, display: "grid", gap: 10 }}>
                   <label style={{ display: "grid", gap: 4 }}>
@@ -219,7 +219,7 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              <div style={{ padding: 0, overflow: "hidden", background: "#fdf7f0", border: "1px solid #d9c49c", borderRadius: ".1875rem" }}>
+              <div style={{ padding: 0, overflow: "hidden", background: "var(--menu-box-bg)", border: "1px solid #d9c49c", borderRadius: ".1875rem" }}>
                 {sectionHeader("Order Summary")}
                 <div style={{ padding: "0.75rem" }}>
                   <div
@@ -311,7 +311,7 @@ export default function CheckoutPage() {
 
             {/* RIGHT COLUMN: order settings / totals / place order */}
             <aside style={{ position: "sticky", top: 16 }}>
-              <div style={{ background: "#fdf7f0", border: "1px solid #d9c49c", borderRadius: ".1875rem", overflow: "hidden" }}>
+              <div style={{ background: "var(--menu-box-bg)", border: "1px solid #d9c49c", borderRadius: ".1875rem", overflow: "hidden" }}>
                 {sectionHeader("Review Order Settings")}
 
                 <div style={{ padding: 12 }}>

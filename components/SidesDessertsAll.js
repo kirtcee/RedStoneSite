@@ -191,7 +191,7 @@ export default function SidesDessertsAll({
         .feastCard {
           display: flex;
           flex-direction: column;
-          background: #fdf7f0;
+          background: var(--menu-box-bg);
           border: 1px solid var(--light-border);
           border-radius: .1875rem;
           padding: 12px;

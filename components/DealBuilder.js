@@ -26,7 +26,7 @@ import { findDealById } from "../utils/dealCatalog";
 const RED = "#E91E28"; // kept only for the destructive "Discard coupon" button
 const MAROON = "#8b1a1a";
 const BORDER = "#d9c49c";
-const BG = "#fdf7f0";
+const BG = "var(--menu-box-bg)";
 const BROWN = "#6b3f22";
 const EDGE_BLEED = 8; // partially cancels DebugPizzaOverlay's fixed 16px side padding, leaving a smaller gap
 
