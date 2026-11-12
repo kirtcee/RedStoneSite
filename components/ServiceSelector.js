@@ -1,13 +1,16 @@
 // components/ServiceSelector.js
 import React, { useEffect, useRef, useState } from "react";
-import Script from "next/script";
 import { useCart } from "./CartSystem";
 
-const GOOGLE_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
-
-// Fallback center (Hamilton-ish) if geocoding fails
-const STORE_LAT = parseFloat(process.env.NEXT_PUBLIC_STORE_LAT || "43.2557");
-const STORE_LNG = parseFloat(process.env.NEXT_PUBLIC_STORE_LNG || "-79.8711");
+// Fallback center (Hamilton-ish) if geocoding fails. Strip stray quotes /
+// whitespace and fall back if the env value still isn't a finite number, so
+// a malformed env var can't hand Google Maps a NaN center.
+const envCoord = (raw, fallback) => {
+  const n = parseFloat(String(raw ?? "").replace(/["'\s]/g, ""));
+  return Number.isFinite(n) ? n : fallback;
+};
+const STORE_LAT = envCoord(process.env.NEXT_PUBLIC_STORE_LAT, 43.2557);
+const STORE_LNG = envCoord(process.env.NEXT_PUBLIC_STORE_LNG, -79.8711);
 
 // Canonical store address (geocoded at runtime)
 const STORE_ADDRESS = "576 Concession Street, Hamilton, Ontario";
@@ -208,9 +211,21 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
     lng: STORE_LNG,
   });
 
-  // If maps already loaded globally, pick it up
+  // Google Maps is loaded once for the whole site by pages/_app.js. Wait
+  // for it here rather than adding a second <script> (loading the API twice
+  // causes "included multiple times" errors and crashes in Safari).
   useEffect(() => {
-    if (window.google?.maps) setMapsReady(true);
+    if (window.google?.maps?.places) {
+      setMapsReady(true);
+      return;
+    }
+    const id = setInterval(() => {
+      if (window.google?.maps?.places) {
+        setMapsReady(true);
+        clearInterval(id);
+      }
+    }, 200);
+    return () => clearInterval(id);
   }, []);
 
   // Geocode store address -> set exact lat/lng
@@ -393,15 +408,6 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
 
   return (
     <div className="container" style={{ padding: "1rem 0 2rem" }}>
-      {/* If Maps also loads in _app.js, this is a harmless no-op */}
-      {GOOGLE_KEY ? (
-        <Script
-          src={`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_KEY}&libraries=places`}
-          strategy="afterInteractive"
-          onLoad={() => setMapsReady(true)}
-        />
-      ) : null}
-
       <h1 className="menu-title" style={{ marginBottom: 12 }}>
         Select Your Service Method
       </h1>
