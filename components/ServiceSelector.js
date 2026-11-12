@@ -394,10 +394,10 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
               onClick={() => setChoice("delivery")}
               aria-pressed={choice === "delivery"}
             >
-              <span className="methodIcon">
+              <span className="methodCircle">
                 <CarIcon />
               </span>
-              <span className="methodLabel">DELIVERY</span>
+              <span className="methodLabel">Delivery</span>
             </button>
 
             <span className="or">— OR —</span>
@@ -409,10 +409,10 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
               onClick={() => setChoice("carryout")}
               aria-pressed={choice === "carryout"}
             >
-              <span className="methodIcon">
+              <span className="methodCircle">
                 <RunnerIcon />
               </span>
-              <span className="methodLabel">CARRYOUT</span>
+              <span className="methodLabel">Carryout</span>
             </button>
           </div>
 
@@ -631,8 +631,9 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
         }
 
         .methodRow {
+          --method-circle: 84px;
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           justify-content: center;
           gap: 22px;
           margin: 10px 0 16px;
@@ -641,42 +642,51 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
         .or {
           color: #777;
           font-weight: 700;
+          /* line up with the middle of the circles, not circle + label */
+          line-height: 1.2;
+          margin-top: calc(var(--method-circle) / 2 - 0.6em);
         }
 
+        /* The whole column (circle + label) is the click target */
         .methodBtn {
-          width: 120px;
-          height: 120px;
-          border-radius: 50%;
-          background: #000;
-          color: #fff;
-          border: 1px solid rgba(0, 0, 0, 0.06);
+          background: none;
+          border: 0;
+          padding: 0;
           display: flex;
           flex-direction: column;
           align-items: center;
-          justify-content: center;
-          gap: 6px;
+          gap: 8px;
           cursor: pointer;
+          font: inherit;
+        }
+        .methodCircle {
+          width: var(--method-circle);
+          height: var(--method-circle);
+          border-radius: 50%;
+          background: #000;
+          color: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           transition: transform 0.08s ease, box-shadow 0.12s ease,
             background 0.12s ease;
         }
-        .methodBtn:hover {
+        .methodCircle :global(svg) {
+          width: 52%;
+          height: 52%;
+        }
+        .methodBtn:hover .methodCircle {
           transform: translateY(-1px);
         }
-        .methodBtn.is-selected {
+        .methodBtn.is-selected .methodCircle {
           background: #262626;
           box-shadow: 0 0 0 4px rgba(139, 26, 26, 0.35),
             0 6px 16px rgba(0, 0, 0, 0.15);
         }
-        .methodIcon {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
+        /* Same look as the brown form labels ("Enter Location" etc.) */
         .methodLabel {
-          font-family: var(--font-heading, Oswald, sans-serif);
-          font-weight: 900;
-          font-size: 0.85rem;
-          letter-spacing: 0.3px;
+          font-weight: 700;
+          color: var(--text-brown);
         }
 
         .stack {
@@ -883,9 +893,8 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           .methodRow {
             gap: 14px;
           }
-          .methodBtn {
-            width: 92px;
-            height: 92px;
+          .methodRow {
+            --method-circle: 72px;
           }
           .deliveryBox {
             padding: 4px 0 0;
