@@ -114,13 +114,27 @@ export default function Home() {
           margin: 28px 0 24px;
           text-align: center;
         }
-        .mobile-start-btn {
-          display: inline-block;
+        /* Mobile "Order Online": long red pill with heavy condensed text */
+        .mobile-start-row :global(.mobile-start-btn) {
+          display: block;
           width: 100%;
-          max-width: 360px;
-          padding: 0.9rem 1.1rem;
-          font-weight: 800;
-          font-size: 1.05rem;
+          max-width: 380px;
+          margin: 0 auto;
+          padding: 0.85rem 1.25rem;
+          background: #ea3323;
+          color: #fff;
+          border-radius: 999px;
+          font-family: 'Anton', 'Oswald', sans-serif;
+          font-weight: 400;
+          font-size: 1.55rem;
+          line-height: 1.15;
+          letter-spacing: 0.04em;
+          text-align: center;
+          box-shadow: 0 4px 14px rgba(234, 51, 35, 0.35);
+        }
+        .mobile-start-row :global(.mobile-start-btn:hover),
+        .mobile-start-row :global(.mobile-start-btn:active) {
+          background: #d42a1b;
         }
         .order-or {
           font-family: "Hoefler Text", "Times New Roman", serif;
