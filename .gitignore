@@ -18,3 +18,5 @@ node_modules/
 # across machines; .claude/launch.json (the dev-server config) IS tracked.
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
+.vercel
+.env*
