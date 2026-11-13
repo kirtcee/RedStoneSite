@@ -548,14 +548,20 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
             </span>
           </button>
         )}
-        {/* "Tap to view" sits over the bottom of the opening pizza but is
-            NOT part of the sticky strip, so it scrolls away normally. */}
+        {/* Cream box behind the opening pizza (same look as the numbered
+            sections, without the black header). It's in normal flow, pulled
+            up underneath the sticky pizza strip, so it — and the "Tap to
+            view" label inside it — scrolls away while the pizza stays
+            pinned. The whole box opens the full pizza while it's visible. */}
         {isNarrow && (
-          <div className="pb-peekHintRow">
-            <button type="button" className="pb-peekHint" onClick={openPizzaZoom}>
-              Tap to view
-            </button>
-          </div>
+          <button
+            type="button"
+            className="pb-peekBox"
+            onClick={openPizzaZoom}
+            aria-label="View your whole pizza"
+          >
+            <span className="pb-peekHint">Tap to view</span>
+          </button>
         )}
 
         {/* ===== Left ===== */}
@@ -1510,18 +1516,20 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
           pointer-events: auto !important;
         }
         /* ----- Mobile pizza peek ----- */
-        .pb-peek {
+        .pb-scope {
           /* pizza is drawn min(screen - 40px, 320px) wide; the canvas is
              300x315, so its height is 1.05x that */
           --pz-h: calc(min(100vw - 40px, 320px) * 1.05);
           --peek-open: calc(var(--pz-h) * 0.40);   /* visible when opened */
           --peek-min: calc(var(--pz-h) * 0.35);    /* visible when scrolled */
+        }
+        .pb-peek {
           position: sticky;
           top: calc(var(--peek-min) - var(--peek-open) - 14px);
           z-index: 5;
           display: block;
           width: calc(100% + 24px);
-          margin: -4px -12px 10px;
+          margin: -4px -12px 0;
           height: var(--peek-open);
           padding: 0;
           border: 0;
@@ -1535,7 +1543,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
         .pb-peek__pizza {
           position: absolute;
           left: 50%;
-          bottom: 0;
+          bottom: 8px; /* small gap above the cream box's bottom border */
           width: min(100vw - 40px, 320px);
           aspect-ratio: 300 / 315;
           transform: translateX(-50%);
@@ -1560,23 +1568,30 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
           pointer-events: auto;
           cursor: zoom-in;
         }
-        .pb-peekHintRow {
+        .pb-peekBox {
           position: relative;
-          height: 0;
-          z-index: 6; /* above the sticky pizza strip */
+          z-index: 1; /* under the sticky pizza strip (z-index 5) */
+          display: block;
+          width: 100%;
+          height: var(--peek-open);
+          margin: calc(-1 * var(--peek-open)) 0 10px;
+          padding: 0;
+          background: var(--menu-box-bg);
+          border: 1px solid var(--menu-box-border);
+          border-radius: .1875rem;
+          cursor: zoom-in;
+          -webkit-tap-highlight-color: transparent;
         }
         .pb-peekHint {
           position: absolute;
-          right: 10px;
-          bottom: 16px;
-          border: 0;
+          right: 8px;
+          bottom: 8px;
           font-size: 0.7rem;
           font-weight: 700;
           color: var(--text-brown);
           background: rgba(255, 255, 255, 0.9);
           border-radius: 999px;
           padding: 3px 9px;
-          cursor: zoom-in;
           box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
         }
         .pb-zoom {
