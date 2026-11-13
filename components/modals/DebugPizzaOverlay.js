@@ -300,7 +300,7 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
         @media (max-width: 640px) {
           /* Space around the popup on phones: first value = top/bottom,
              second = left/right. Smaller second value = wider popup. */
-          .rs-modal-viewport { padding: 14px 8px !important; }
+          .rs-modal-viewport { padding: 63px 8px !important; }
           .rs-modal-panel { margin-top: 12px !important; }
           .rs-modal-body { padding: 4px 12px 12px !important; }
           .rs-modal-title { font-size: 1.5rem !important; padding-right: 40px !important; }
