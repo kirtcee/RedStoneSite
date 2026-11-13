@@ -134,7 +134,13 @@ export default function Home() {
         }
         .mobile-start-row :global(.mobile-start-btn:hover),
         .mobile-start-row :global(.mobile-start-btn:active) {
-          background: #d90000;
+          background: #910000;
+        }
+        /* While pressed: dotted red ring that follows the pill shape,
+           with a small cream gap between it and the button. */
+        .mobile-start-row :global(.mobile-start-btn:active) {
+          outline: 2px dotted #d0343e;
+          outline-offset: 2px;
         }
         .order-or {
           font-family: "Hoefler Text", "Times New Roman", serif;
