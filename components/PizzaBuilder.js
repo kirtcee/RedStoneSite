@@ -1513,10 +1513,11 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
           height: var(--peek-open);
           padding: 0;
           border: 0;
-          background: #fff;
+          /* transparent: only the pizza itself floats over the options as
+             they scroll underneath; taps outside the pizza fall through */
+          background: transparent;
           overflow: hidden;
-          cursor: zoom-in;
-          box-shadow: 0 8px 12px -10px rgba(0, 0, 0, 0.35);
+          pointer-events: none;
           -webkit-tap-highlight-color: transparent;
         }
         .pb-peek__pizza {
@@ -1526,6 +1527,10 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
           width: min(100vw - 40px, 320px);
           aspect-ratio: 300 / 315;
           transform: translateX(-50%);
+          pointer-events: auto;
+          cursor: zoom-in;
+          /* soft shadow so the pizza stays readable over the options */
+          filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
         }
         .pb-peek__pizza canvas {
           display: block;
