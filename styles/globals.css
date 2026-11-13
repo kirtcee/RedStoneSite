@@ -12,7 +12,7 @@
    Source files live in design/fonts/. Must stay outside :root {}. */
 @font-face {
   font-family: 'Red Stone Display';
-  src: url('/fonts/RedStoneDisplay-Regular.woff2') format('woff2');
+  src: url('/fonts/RedStoneDisplay-Regular.woff2?v=2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;

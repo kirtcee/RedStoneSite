@@ -37,7 +37,7 @@ function RootApp({ Component, pageProps }) {
           doesn't visibly swap from the fallback font. */}
       <link
         rel="preload"
-        href="/fonts/RedStoneDisplay-Regular.woff2"
+        href="/fonts/RedStoneDisplay-Regular.woff2?v=2"
         as="font"
         type="font/woff2"
         crossOrigin="anonymous"
