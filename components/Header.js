@@ -234,6 +234,86 @@ export default function Header() {
   const carryoutAddress = carryoutAddressFull;
   const deliveryAddressDisplay = formatAddressFull(deliveryAddress) || "Enter Address";
 
+  // Carryout / Delivery chip (icon | separator | two lines of text). Used in
+  // the desktop header and the mobile sub-bar below the header.
+  const serviceChip = (
+    !service ? (
+    <span className="carryout-chip" aria-label="Choose Carryout or Delivery">
+      <span className="carryout-iconbox" aria-hidden="true">
+        <HomeIcon className="carryout-icon" focusable="false" />
+      </span>
+      <span className="carryout-sep" aria-hidden="true" />
+      <span className="carryout-text">
+        <span className="carryout-line carryout-line--sm">SELECT</span>
+        <span className="carryout-line carryout-line--lg">
+          Order Method
+        </span>
+      </span>
+    </span>
+  ) : service === "carryout" ? (
+    <span
+      className="carryout-chip"
+      aria-label={`Carryout From ${carryoutAddressFull}`}
+    >
+      <span className="carryout-iconbox" aria-hidden="true">
+        <CarryoutIcon className="carryout-icon" focusable="false" />
+      </span>
+      <span className="carryout-sep" aria-hidden="true" />
+      <span className="carryout-text">
+        <span className="carryout-line carryout-line--sm">CARRYOUT FROM</span>
+        <span className="carryout-line carryout-line--lg">
+          {carryoutAddress}
+        </span>
+      </span>
+    </span>
+  ) : (
+    <span
+      className="carryout-chip"
+      aria-label={`Delivery To ${
+        formatAddressFull(deliveryAddress) || "Enter Address"
+      }`}
+    >
+      <span className="carryout-iconbox" aria-hidden="true">
+        <DeliveryIcon className="carryout-icon" focusable="false" />
+      </span>
+      <span className="carryout-sep" aria-hidden="true" />
+      <span className="carryout-text">
+        <span className="carryout-line carryout-line--sm">DELIVERY TO</span>
+        <span className="carryout-line carryout-line--lg">
+          {deliveryAddressDisplay}
+        </span>
+      </span>
+    </span>
+  )
+  );
+
+  // Mobile sub-bar (phones/tablets, where the desktop header nav is hidden):
+  // left = "◀ BACK" (or "DEALS" on the main menu page), right = the same
+  // carryout/delivery chip as the desktop header, without its border box.
+  const showMobileSubbar = ["/menu", "/cart", "/coupons"].some((p) =>
+    (router.pathname || "").startsWith(p)
+  );
+  const isMenuHome =
+    router.pathname === "/menu" &&
+    (!tab || tab === "entrees") &&
+    (!sub || sub === "all");
+  // Only use the browser's back if the previous page was on this site;
+  // otherwise (e.g. opened from a link) go to the menu.
+  const inAppNavCountRef = useRef(0);
+  useEffect(() => {
+    const onDone = () => { inAppNavCountRef.current += 1; };
+    router.events?.on("routeChangeComplete", onDone);
+    return () => router.events?.off("routeChangeComplete", onDone);
+  }, [router.events]);
+  const goBack = () => {
+    if (inAppNavCountRef.current > 0) router.back();
+    else router.push("/menu");
+  };
+  useEffect(() => {
+    document.documentElement.classList.toggle("has-mobile-subbar", showMobileSubbar);
+    return () => document.documentElement.classList.remove("has-mobile-subbar");
+  }, [showMobileSubbar]);
+
   // A fresh random bright color every hover, in the same vivid register as
   // the header rosette icons — fixed saturation/lightness so it's never a
   // dark or washed-out draw, only the hue changes. Set directly on the SVG
@@ -314,54 +394,7 @@ export default function Header() {
                 aria-label="Choose carryout or delivery"
                 title="Choose carryout or delivery"
               >
-                {!service ? (
-                  <span className="carryout-chip" aria-label="Choose Carryout or Delivery">
-                    <span className="carryout-iconbox" aria-hidden="true">
-                      <HomeIcon className="carryout-icon" focusable="false" />
-                    </span>
-                    <span className="carryout-sep" aria-hidden="true" />
-                    <span className="carryout-text">
-                      <span className="carryout-line carryout-line--sm">SELECT</span>
-                      <span className="carryout-line carryout-line--lg">
-                        Order Method
-                      </span>
-                    </span>
-                  </span>
-                ) : service === "carryout" ? (
-                  <span
-                    className="carryout-chip"
-                    aria-label={`Carryout From ${carryoutAddressFull}`}
-                  >
-                    <span className="carryout-iconbox" aria-hidden="true">
-                      <CarryoutIcon className="carryout-icon" focusable="false" />
-                    </span>
-                    <span className="carryout-sep" aria-hidden="true" />
-                    <span className="carryout-text">
-                      <span className="carryout-line carryout-line--sm">CARRYOUT FROM</span>
-                      <span className="carryout-line carryout-line--lg">
-                        {carryoutAddress}
-                      </span>
-                    </span>
-                  </span>
-                ) : (
-                  <span
-                    className="carryout-chip"
-                    aria-label={`Delivery To ${
-                      formatAddressFull(deliveryAddress) || "Enter Address"
-                    }`}
-                  >
-                    <span className="carryout-iconbox" aria-hidden="true">
-                      <DeliveryIcon className="carryout-icon" focusable="false" />
-                    </span>
-                    <span className="carryout-sep" aria-hidden="true" />
-                    <span className="carryout-text">
-                      <span className="carryout-line carryout-line--sm">DELIVERY TO</span>
-                      <span className="carryout-line carryout-line--lg">
-                        {deliveryAddressDisplay}
-                      </span>
-                    </span>
-                  </span>
-                )}
+                {serviceChip}
               </button>
 
               <div className="header-seg header-seg--cart" role="button" aria-label="Cart">
@@ -422,6 +455,33 @@ export default function Header() {
           <OrderSettingsAside variant="drawer" />
         </div>
       </div>
+
+      {showMobileSubbar && (
+        <div className="mobile-subbar">
+          {isMenuHome ? (
+            <button
+              type="button"
+              className="mobile-subbar__left"
+              onClick={() => router.push("/coupons")}
+            >
+              Deals
+            </button>
+          ) : (
+            <button type="button" className="mobile-subbar__left" onClick={goBack}>
+              <span className="mobile-subbar__tri" aria-hidden="true" />
+              Back
+            </button>
+          )}
+          <button
+            type="button"
+            className="mobile-subbar__service"
+            onClick={() => openServiceGate()}
+            aria-label="Choose carryout or delivery"
+          >
+            {serviceChip}
+          </button>
+        </div>
+      )}
 
       {showSubheader && (
         <div className="subheader">

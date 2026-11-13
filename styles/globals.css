@@ -299,6 +299,7 @@ h3 { font-size: 1.25rem; }
 }
 
 /* Subheader: crisp seam + shadow ONLY below */
+.mobile-subbar { display: none; } /* phones only, see the 860px block */
 .subheader {
   position: sticky;
   top: var(--header-h);
@@ -1350,6 +1351,122 @@ body::before {
      back to just the main header so anchors/sticky bits line up. */
   html.has-menu-subheader .subheader {
     display: none !important;
+  }
+
+  /* ---- Mobile sub-bar: ◀ BACK / DEALS on the left, carryout chip on the
+     right (see Header.js). Sticks under the main header. ---- */
+  .mobile-subbar {
+    --subbar-h: 48px;
+    position: sticky;
+    top: var(--header-h);
+    z-index: 1990;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    height: var(--subbar-h);
+    padding: 0 12px 0 14px;
+    background: #000;
+    color: #fff;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 8px 14px -10px rgba(0, 0, 0, 0.5);
+  }
+  .mobile-subbar__left {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 4px;
+    background: none;
+    border: 0;
+    color: #fff;
+    font-family: var(--font-heading);
+    font-size: 17px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+  /* solid left-pointing triangle */
+  .mobile-subbar__tri {
+    width: 0;
+    height: 0;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-right: 10px solid currentColor;
+  }
+  .mobile-subbar__service {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: #fff;
+    font-family: var(--font-heading);
+    cursor: pointer;
+  }
+  /* Same chip as the desktop header, minus the white border box */
+  .mobile-subbar .carryout-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    max-width: 100%;
+    height: 38px;
+  }
+  .mobile-subbar .carryout-iconbox {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 auto;
+  }
+  .mobile-subbar .carryout-icon {
+    width: 36px;
+    height: 36px;
+    display: block;
+    color: currentColor;
+  }
+  .mobile-subbar .carryout-icon rect {
+    display: none;
+  }
+  .mobile-subbar .carryout-sep {
+    width: 2px;
+    align-self: stretch;
+    background: #fff;
+    border-radius: 1px;
+    margin: 2px 4px;
+    flex: 0 0 auto;
+  }
+  .mobile-subbar .carryout-text {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    line-height: 1.1;
+    text-transform: uppercase;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .mobile-subbar .carryout-line--sm,
+  .mobile-subbar .carryout-line--lg {
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 210px;
+  }
+  /* Everything that measures "how tall is the sticky header area" grows by
+     the bar; the /coupons deal tabs sit just under it. */
+  html.has-mobile-subbar {
+    --header-offset: calc(var(--header-h) + 48px);
+  }
+  html.has-mobile-subbar.has-subheader:not(.has-menu-subheader) {
+    --header-offset: calc(var(--header-h) + 48px + var(--subheader-h));
+  }
+  html.has-mobile-subbar .subheader {
+    top: calc(var(--header-h) + 48px);
   }
   html.has-menu-subheader {
     --header-offset: var(--header-h);
