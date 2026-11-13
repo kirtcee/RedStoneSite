@@ -238,6 +238,9 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
   const autoRef = useRef(null);
   const autoObjRef = useRef(null);
   const localBoundsRef = useRef(null);
+  // Set once the customer edits any address field by hand, so the
+  // location lookup never overwrites what they typed.
+  const addrTouchedRef = useRef(false);
 
   // Init Places Autocomplete with strong local bias
   useEffect(() => {
@@ -281,33 +284,12 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
     };
     inputEl.addEventListener("input", handleInput);
 
-    // Optional: user geolocation for even better ranking if available
-    try {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const near = new g.maps.Circle({
-              center: {
-                lat: pos.coords.latitude,
-                lng: pos.coords.longitude,
-              },
-              radius: 15000,
-            }).getBounds();
-            ac.setBounds(near);
-          },
-          () => {}
-        );
-      }
-    } catch {}
-
     const partsOf = (place, t) =>
       place.address_components?.find((c) => c.types.includes(t))?.long_name ||
       "";
 
-    ac.addListener("place_changed", () => {
-      const place = ac.getPlace();
-      if (!place || !place.address_components) return;
-
+    // Fill the delivery form from a Google place / geocoder result
+    const fillFromPlace = (place) => {
       const streetNum = partsOf(place, "street_number");
       const route = partsOf(place, "route");
       const locality =
@@ -320,7 +302,54 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
       setCity(locality);
       setProvince(admin1 || "ON");
       setPostal(pc || "");
+    };
+
+    ac.addListener("place_changed", () => {
+      const place = ac.getPlace();
+      if (!place || !place.address_components) return;
+      fillFromPlace(place);
     });
+
+    // If the customer allows location access: bias suggestions to where
+    // they are, and look up their street address to pre-fill the form.
+    // Skipped if they've already started typing an address themselves.
+    try {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const here = {
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
+            };
+            const near = new g.maps.Circle({
+              center: here,
+              radius: 15000,
+            }).getBounds();
+            ac.setBounds(near);
+
+            new g.maps.Geocoder().geocode(
+              { location: here },
+              (results, status) => {
+                if (status !== "OK" || !results?.length) return;
+                if (inputEl.value.trim() || addrTouchedRef.current) return;
+                // Results are most-specific first; prefer one with a
+                // house number so the street line is complete.
+                const best =
+                  results.find((r) =>
+                    r.address_components?.some((c) =>
+                      c.types.includes("street_number")
+                    )
+                  ) || results[0];
+                inputEl.value = best.formatted_address || "";
+                fillFromPlace(best);
+              }
+            );
+          },
+          () => {},
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+        );
+      }
+    } catch {}
 
     // Keep PAC aligned with the input
     const fixPacPosition = () => {
@@ -485,7 +514,10 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
                   <input
                     className="textInput"
                     value={street}
-                    onChange={(e) => setStreet(e.target.value)}
+                    onChange={(e) => {
+                      addrTouchedRef.current = true;
+                      setStreet(e.target.value);
+                    }}
                   />
                 </div>
 
@@ -494,7 +526,10 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
                   <input
                     className="textInput"
                     value={suite}
-                    onChange={(e) => setSuite(e.target.value)}
+                    onChange={(e) => {
+                      addrTouchedRef.current = true;
+                      setSuite(e.target.value);
+                    }}
                   />
                 </div>
 
@@ -503,7 +538,10 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
                   <input
                     className="textInput"
                     value={city}
-                    onChange={(e) => setCity(e.target.value)}
+                    onChange={(e) => {
+                      addrTouchedRef.current = true;
+                      setCity(e.target.value);
+                    }}
                   />
                 </div>
 
@@ -512,7 +550,10 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
                   <input
                     className="textInput"
                     value={postal}
-                    onChange={(e) => setPostal(e.target.value)}
+                    onChange={(e) => {
+                      addrTouchedRef.current = true;
+                      setPostal(e.target.value);
+                    }}
                   />
                 </div>
 
