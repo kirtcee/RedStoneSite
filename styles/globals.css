@@ -1564,3 +1564,25 @@ body::before {
     font-size: 16px !important;
   }
 }
+
+/* ===========================
+   Menu category pages (Sides, Drinks, Signature/Specialty pizzas, Combos…)
+   =========================== */
+/* No white panel behind the item grids: the cream item boxes sit straight
+   on the page background. */
+.card:has(.feast) {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  /* padding kept: .feast--edge grids use negative margins that cancel it */
+}
+/* Group headings inside those panels (e.g. "Wings", combo groups) line
+   up with the boxes, which use .feast--edge to cancel the panel padding */
+.card:has(.feast) > h2 {
+  margin-left: -16px !important;
+}
+/* Boxes side by side in the same row are the same height (each row grows
+   to its tallest box), instead of uneven heights. */
+.feast__grid {
+  align-items: stretch !important;
+}

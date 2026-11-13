@@ -66,7 +66,7 @@ export default function SidesDessertsAll({
     <div className="stack" style={{ display: "grid", gap: "16px" }}>
       {/* ===== Sides ===== */}
       <section className="card" style={{ padding: "1rem 1rem 1.25rem" }}>
-        <h2 style={{ margin: "0 0 0.75rem 0" }}>Sides</h2>
+        {/* No "Sides" heading here — the page title already says Sides */}
 
         <div className="feast feast--edge">
           <section className="feast__grid feast__grid--four">
