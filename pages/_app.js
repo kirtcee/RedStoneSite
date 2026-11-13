@@ -33,6 +33,15 @@ function RootApp({ Component, pageProps }) {
         content="Order pizza, wings, sides, and drinks online from Red Stone Pizza for carryout or delivery."
       />
       <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+      {/* Start downloading the custom display font right away so text
+          doesn't visibly swap from the fallback font. */}
+      <link
+        rel="preload"
+        href="/fonts/RedStoneDisplay-Regular.woff2"
+        as="font"
+        type="font/woff2"
+        crossOrigin="anonymous"
+      />
     </Head>
   );
 

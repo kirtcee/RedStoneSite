@@ -124,7 +124,7 @@ export default function Home() {
           background: #ea3323;
           color: #fff;
           border-radius: 999px;
-          font-family: 'Anton', 'Oswald', sans-serif;
+          font-family: var(--font-display);
           font-weight: 400;
           font-size: 1.55rem;
           line-height: 1.15;
