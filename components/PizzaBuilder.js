@@ -1502,8 +1502,8 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
           /* pizza is drawn min(screen - 40px, 320px) wide; the canvas is
              300x315, so its height is 1.05x that */
           --pz-h: calc(min(100vw - 40px, 320px) * 1.05);
-          --peek-open: calc(var(--pz-h) * 0.35);   /* visible when opened */
-          --peek-min: calc(var(--pz-h) * 0.18);    /* visible when scrolled */
+          --peek-open: calc(var(--pz-h) * 0.40);   /* visible when opened */
+          --peek-min: calc(var(--pz-h) * 0.35);    /* visible when scrolled */
           position: sticky;
           top: calc(var(--peek-min) - var(--peek-open) - 14px);
           z-index: 5;
