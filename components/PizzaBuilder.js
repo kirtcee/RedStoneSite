@@ -2,6 +2,34 @@ import React, { useState, useEffect, useRef } from "react";
 import { priceLineItem, formatMoney, weightedToppingCount, PRICES, sizeMapUIToPrice, PREMIUM_TOPPINGS, describePizzaFull } from "./Pricing";
 import { useCart } from "./CartSystem";
 
+// Shared cache of pizza layer images: src -> Promise<HTMLImageElement|null>.
+// Each PNG downloads/decodes once per visit; later draws reuse it. Resolves
+// null (instead of hanging) if a file is missing, so one absent graphic
+// can't stop the rest of the pizza from drawing.
+const pizzaLayerCache = new Map();
+function loadPizzaLayer(src) {
+  if (!pizzaLayerCache.has(src)) {
+    pizzaLayerCache.set(
+      src,
+      new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () =>
+          (img.decode ? img.decode().catch(() => {}) : Promise.resolve()).then(
+            () => resolve(img)
+          );
+        img.onerror = () => {
+          if (process.env.NODE_ENV !== "production") {
+            console.warn("[PizzaBuilder] missing pizza layer:", src);
+          }
+          resolve(null);
+        };
+        img.src = src;
+      })
+    );
+  }
+  return pizzaLayerCache.get(src);
+}
+
 export default function PizzaBuilder({
   presetToppings = [],
   allowedToppings = null,
@@ -222,7 +250,6 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
     const ctx = canvas.getContext("2d"); if (!ctx) return;
 
     const currentVersion = ++drawVersionRef.current;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
     const imageQueue = [];
 
     imageQueue.push("/pizza_layers/No-Base.png");
@@ -288,15 +315,16 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
       imageQueue.push(filename);
     });
 
-    let loaded = 0; const images = [];
-    imageQueue.forEach((src, i) => {
-      const img = new Image();
-      img.src = src;
-      img.onload = () => {
-        if (drawVersionRef.current !== currentVersion) return;
-        images[i] = img; loaded++;
-        if (loaded === imageQueue.length) images.forEach((im) => ctx.drawImage(im, 0, 0, canvas.width, canvas.height));
-      };
+    // Wait for every layer, THEN clear + redraw in one go, so the previous
+    // pizza stays on screen until the new one is ready (no blank flash).
+    // Layers are cached, so after first use a redraw is effectively instant.
+    // A missing image is skipped instead of blocking the whole pizza.
+    Promise.all(imageQueue.map(loadPizzaLayer)).then((images) => {
+      if (drawVersionRef.current !== currentVersion) return; // newer draw won
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      images.forEach((im) => {
+        if (im) ctx.drawImage(im, 0, 0, canvas.width, canvas.height);
+      });
     });
   }, [
     cheeseIncluded, cheeseAmount, cheeseCoverage, secondAmount, secondCoverage,
@@ -899,7 +927,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                 }}
               >
                 {includedToppings} topping{includedToppings === 1 ? "" : "s"} included.
-                {` Additional toppings cost ${formatMoney(extraRateForNotice)} each. Toppings marked ★ count as 2.`}
+                {` Additional toppings cost ${formatMoney(extraRateForNotice)} each. Toppings marked * count as 2.`}
               </p>
             )}
             {meats.length > 0 && (
@@ -925,7 +953,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                       onChange={(e) => { e.stopPropagation(); handleToppingToggle(topping); }}
                       style={{ marginRight: "0.5rem" }}
                     />
-                    {topping}{PREMIUM_TOPPINGS.has(topping) ? " ★" : ""}
+                    {topping}{PREMIUM_TOPPINGS.has(topping) ? "*" : ""}
                   </label>
                   {selectedToppings.includes(topping) && (
                     <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginTop: "0.3rem" }}>
@@ -985,7 +1013,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                       onChange={(e) => { e.stopPropagation(); handleToppingToggle(topping); }}
                       style={{ marginRight: "0.5rem" }}
                     />
-                    {topping}{PREMIUM_TOPPINGS.has(topping) ? " ★" : ""}
+                    {topping}{PREMIUM_TOPPINGS.has(topping) ? "*" : ""}
                   </label>
                   {selectedToppings.includes(topping) && (
                     <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginTop: "0.3rem" }}>
