@@ -370,7 +370,13 @@ function DateDropdown({ value, onChange }) {
   );
 }
 
-export default function OrderSettingsAside() {
+// variant="aside" (default): the sticky desktop sidebar on menu/cart/coupons,
+//   plus the mobile bottom checkout bar.
+// variant="drawer": just the ORDER SETTINGS card, for the mobile hamburger
+//   menu (components/Header.js) — no checkout button, sticky follower or
+//   bottom bar.
+export default function OrderSettingsAside({ variant = "aside" }) {
+  const isDrawer = variant === "drawer";
   const router = useRouter();
   const {
     subtotalCents: cartSubtotalCents,
@@ -425,7 +431,7 @@ export default function OrderSettingsAside() {
   const prevScrollRef = useRef(0);
   const rafRef = useRef(0);
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (isDrawer || typeof window === "undefined") return;
     prevScrollRef.current = window.scrollY;
     const onScroll = () => {
       const y = window.scrollY;
@@ -462,6 +468,7 @@ export default function OrderSettingsAside() {
       {/* Mobile-only stand-in for the Checkout button inside .menu-aside,
           which is display:none below 860px (see globals.css) — without
           this there is no way to reach /checkout from a phone at all. */}
+      {!isDrawer && (
       <div className="mobile-checkout-bar">
         <div className="mobile-checkout-bar__total">
           <span>Total</span>
@@ -475,8 +482,13 @@ export default function OrderSettingsAside() {
           Checkout
         </button>
       </div>
-      <aside className="menu-aside">
-      <div className="menu-aside__follower" ref={followerRef}>
+      )}
+      <aside className={isDrawer ? "os-drawer" : "menu-aside"}>
+      <div
+        className={isDrawer ? undefined : "menu-aside__follower"}
+        ref={isDrawer ? undefined : followerRef}
+      >
+        {!isDrawer && (
         <button
           type="button"
           className="os-checkout"
@@ -487,6 +499,7 @@ export default function OrderSettingsAside() {
         >
           CHECKOUT
         </button>
+        )}
 
         <div className="os-card">
           <div className="os-bar">

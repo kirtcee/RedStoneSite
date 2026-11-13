@@ -8,6 +8,7 @@ import DeliveryIcon from "../public/deliveryRSP.svg";
 import HomeIcon from "../public/homeRSP.svg";
 import StoreLogo from "../public/storelogoRSP.svg";
 import HeaderOrnaments from "./HeaderOrnaments";
+import OrderSettingsAside from "./OrderSettingsAside";
 import { dealSections } from "../utils/dealCatalog";
 
 /**
@@ -192,8 +193,14 @@ export default function Header() {
   useEffect(() => {
     if (typeof document !== "undefined") {
       document.documentElement.classList.toggle("has-subheader", showSubheader);
+      // Menu-category subheader (VIEW ALL / BUILD YOUR OWN PIZZA / ...) is
+      // hidden on phones via CSS; the /coupons deal tabs are kept.
+      document.documentElement.classList.toggle(
+        "has-menu-subheader",
+        showSubheader && activeTopKey !== "deals"
+      );
     }
-  }, [showSubheader]);
+  }, [showSubheader, activeTopKey]);
 
   // /order is technically "menu mode" (so the header nav switches to
   // HOME/ENTRÉES/SIDES.../COMBOS), but its category subnav doesn't fit the
@@ -404,6 +411,10 @@ export default function Header() {
             ? `Carryout from ${carryoutAddress}`
             : `Delivery to ${deliveryAddressDisplay}`}
         </button>
+        {/* Same ORDER SETTINGS card as the desktop sidebar */}
+        <div className="mobile-drawer__settings">
+          <OrderSettingsAside variant="drawer" />
+        </div>
       </div>
 
       {showSubheader && (

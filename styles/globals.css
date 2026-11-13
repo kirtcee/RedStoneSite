@@ -1345,6 +1345,23 @@ body::before {
     display: none !important;
   }
 
+  /* Menu category subheader (VIEW ALL / BUILD YOUR OWN PIZZA / ...) is
+     removed on phones; the /coupons deal tabs stay. Header offset drops
+     back to just the main header so anchors/sticky bits line up. */
+  html.has-menu-subheader .subheader {
+    display: none !important;
+  }
+  html.has-menu-subheader {
+    --header-offset: var(--header-h);
+  }
+
+  /* ORDER SETTINGS card inside the hamburger drawer */
+  .mobile-drawer__settings {
+    /* extra bottom room so the last rows can scroll clear of the
+       fixed Total / Checkout bar on menu, cart and coupons */
+    padding: 12px 10px calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+
   /* Order Settings sidebar (menu/cart/coupons): dropped entirely on mobile
      rather than stacked below the page content. Checkout itself is NOT
      reachable any other way on mobile (the cart dropdown only links back
