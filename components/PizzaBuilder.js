@@ -20,6 +20,15 @@ export default function PizzaBuilder({
   // ===== refs for scroll control =====
   const rootRef = useRef(null);
 
+  // Mobile "pizza peek": tapping the strip opens the full pizza
+  const [pizzaZoomSrc, setPizzaZoomSrc] = useState(null);
+  const openPizzaZoom = () => {
+    try {
+      const c = canvasRef.current;
+      if (c) setPizzaZoomSrc(c.toDataURL("image/png"));
+    } catch {}
+  };
+
   // ===== Responsive: stack the two columns below the builder's natural
   // 846px width instead of overflowing/forcing horizontal scroll. Mirrors
   // the same isNarrow pattern already used in WingsBuilder.js. =====
@@ -291,7 +300,8 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
     });
   }, [
     cheeseIncluded, cheeseAmount, cheeseCoverage, secondAmount, secondCoverage,
-    selectedToppings, toppingPlacement, sauceEnabled, selectedSauce
+    selectedToppings, toppingPlacement, sauceEnabled, selectedSauce,
+    isNarrow // canvas element moves between mobile peek and desktop column
   ]);
 
   const defaultMeats = [
@@ -515,8 +525,28 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
 >
 
 
+        {/* ===== Mobile pizza peek =====
+            Shows only the bottom slice of the pizza, hanging down under the
+            title. It's position:sticky with a NEGATIVE top: it scrolls up
+            with the page (cropping from the top) until only the collapsed
+            slice is left, then pins there; scrolling back up grows it back.
+            Pure CSS, so it tracks the finger exactly with no layout jumps.
+            Sizes live in the .pb-peek CSS vars below. Tap = full pizza. */}
+        {isNarrow && (
+          <button
+            type="button"
+            className="pb-peek"
+            onClick={openPizzaZoom}
+            aria-label="View your whole pizza"
+          >
+            <span className="pb-peek__pizza">
+              <canvas ref={canvasRef} width="300" height="315" />
+            </span>
+            <span className="pb-peek__hint">Tap to view</span>
+          </button>
+        )}
+
         {/* ===== Left ===== */}
-{/* ===== Left ===== */}
 <div className="pb-left" style={{ overflowAnchor: 'none' }}>
 
           {/* 1. Size & Crust */}
@@ -1406,6 +1436,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
               itself stretches to fill via width/height:100% (its internal
               300x315 drawing buffer is unaffected, so the art doesn't blur
               at this scale). */}
+          {!isNarrow && (
           <div style={{ position: "relative", width: "100%", maxWidth: 300, aspectRatio: "300 / 315", margin: "1rem auto 0" }}>
             <canvas
               ref={canvasRef}
@@ -1414,8 +1445,22 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
               style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 0 }}
             />
           </div>
+          )}
         </aside>
       </div>
+
+      {/* Full-pizza view, opened by tapping the mobile peek */}
+      {pizzaZoomSrc && (
+        <div
+          className="pb-zoom"
+          role="dialog"
+          aria-label="Your pizza"
+          onClick={() => setPizzaZoomSrc(null)}
+        >
+          <img src={pizzaZoomSrc} alt="Your pizza" className="pb-zoom__img" />
+          <div className="pb-zoom__hint">Tap anywhere to close</div>
+        </div>
+      )}
 
       {/* Mobile-only sticky CTA — on desktop the "Add To Order" button inside
           the My Pizza card (above) is used instead. Fixed to the real
@@ -1452,6 +1497,82 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
           box-shadow: none !important;
           pointer-events: auto !important;
         }
+        /* ----- Mobile pizza peek ----- */
+        .pb-peek {
+          /* pizza is drawn min(screen - 40px, 320px) wide; the canvas is
+             300x315, so its height is 1.05x that */
+          --pz-h: calc(min(100vw - 40px, 320px) * 1.05);
+          --peek-open: calc(var(--pz-h) * 0.35);   /* visible when opened */
+          --peek-min: calc(var(--pz-h) * 0.18);    /* visible when scrolled */
+          position: sticky;
+          top: calc(var(--peek-min) - var(--peek-open) - 14px);
+          z-index: 5;
+          display: block;
+          width: calc(100% + 24px);
+          margin: -4px -12px 10px;
+          height: var(--peek-open);
+          padding: 0;
+          border: 0;
+          background: #fff;
+          overflow: hidden;
+          cursor: zoom-in;
+          box-shadow: 0 8px 12px -10px rgba(0, 0, 0, 0.35);
+          -webkit-tap-highlight-color: transparent;
+        }
+        .pb-peek__pizza {
+          position: absolute;
+          left: 50%;
+          bottom: 0;
+          width: min(100vw - 40px, 320px);
+          aspect-ratio: 300 / 315;
+          transform: translateX(-50%);
+        }
+        .pb-peek__pizza canvas {
+          display: block;
+          width: 100%;
+          height: 100%;
+        }
+        .pb-peek__hint {
+          position: absolute;
+          right: 10px;
+          bottom: 6px;
+          font-size: 0.7rem;
+          font-weight: 700;
+          color: var(--text-brown);
+          background: rgba(255, 255, 255, 0.85);
+          border-radius: 999px;
+          padding: 2px 8px;
+          pointer-events: none;
+        }
+        .pb-zoom {
+          position: fixed;
+          inset: 0;
+          z-index: 10050;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 14px;
+          background: rgba(0, 0, 0, 0.72);
+          animation: pbZoomIn 0.18s ease-out;
+          cursor: zoom-out;
+        }
+        .pb-zoom__img {
+          width: min(90vw, 420px);
+          height: auto;
+          filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.45));
+        }
+        .pb-zoom__hint {
+          color: #fff;
+          font-size: 0.85rem;
+          font-weight: 700;
+          opacity: 0.85;
+        }
+        @keyframes pbZoomIn {
+          from { opacity: 0; transform: scale(0.96); }
+          to { opacity: 1; transform: scale(1); }
+        }
+
         .pb-mobile-bar {
           position: fixed;
           left: 0;
