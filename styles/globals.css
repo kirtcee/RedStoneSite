@@ -1357,9 +1357,21 @@ body::before {
 
   /* ORDER SETTINGS card inside the hamburger drawer */
   .mobile-drawer__settings {
-    /* extra bottom room so the last rows can scroll clear of the
-       fixed Total / Checkout bar on menu, cart and coupons */
-    padding: 12px 10px calc(96px + env(safe-area-inset-bottom, 0px));
+    padding: 10px 10px calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+  /* Drawer open: hide the fixed Total/Checkout bar so the drawer can use
+     the full height (bar is behind the drawer/backdrop anyway). */
+  html.mobile-nav-open .mobile-checkout-bar {
+    display: none !important;
+  }
+  /* Slightly tighter rows so drawer + Order Settings fit without scrolling */
+  .mobile-drawer__link {
+    padding-top: 11px;
+    padding-bottom: 11px;
+  }
+  .mobile-drawer__service {
+    padding-top: 12px;
+    padding-bottom: 12px;
   }
 
   /* Order Settings sidebar (menu/cart/coupons): dropped entirely on mobile

@@ -220,6 +220,12 @@ export default function Header() {
   // Mobile hamburger drawer — desktop never sets this true (the toggle button
   // is CSS-hidden above the mobile breakpoint), and any navigation closes it.
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  // Lets CSS hide the fixed Total/Checkout bar while the drawer is open
+  // (it's covered by the drawer anyway) so the drawer gets that space.
+  useEffect(() => {
+    document.documentElement.classList.toggle("mobile-nav-open", mobileNavOpen);
+    return () => document.documentElement.classList.remove("mobile-nav-open");
+  }, [mobileNavOpen]);
   useEffect(() => {
     setMobileNavOpen(false);
   }, [router.pathname, tab, sub]);

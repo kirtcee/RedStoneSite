@@ -602,6 +602,7 @@ export default function OrderSettingsAside({ variant = "aside" }) {
               0 (not yet "genuinely empty"); show a neutral placeholder
               instead of a misleading "$0.00" that looks like the order was
               wiped (see project memory: Order Settings $0.00 flash). */}
+          {!isDrawer && (
           <div className="os-box" style={{ background: DARK }}>
             <div className="os-totalRow">
               <div>Food &amp; Beverage:</div>
@@ -622,6 +623,7 @@ export default function OrderSettingsAside({ variant = "aside" }) {
               <div>{isLoaded ? formatMoney(totalCents) : "···"}</div>
             </div>
           </div>
+          )}
         </div>
       </div>
 
@@ -713,6 +715,17 @@ export default function OrderSettingsAside({ variant = "aside" }) {
           border-radius: 0;
           background: #fff;
           cursor: pointer;
+        }
+        /* Hamburger-drawer version: a bit tighter so it fits on screen */
+        .os-drawer .os-box {
+          padding: 9px 12px;
+        }
+        .os-drawer .os-bar {
+          padding: 0.55rem 0.8rem;
+        }
+        .os-drawer .os-radios {
+          gap: 4px;
+          margin-top: 6px;
         }
         .os-radios {
           display: flex;
