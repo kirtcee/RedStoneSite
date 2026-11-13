@@ -177,6 +177,10 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
   // close on outside click (but not on scrollbar)
   const onViewportMouseDown = useCallback(
     (e) => {
+      // Phones: tapping outside the popup does NOT close it — the margin is
+      // a thin strip that's easy to hit by accident while scrolling, which
+      // would throw away a half-built order. Use the ✕ to close.
+      if (isPhoneWidth()) return;
       const el = scrollerRef.current;
       if (!el) return;
       if (e.target && e.target.closest?.("[data-modal-panel]")) return;
@@ -247,7 +251,9 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
       <div
         style={backdropStyle}
         aria-hidden
-        onMouseDown={onClose}
+        onMouseDown={() => {
+          if (!isPhoneWidth()) onClose();
+        }}
       />
       <div
         ref={scrollerRef}
@@ -300,6 +306,14 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
       `}</style>
     </div>,
     root
+  );
+}
+
+// Phone-sized screen (matches the 640px mobile breakpoint used site-wide)
+function isPhoneWidth() {
+  return (
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(max-width: 640px)").matches
   );
 }
 
