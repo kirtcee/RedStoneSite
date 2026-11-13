@@ -2,7 +2,7 @@
   --brand-blue:#000000;
   --red:#8b1a1a;
   --light-border:var(--menu-box-border);
-  --heading: Oswald, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  --heading: var(--font-display); /* was Oswald */
 }
 
 /* keep page from shifting when a modal opens */

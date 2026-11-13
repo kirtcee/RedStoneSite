@@ -97,7 +97,7 @@ export default function Home() {
         }
         .home-title {
           margin: 0 10px 0 0;
-          font-family: 'Oswald', sans-serif;
+          font-family: var(--font-heading);
           font-weight: 900;
           letter-spacing: 0.5px;
           font-size: 1.9rem;
