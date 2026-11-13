@@ -1370,3 +1370,18 @@ html {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* ===========================
+   iPhone auto-zoom fix
+   iOS Safari zooms the whole page into any form field whose text is
+   under 16px (and often stays zoomed). Keep every field at 16px on
+   phones / touch screens. !important so it wins over the per-component
+   field sizes; desktop sizes are unaffected.
+   =========================== */
+@media (max-width: 640px), (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
