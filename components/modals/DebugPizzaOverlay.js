@@ -298,7 +298,9 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
            Uses !important because the desktop values above are inline
            styles, which otherwise always win over external CSS. */
         @media (max-width: 640px) {
-          .rs-modal-viewport { padding: 14px !important; }
+          /* Space around the popup on phones: first value = top/bottom,
+             second = left/right. Smaller second value = wider popup. */
+          .rs-modal-viewport { padding: 14px 8px !important; }
           .rs-modal-panel { margin-top: 12px !important; }
           .rs-modal-body { padding: 4px 12px 12px !important; }
           .rs-modal-title { font-size: 1.5rem !important; padding-right: 40px !important; }
@@ -351,13 +353,13 @@ const closeBtnStyle = {
   position: "absolute",
   right: 8,
   top: 8,
-  fontSize: 20,
+  fontSize: 26,
   lineHeight: 1,
   background: "transparent",
   border: 0,
   cursor: "pointer",
   padding: "6px 8px",
-  color: "var(--menu-box-border)", // same tan-brown as the box borders
+  color: "var(--text-brown)", // same brown as the body text (#8f6c49)
 };
 const titleStyle = {
   paddingRight: 44,
@@ -380,6 +382,7 @@ const panelStyle = {
   marginTop: 48,
   background: "#fff",
   border: "1px solid #e5e5e5",
+  borderRadius: 3, // slightly rounded corners
   boxShadow: "0 10px 24px rgba(0,0,0,0.16)",
 };
 const panelBodyStyle = { padding: "8px 16px 16px" };

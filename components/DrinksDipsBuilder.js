@@ -281,7 +281,7 @@ export function DrinksCategoryPanel({
 
         <div style={{ padding: "1.15rem 1rem", background: LIGHTER_BG }}>
           {items.length === 0 ? (
-            <p style={{ margin: 0, color: "#8a7256" }}>
+            <p style={{ margin: 0, color: "var(--text-brown)" }}>
               No items added yet.
             </p>
           ) : (
