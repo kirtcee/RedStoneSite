@@ -177,10 +177,6 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
   // close on outside click (but not on scrollbar)
   const onViewportMouseDown = useCallback(
     (e) => {
-      // Phones: tapping outside the popup does NOT close it — the margin is
-      // a thin strip that's easy to hit by accident while scrolling, which
-      // would throw away a half-built order. The ✕ (kept on screen) closes.
-      if (isPhoneWidth()) return;
       const el = scrollerRef.current;
       if (!el) return;
       if (e.target && e.target.closest?.("[data-modal-panel]")) return;
@@ -251,9 +247,7 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
       <div
         style={backdropStyle}
         aria-hidden
-        onMouseDown={() => {
-          if (!isPhoneWidth()) onClose();
-        }}
+        onMouseDown={onClose}
       />
       <div
         ref={scrollerRef}
@@ -302,37 +296,10 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
           .rs-modal-panel { margin-top: 12px !important; }
           .rs-modal-body { padding: 4px 12px 12px !important; }
           .rs-modal-title { font-size: 1.5rem !important; padding-right: 40px !important; }
-          /* ✕ stays on screen while scrolling (it's the only way to close
-             on phones). Fixed exactly where it sits in the title bar
-             (viewport pad 14 + panel margin 12 + 8 = 34 top; 14 + 8 = 22
-             right), with a white disc so it reads over the content. */
-          .rs-modal-close {
-            position: fixed !important;
-            top: 34px !important;
-            right: 22px !important;
-            z-index: 20;
-            width: 36px;
-            height: 36px;
-            padding: 0 !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.95) !important;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-          }
         }
       `}</style>
     </div>,
     root
-  );
-}
-
-// Phone-sized screen (matches the 640px mobile breakpoint used site-wide)
-function isPhoneWidth() {
-  return (
-    typeof window !== "undefined" &&
-    window.matchMedia?.("(max-width: 640px)").matches
   );
 }
 
@@ -376,6 +343,7 @@ const closeBtnStyle = {
   border: 0,
   cursor: "pointer",
   padding: "6px 8px",
+  color: "var(--menu-box-border)", // same tan-brown as the box borders
 };
 const titleStyle = {
   paddingRight: 44,
