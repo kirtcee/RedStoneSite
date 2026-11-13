@@ -121,8 +121,8 @@ export default function Home() {
           max-width: 380px;
           margin: 0 auto;
           padding: 0.85rem 1.25rem;
-          background: #ea3323;
-          color: #fff;
+          background: #ff0000;
+          color: #fefaf6;
           border-radius: 999px;
           font-family: var(--font-display);
           font-weight: 400;
@@ -130,11 +130,11 @@ export default function Home() {
           line-height: 1.15;
           letter-spacing: 0.04em;
           text-align: center;
-          box-shadow: 0 4px 14px rgba(234, 51, 35, 0.35);
+          box-shadow: 0 4px 14px rgba(255, 0, 0, 0.35);
         }
         .mobile-start-row :global(.mobile-start-btn:hover),
         .mobile-start-row :global(.mobile-start-btn:active) {
-          background: #d42a1b;
+          background: #d90000;
         }
         .order-or {
           font-family: "Hoefler Text", "Times New Roman", serif;
