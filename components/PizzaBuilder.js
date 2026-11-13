@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { priceLineItem, formatMoney, weightedToppingCount, PRICES, sizeMapUIToPrice, PREMIUM_TOPPINGS, describePizzaFull } from "./Pricing";
 import { useCart } from "./CartSystem";
+import { getToppingArt } from "../utils/pizzaToppingArt";
+import { getPieces } from "../utils/pizzaPieces";
 
 // Shared cache of pizza layer images: src -> Promise<HTMLImageElement|null>.
 // Each PNG downloads/decodes once per visit; later draws reuse it. Resolves
@@ -43,6 +45,8 @@ export default function PizzaBuilder({
 }) {
   const { addItem } = useCart();
   const drawVersionRef = useRef(0);
+  // ids of topping pieces on the pizza at the last draw (null = first draw)
+  const drawnPieceIdsRef = useRef(null);
   const canvasRef = useRef(null);
 
   // ===== refs for scroll control =====
@@ -305,30 +309,118 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
       }
     }
 
-    selectedToppings.forEach((topping) => {
-      const placement = toppingPlacement[topping];
+    // Toppings: ones with piece art (utils/pizzaToppingArt.js) are scattered
+    // as individual pieces; anything else falls back to its old full-pizza
+    // layer image.
+    const toppingItems = selectedToppings.map((topping) => {
+      const placement = toppingPlacement[topping] || "full";
+      const art = getToppingArt(topping);
+      if (art) {
+        return {
+          kind: "pieces",
+          art,
+          pieces: getPieces(topping, art, placement, toppingAmount[topping] || "Normal"),
+        };
+      }
       const formatted = topping.replace(/\s+/g, "-");
-      let filename = `/pizza_layers/${formatted}`;
-      if (placement === "left") filename += "-Left.png";
-      else if (placement === "right") filename += "-Right.png";
-      else filename += ".png";
-      imageQueue.push(filename);
+      let src = `/pizza_layers/${formatted}`;
+      if (placement === "left") src += "-Left.png";
+      else if (placement === "right") src += "-Right.png";
+      else src += ".png";
+      return { kind: "layer", src };
     });
 
-    // Wait for every layer, THEN clear + redraw in one go, so the previous
+    // Wait for every image, THEN clear + redraw in one go, so the previous
     // pizza stays on screen until the new one is ready (no blank flash).
-    // Layers are cached, so after first use a redraw is effectively instant.
+    // Images are cached, so after first use a redraw is effectively instant.
     // A missing image is skipped instead of blocking the whole pizza.
-    Promise.all(imageQueue.map(loadPizzaLayer)).then((images) => {
+    Promise.all([
+      Promise.all(imageQueue.map(loadPizzaLayer)),
+      Promise.all(
+        toppingItems.map((it) =>
+          it.kind === "layer"
+            ? loadPizzaLayer(it.src)
+            : Promise.all(it.art.sprites.map((f) => loadPizzaLayer(`/pizza_toppings/${f}`)))
+        )
+      ),
+    ]).then(([baseImages, toppingImages]) => {
       if (drawVersionRef.current !== currentVersion) return; // newer draw won
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      images.forEach((im) => {
-        if (im) ctx.drawImage(im, 0, 0, canvas.width, canvas.height);
+
+      // Pieces that weren't on the pizza last time "drop in" (shrink from a
+      // bit bigger + fade in), slightly staggered so it feels sprinkled.
+      // Nothing animates on the builder's first draw.
+      const start = performance.now();
+      const bornAt = new Map();
+      const prevIds = drawnPieceIdsRef.current;
+      const nowIds = new Set();
+      let newCount = 0;
+      toppingItems.forEach((it) => {
+        if (it.kind !== "pieces") return;
+        it.pieces.forEach((pc) => {
+          nowIds.add(pc.id);
+          if (prevIds && !prevIds.has(pc.id)) {
+            bornAt.set(pc.id, start + Math.min(160, newCount * 4));
+            newCount++;
+          }
+        });
       });
+      drawnPieceIdsRef.current = nowIds;
+
+      const DROP_MS = 240;
+      const drawFrame = (now) => {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // everything is laid out on a 300 x 300 pizza, scaled to the canvas
+        ctx.setTransform(canvas.width / 300, 0, 0, canvas.height / 300, 0, 0);
+        baseImages.forEach((im) => {
+          if (im) ctx.drawImage(im, 0, 0, 300, 300);
+        });
+        toppingItems.forEach((it, i) => {
+          const imgs = toppingImages[i];
+          if (it.kind === "layer") {
+            if (imgs) ctx.drawImage(imgs, 0, 0, 300, 300);
+            return;
+          }
+          it.pieces.forEach((pc) => {
+            const im = imgs[pc.sprite];
+            if (!im) return;
+            let scale = pc.scale;
+            let alpha = 1;
+            const born = bornAt.get(pc.id);
+            if (born !== undefined) {
+              const t = Math.max(0, Math.min(1, (now - born) / DROP_MS));
+              if (t === 0) return; // not started yet
+              const ease = 1 - (1 - t) ** 3;
+              scale *= 1 + 0.4 * (1 - ease);
+              alpha = ease;
+            }
+            const w = it.art.size * scale;
+            ctx.save();
+            ctx.translate(pc.x, pc.y);
+            ctx.rotate(pc.rotation);
+            if (pc.flip) ctx.scale(-1, 1);
+            ctx.globalAlpha = alpha;
+            ctx.drawImage(im, -w / 2, -w / 2, w, w);
+            ctx.restore();
+          });
+        });
+      };
+
+      if (!newCount) {
+        drawFrame(start);
+        return;
+      }
+      const lastBorn = start + Math.min(160, newCount * 4);
+      const tick = (now) => {
+        if (drawVersionRef.current !== currentVersion) return; // superseded
+        drawFrame(now);
+        if (now < lastBorn + DROP_MS) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
     });
   }, [
     cheeseIncluded, cheeseAmount, cheeseCoverage, secondAmount, secondCoverage,
-    selectedToppings, toppingPlacement, sauceEnabled, selectedSauce,
+    selectedToppings, toppingPlacement, toppingAmount, sauceEnabled, selectedSauce,
     isNarrow // canvas element moves between mobile peek and desktop column
   ]);
 
@@ -568,7 +660,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
             aria-label="View your whole pizza"
           >
             <span className="pb-peek__pizza">
-              <canvas ref={canvasRef} width="300" height="315" />
+              <canvas ref={canvasRef} width="600" height="630" />
               {/* The only tappable part: an oval exactly over the pizza
                   (border-radius:50% also shapes the tap area), so taps
                   beside/around the pizza reach the options underneath. */}
@@ -1495,8 +1587,8 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
           <div style={{ position: "relative", width: "100%", maxWidth: 300, aspectRatio: "300 / 315", margin: "1rem auto 0" }}>
             <canvas
               ref={canvasRef}
-              width="300"
-              height="315"
+              width="600"
+              height="630"
               style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 0 }}
             />
           </div>
