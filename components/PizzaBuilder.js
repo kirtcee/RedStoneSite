@@ -569,15 +569,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
             pinned pizza never shows it. */}
         {isNarrow && (
           <div className="pb-peekWaves" aria-hidden="true">
-            <svg className="pb-peekWaves__svg" preserveAspectRatio="none">
-              <defs>
-                <pattern id="pbWaves" width="40" height="24" patternUnits="userSpaceOnUse">
-                  <path d="M0 0H40V9Q30 15 20 9Q10 3 0 9Z" fill="#8B1A1A" />
-                  <path d="M0 9Q10 3 20 9Q30 15 40 9V16Q30 22 20 16Q10 10 0 16Z" fill="#FFB0B0" />
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#pbWaves)" />
-            </svg>
+            <div className="pb-peekWaves__band" />
           </div>
         )}
 
@@ -1607,16 +1599,25 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
           z-index: 6; /* above the sticky pizza strip (5) */
           pointer-events: none;
         }
-        .pb-peekWaves__svg {
+        /* The bands are one 40x24 wave tile repeated sideways. Tweak:
+             --wave-h  height of the bands (the waves scale with it)
+             --wave-y  nudge up/down: negative = higher, positive = lower.
+                       -1px makes the maroon cover the box's top border so
+                       there's no hairline gap between border and bands. */
+        .pb-peekWaves__band {
+          --wave-h: 24px;
+          --wave-y: -1px;
           position: absolute;
           left: 1px;
           right: 1px;
-          width: calc(100% - 2px);
-          top: calc(-10px - var(--peek-open) + 1px);
-          height: 24px;
-          border-top-left-radius: .125rem;
-          border-top-right-radius: .125rem;
-          overflow: hidden;
+          top: calc(-10px - var(--peek-open) + 1px + var(--wave-y));
+          height: var(--wave-h);
+          border-top-left-radius: .1875rem;
+          border-top-right-radius: .1875rem;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='24' viewBox='0 0 40 24'%3E%3Cpath d='M0 0H40V9Q30 15 20 9Q10 3 0 9Z' fill='%238B1A1A'/%3E%3Cpath d='M0 9Q10 3 20 9Q30 15 40 9V16Q30 22 20 16Q10 10 0 16Z' fill='%23FFB0B0'/%3E%3C/svg%3E");
+          background-repeat: repeat-x;
+          background-position: left top;
+          background-size: calc(var(--wave-h) * 40 / 24) var(--wave-h);
         }
         .pb-peekHint {
           position: absolute;
