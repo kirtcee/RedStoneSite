@@ -12,6 +12,26 @@ const DEFAULT_PIECE_OPTIONS = [6, 12, 20, 30];
 const DEFAULT_DIPS_OPTIONS  = ["Blue Cheese", "Garlic", "Ranch"];
 const DEFAULT_INCLUDED_DIPS_MAP = { 6: 1, 12: 2, 20: 3, 30: 4 };
 
+// Green check-in-a-circle shown beside each line in the "Item" summary
+// (cropped from the 76x62 artwork to just the 39x39 circle)
+function ItemCheck() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="12.5 11.5 39 39"
+      aria-hidden="true"
+      style={{ flex: "0 0 auto", display: "block" }}
+    >
+      <path
+        fill="#6F9F47"
+        fillRule="evenodd"
+        d="M 32 11.5 A 19.5 19.5 0 1 1 32 50.5 A 19.5 19.5 0 1 1 32 11.5 Z M 29.50 40.00 L 43.50 26.00 L 43.50 24.00 L 42.00 22.50 L 41.00 22.50 L 29.00 34.50 L 28.00 34.50 L 24.00 30.50 L 23.00 30.50 L 20.50 33.00 L 22.50 35.00 L 22.50 36.00 L 23.00 36.50 L 24.00 36.50 L 24.50 37.00 L 24.50 38.00 L 27.00 40.50 L 29.00 40.50 Z"
+      />
+    </svg>
+  );
+}
+
 export default function WingsBuilder({
   onClose = () => {},
   onAdd = () => {},
@@ -355,9 +375,11 @@ export default function WingsBuilder({
         <div
           style={{
             display: "flex",
+            // phones: one full-width button per row (easier to tap)
+            flexDirection: isNarrow ? "column" : "row",
             gap: "0.55rem",
             marginBottom: "0.4rem",
-            flexWrap: "wrap",
+            flexWrap: isNarrow ? "nowrap" : "wrap",
           }}
         >
           {pieceOptions.map((count) => {
@@ -376,9 +398,11 @@ export default function WingsBuilder({
                   if (!isCountLocked) setSelectedCount(count);
                 }}
                 style={{
-                  flex: isNarrow ? "1 1 calc(50% - 0.55rem)" : "1 1 auto",
-                  minWidth: "160px",
-                  padding: "0.6rem 0.8rem",
+                  flex: isNarrow ? "0 0 auto" : "1 1 auto",
+                  width: isNarrow ? "100%" : undefined,
+                  minWidth: isNarrow ? 0 : "160px",
+                  padding: isNarrow ? "0.8rem 1rem" : "0.6rem 0.8rem",
+                  fontSize: isNarrow ? "1rem" : undefined,
                   backgroundColor: active ? MAROON : "#eee",
                   color: active ? "white" : "#333",
                   border: "none",
@@ -495,13 +519,13 @@ export default function WingsBuilder({
       <Section index={3} title="Item">
         <div style={{ marginTop: "0.25rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" }}>
-            <span style={{ color: "green", fontWeight: 900 }}>✔</span>
+            <ItemCheck />
             <span style={{ fontWeight: 900 }}>({wingsQty})</span>
             <span>{selectedCount} piece wings — {selectedSauce}</span>
           </div>
           {selectedDipsList.map((item, idx) => (
             <div key={idx} style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" }}>
-              <span style={{ color: "green", fontWeight: 900 }}>✔</span>
+              <ItemCheck />
               <span style={{ fontWeight: 900 }}>({item.qty})</span>
               <span>{item.label}</span>
             </div>
