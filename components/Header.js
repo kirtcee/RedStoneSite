@@ -435,21 +435,6 @@ export default function Header() {
             </button>
           ))}
         </nav>
-        <button
-          type="button"
-          className="mobile-drawer__service"
-          tabIndex={mobileNavOpen ? 0 : -1}
-          onClick={() => {
-            setMobileNavOpen(false);
-            openServiceGate();
-          }}
-        >
-          {!service
-            ? "Select Order Method"
-            : service === "carryout"
-            ? `Carryout from ${carryoutAddress}`
-            : `Delivery to ${deliveryAddressDisplay}`}
-        </button>
         {/* Same ORDER SETTINGS card as the desktop sidebar */}
         <div className="mobile-drawer__settings">
           <OrderSettingsAside variant="drawer" />

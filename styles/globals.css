@@ -1366,9 +1366,9 @@ body::before {
     gap: 12px;
     height: var(--subbar-h);
     padding: 0 12px 0 14px;
-    background: #000;
-    color: #fff;
-    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    background: #fff;
+    color: #000;
+    border-top: 1px solid #e5e5e5;
     box-shadow: 0 8px 14px -10px rgba(0, 0, 0, 0.5);
   }
   .mobile-subbar__left {
@@ -1378,7 +1378,7 @@ body::before {
     padding: 6px 4px;
     background: none;
     border: 0;
-    color: #fff;
+    color: #000;
     font-family: var(--font-heading);
     font-size: 17px;
     text-transform: uppercase;
@@ -1401,7 +1401,7 @@ body::before {
     padding: 0;
     background: none;
     border: 0;
-    color: #fff;
+    color: #000;
     font-family: var(--font-heading);
     cursor: pointer;
   }
@@ -1431,10 +1431,27 @@ body::before {
   .mobile-subbar .carryout-icon rect {
     display: none;
   }
+  /* the icon files have white baked in; make them black in this bar */
+  .mobile-subbar .carryout-icon [class*="cls-1"] {
+    fill: #000;
+  }
+  /* the delivery truck's outline has its white stroke inlined, so it
+     needs !important to turn black */
+  .mobile-subbar .carryout-icon [class*="cls-2"],
+  .mobile-subbar .carryout-icon [style*="stroke"] {
+    stroke: #000 !important;
+  }
+  /* hairline frame edges exported with the house / delivery icons —
+     invisible on the black desktop header, but would show on white */
+  .mobile-subbar .carryout-icon path[d^="M.02 23.97"],
+  .mobile-subbar .carryout-icon path[d^="M23.97 0"],
+  .mobile-subbar .carryout-icon polygon {
+    display: none;
+  }
   .mobile-subbar .carryout-sep {
     width: 2px;
     align-self: stretch;
-    background: #fff;
+    background: #000;
     border-radius: 1px;
     margin: 2px 4px;
     flex: 0 0 auto;
