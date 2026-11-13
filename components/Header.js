@@ -73,7 +73,7 @@ export default function Header() {
       label: "ENTRÉES",
       onClick: () =>
         router.push(buildMenuUrl({ tab: "entrees" }), undefined, {
-          scroll: false,
+          scroll: true, // switching menu section starts at the top
         }),
     },
     {
@@ -81,7 +81,7 @@ export default function Header() {
       label: "SIDES",
       onClick: () =>
         router.push(buildMenuUrl({ tab: "sides", sub: "all" }), undefined, {
-          scroll: false,
+          scroll: true, // switching menu section starts at the top
         }),
     },
     {
@@ -89,7 +89,7 @@ export default function Header() {
       label: "DRINKS",
       onClick: () =>
         router.push(buildMenuUrl({ tab: "drinks" }), undefined, {
-          scroll: false,
+          scroll: true, // switching menu section starts at the top
         }),
     },
     {
@@ -97,7 +97,7 @@ export default function Header() {
       label: "COMBOS",
       onClick: () =>
         router.push(buildMenuUrl({ tab: "entrees", sub: "combos" }), undefined, {
-          scroll: false,
+          scroll: true, // switching menu section starts at the top
         }),
     },
   ];
@@ -185,7 +185,7 @@ export default function Header() {
       document.getElementById(s.anchor)?.scrollIntoView({ behavior: "smooth" });
       return;
     }
-    router.push(buildMenuUrl(s.qp), undefined, { scroll: false });
+    router.push(buildMenuUrl(s.qp), undefined, { scroll: true }); // new category starts at the top
   };
 
   const topItems = inMenuMode ? menuNav : homeNav;

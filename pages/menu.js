@@ -598,11 +598,17 @@ function MenuBody() {
   const tab = (router.query.tab || "entrees").toString();
   const sub = (router.query.sub || "all").toString();
 
-  const setTabSub = (next) =>
-    router.push({ pathname: "/menu", query: next }, undefined, {
-      scroll: false,
-      shallow: true,
-    });
+  // toTop: opening a different category starts at the top of the page;
+  // closing a popup back to the list (default) keeps the scroll position.
+  const setTabSub = (next, { toTop = false } = {}) =>
+    router
+      .push({ pathname: "/menu", query: next }, undefined, {
+        scroll: false,
+        shallow: true,
+      })
+      .then(() => {
+        if (toTop) window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      });
 
   // Wings popup (opened from the Sides "View All" card — should behave like
   // every other side's popup builder, not navigate away to a full page)
@@ -752,7 +758,7 @@ function MenuBody() {
                   <button
                     key={c.id + i}
                     className="cat-card cat-card--dom"
-                    onClick={() => setTabSub(c.nav)}
+                    onClick={() => setTabSub(c.nav, { toTop: true })}
                   >
                     <div className="cat-card__imgWrap">
                       <img src={c.img} alt="" className="cat-card__img" />
