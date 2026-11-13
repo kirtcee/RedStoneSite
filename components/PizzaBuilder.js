@@ -563,6 +563,23 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
             <span className="pb-peekHint">Tap to view</span>
           </button>
         )}
+        {/* Retro wavy bands along the top of the cream box, drawn ABOVE the
+            pizza so its cut-off edge tucks under them. Lives in normal flow
+            with the box (not in the sticky strip), so it scrolls away and the
+            pinned pizza never shows it. */}
+        {isNarrow && (
+          <div className="pb-peekWaves" aria-hidden="true">
+            <svg className="pb-peekWaves__svg" preserveAspectRatio="none">
+              <defs>
+                <pattern id="pbWaves" width="40" height="24" patternUnits="userSpaceOnUse">
+                  <path d="M0 0H40V9Q30 15 20 9Q10 3 0 9Z" fill="#8B1A1A" />
+                  <path d="M0 9Q10 3 20 9Q30 15 40 9V16Q30 22 20 16Q10 10 0 16Z" fill="#FFB0B0" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#pbWaves)" />
+            </svg>
+          </div>
+        )}
 
         {/* ===== Left ===== */}
 <div className="pb-left" style={{ overflowAnchor: 'none' }}>
@@ -1581,6 +1598,25 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
           border-radius: .1875rem;
           cursor: zoom-in;
           -webkit-tap-highlight-color: transparent;
+        }
+        /* zero-height row right after the box; the bands are positioned
+           back up onto the box's top edge, inside its 1px border */
+        .pb-peekWaves {
+          position: relative;
+          height: 0;
+          z-index: 6; /* above the sticky pizza strip (5) */
+          pointer-events: none;
+        }
+        .pb-peekWaves__svg {
+          position: absolute;
+          left: 1px;
+          right: 1px;
+          width: calc(100% - 2px);
+          top: calc(-10px - var(--peek-open) + 1px);
+          height: 24px;
+          border-top-left-radius: .125rem;
+          border-top-right-radius: .125rem;
+          overflow: hidden;
         }
         .pb-peekHint {
           position: absolute;
