@@ -541,9 +541,21 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
           >
             <span className="pb-peek__pizza">
               <canvas ref={canvasRef} width="300" height="315" />
+              {/* The only tappable part: an oval exactly over the pizza
+                  (border-radius:50% also shapes the tap area), so taps
+                  beside/around the pizza reach the options underneath. */}
+              <span className="pb-peek__hit" />
             </span>
-            <span className="pb-peek__hint">Tap to view</span>
           </button>
+        )}
+        {/* "Tap to view" sits over the bottom of the opening pizza but is
+            NOT part of the sticky strip, so it scrolls away normally. */}
+        {isNarrow && (
+          <div className="pb-peekHintRow">
+            <button type="button" className="pb-peekHint" onClick={openPizzaZoom}>
+              Tap to view
+            </button>
+          </div>
         )}
 
         {/* ===== Left ===== */}
@@ -1527,8 +1539,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
           width: min(100vw - 40px, 320px);
           aspect-ratio: 300 / 315;
           transform: translateX(-50%);
-          pointer-events: auto;
-          cursor: zoom-in;
+          pointer-events: none;
           /* soft shadow so the pizza stays readable over the options */
           filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
         }
@@ -1537,17 +1548,36 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
           width: 100%;
           height: 100%;
         }
-        .pb-peek__hint {
+        /* Pizza art spans ~95% of the 300x300 layer images, which are
+           drawn stretched to the 300x315 canvas, so it's a near-circle oval */
+        .pb-peek__hit {
+          position: absolute;
+          left: 2.5%;
+          top: 2.5%;
+          width: 95%;
+          height: 95%;
+          border-radius: 50%;
+          pointer-events: auto;
+          cursor: zoom-in;
+        }
+        .pb-peekHintRow {
+          position: relative;
+          height: 0;
+          z-index: 6; /* above the sticky pizza strip */
+        }
+        .pb-peekHint {
           position: absolute;
           right: 10px;
-          bottom: 6px;
+          bottom: 16px;
+          border: 0;
           font-size: 0.7rem;
           font-weight: 700;
           color: var(--text-brown);
-          background: rgba(255, 255, 255, 0.85);
+          background: rgba(255, 255, 255, 0.9);
           border-radius: 999px;
-          padding: 2px 8px;
-          pointer-events: none;
+          padding: 3px 9px;
+          cursor: zoom-in;
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
         }
         .pb-zoom {
           position: fixed;
