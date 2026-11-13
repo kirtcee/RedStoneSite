@@ -1534,7 +1534,9 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
         }
         .pb-peek {
           position: sticky;
-          top: calc(var(--peek-min) - var(--peek-open) - 14px);
+          /* minus the popup's top padding (set on .rs-modal-viewport in
+             DebugPizzaOverlay.js) so the pinned slice sits at screen top */
+          top: calc(var(--peek-min) - var(--peek-open) - var(--modal-pad-y, 14px));
           z-index: 5;
           display: block;
           width: calc(100% + 24px);
