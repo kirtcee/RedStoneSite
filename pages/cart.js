@@ -540,8 +540,10 @@ export default function CartPage() {
           gap: 10px;
           background: #000;
           color: #fff;
-          padding: 0.6rem 0.9rem;
+          padding: 0.75rem 0.9rem;
           font-family: var(--font-heading);
+          font-size: 1.3rem;
+          line-height: 1;
           text-transform: uppercase;
           letter-spacing: 0.3px;
         }
@@ -591,16 +593,18 @@ export default function CartPage() {
           display: block;
           width: 100%;
         }
+        /* same height as the capital letters beside it (the display
+           font's caps are 0.7em tall); width keeps the icon's shape */
         .cart-box :global(.cart-box__icon) {
-          width: 20px;
-          height: 26px;
+          height: 0.78em;
+          width: calc(0.78em * 512 / 658);
           flex: 0 0 auto;
         }
 
         /* ----- Totals: 3 stacked rows, right-aligned under Step 4 ----- */
         .cart-box :global(.cart-totals) {
-          width: min(100%, 320px);
-          margin: 0 14px 16px auto;
+          width: min(100% - 28px, 230px);
+          margin: 0 var(--cart-gutter) 16px auto; /* right edge = step boxes' */
           border: 1px solid var(--menu-box-border);
           border-radius: 0.1875rem;
           background: ${OFF_WHITE};
@@ -609,17 +613,19 @@ export default function CartPage() {
           text-transform: uppercase;
           letter-spacing: 0.03em;
         }
+        /* label right-aligned, snug against its price */
         .cart-box :global(.cart-totals__row) {
-          display: flex;
-          justify-content: space-between;
-          gap: 12px;
+          display: grid;
+          grid-template-columns: 1fr auto;
+          column-gap: 8px;
+          text-align: right;
           padding: 8px 12px;
           border-bottom: 1px solid var(--menu-box-border);
           font-size: 1rem;
         }
         .cart-box :global(.cart-totals__row--total) {
           border-bottom: 0;
-          border-top: 2px solid var(--menu-box-border); /* thicker line above the total */
+          border-top: 3px solid var(--menu-box-border); /* thicker line above the total */
           font-size: 1.2rem;
           -webkit-text-stroke: 0.4px currentColor; /* a touch bolder */
         }
@@ -640,7 +646,7 @@ export default function CartPage() {
 
         /* ----- Step sections ----- */
         .cart-box :global(.cart-step) {
-          margin: 0 14px 14px;
+          margin: 0 var(--cart-gutter) 14px;
           border: 1px solid var(--menu-box-border);
           border-radius: 0.1875rem;
           overflow: hidden;
@@ -651,9 +657,9 @@ export default function CartPage() {
           align-items: center;
           background: #000;
           color: #fff;
-          padding: 0.55rem 0.8rem;
+          padding: 0.65rem 0.8rem;
           font-family: var(--font-heading);
-          font-size: 0.95rem;
+          font-size: 1.15rem;
           line-height: 1;
           text-transform: uppercase;
           letter-spacing: 0.3px;
@@ -666,6 +672,7 @@ export default function CartPage() {
         .cart-box {
           --cart-qty-w: 104px;
           --cart-price-w: 64px;
+          --cart-gutter: 14px; /* side space around the step boxes + totals */
         }
         .cart-box :global(.cart-step__col) {
           text-align: center;
@@ -870,6 +877,10 @@ export default function CartPage() {
           .cart-box {
             --cart-qty-w: 92px;
             --cart-price-w: 56px;
+            --cart-gutter: 10px;
+          }
+          .cart-box__head {
+            font-size: 1.15rem;
           }
           .cart-box__intro {
             padding: 12px 12px 2px;
@@ -885,11 +896,11 @@ export default function CartPage() {
             margin: 6px 12px 12px;
           }
           .cart-box :global(.cart-step) {
-            margin: 0 10px 12px;
+            margin-bottom: 12px;
           }
           .cart-box :global(.cart-step__head) {
-            padding: 0.55rem 0.6rem;
-            font-size: 0.85rem;
+            padding: 0.6rem 0.6rem;
+            font-size: 1rem;
           }
           .cart-box :global(.cart-step__body) {
             padding: 4px 8px;
