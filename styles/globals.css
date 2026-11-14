@@ -1531,18 +1531,6 @@ body::before {
    Mobile: cart + checkout
    =========================== */
 @media (max-width: 640px) {
-  /* Cart line items: stack the item info above the qty/edit/price block
-     instead of squeezing a fixed 220px column next to it. */
-  .cart-item-row {
-    grid-template-columns: 1fr !important;
-    row-gap: 8px !important;
-  }
-  /* The "Your Items / Quantity / Price" column-label header only makes
-     sense when the columns are actually side by side; ItemRow already
-     labels its own quantity control once stacked. */
-  .cart-header-row {
-    display: none !important;
-  }
   /* Checkout: order summary/place-order column drops below the form
      instead of squeezing into a fixed 360px sidebar. */
   .checkout-grid {
@@ -1585,4 +1573,36 @@ body::before {
    to its tallest box), instead of uneven heights. */
 .feast__grid {
   align-items: stretch !important;
+}
+
+/* ===========================
+   Red pill button — same look as the home page "Order Online" button
+   (pages/index.js). Used for "Add More Items" on the cart page.
+   =========================== */
+.rs-pill-btn {
+  display: inline-block;
+  padding: 0.85rem 1.25rem;
+  background: #ff0000;
+  color: #fefaf6;
+  border: 0;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.55rem;
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(255, 0, 0, 0.35);
+  cursor: pointer;
+}
+.rs-pill-btn:hover,
+.rs-pill-btn:active {
+  background: #910000;
+  color: #fefaf6;
+}
+.rs-pill-btn:active {
+  outline: 2px dotted #d0343e;
+  outline-offset: 2px;
 }
