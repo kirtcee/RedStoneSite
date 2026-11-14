@@ -9,8 +9,8 @@ import { useRouter } from "next/router";
 import { useCart } from "./CartSystem";
 import { formatMoney } from "./Pricing";
 
-const DELIVERY_FEE_CENTS = 499;
-const TAX_RATE = 0.13;
+export const DELIVERY_FEE_CENTS = 499;
+export const TAX_RATE = 0.13;
 const STORE_HOURS = { open: "11:00", close: "22:00" };
 const BORDER = "var(--menu-box-border)";
 const LIGHT = "#faf2e9";

@@ -626,6 +626,97 @@ const REDEEM_ERROR_MESSAGES = {
 // /cart page, and checkout. On a valid code it opens the matching deal's
 // builder (via CartProvider's openDeal, driven by the server-validated
 // result), it never applies a discount silently.
+function DealCodeReveal({ code, setCode, status, error, onSubmit }) {
+  const [open, setOpen] = useState(false);
+  const inputRef = useRef(null);
+  useEffect(() => {
+    if (open) inputRef.current?.focus();
+  }, [open]);
+  if (!open) {
+    return (
+      <button type="button" className="deal-reveal__link" onClick={() => setOpen(true)}>
+        Add Coupon
+        <style jsx>{`
+          .deal-reveal__link {
+            padding: 0;
+            background: none;
+            border: 0;
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            color: var(--text-brown);
+            cursor: pointer;
+          }
+        `}</style>
+      </button>
+    );
+  }
+  return (
+    <form onSubmit={onSubmit} className="deal-reveal">
+      <label className="deal-reveal__label" htmlFor="deal-reveal-input">
+        Have a coupon or promotion code? Please enter the code exactly as shown, including the
+        hyphen:
+      </label>
+      <div className="deal-reveal__row">
+        <input
+          id="deal-reveal-input"
+          ref={inputRef}
+          type="text"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          className="deal-reveal__input"
+          autoComplete="off"
+          autoCapitalize="characters"
+        />
+        <button type="submit" className="rs-pill-btn deal-reveal__btn" disabled={status === "checking"}>
+          {status === "checking" ? "…" : "Add"}
+        </button>
+      </div>
+      {error && <div className="deal-reveal__error">{error}</div>}
+      <style jsx>{`
+        .deal-reveal__label {
+          display: block;
+          margin-bottom: 8px;
+          font-family: var(--font-display);
+          font-size: 0.95rem;
+          line-height: 1.2;
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+          color: var(--text-brown);
+        }
+        .deal-reveal__row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .deal-reveal__input {
+          flex: 1 1 auto;
+          min-width: 0;
+          height: 40px;
+          padding: 0 10px;
+          border: 1px solid var(--menu-box-border);
+          border-radius: 0.1875rem;
+          background: #fff;
+          color: #000;
+        }
+        .deal-reveal__btn {
+          flex: 0 0 auto;
+          padding: 0.45rem 1.2rem;
+          font-size: 1.05rem;
+        }
+        .deal-reveal__error {
+          margin-top: 6px;
+          font-size: 0.85rem;
+          color: #b00020;
+        }
+      `}</style>
+    </form>
+  );
+}
+
 export function DealCodeEntry({ compact = false, variant = null }) {
   const { redeemDealCode } = useCart();
   const [code, setCode] = useState("");
@@ -645,6 +736,12 @@ export function DealCodeEntry({ compact = false, variant = null }) {
       setError(REDEEM_ERROR_MESSAGES[result.reason] || REDEEM_ERROR_MESSAGES.not_found);
     }
   };
+
+  // Cart page: just a small "ADD COUPON" link until tapped, then the
+  // instructions, a plain input and a small red "ADD" pill.
+  if (variant === "reveal") {
+    return <DealCodeReveal code={code} setCode={setCode} status={status} error={error} onSubmit={handleSubmit} />;
+  }
 
   // Full standalone card — black header bar, cream body, thin bottom rule —
   // used on the /coupons page. The compact/default renders below stay

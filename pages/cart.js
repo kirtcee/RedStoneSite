@@ -5,7 +5,8 @@ import { useCart, DealCodeEntry } from "../components/CartSystem";
 import { priceLineItem, formatMoney, describePizzaFull, describeByoPizzaTitle } from "../components/Pricing";
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { dealNameFor, dealSlotLabel, findDealById } from "../utils/dealCatalog";
-import OrderSettingsAside from "../components/OrderSettingsAside";
+import OrderSettingsAside, { DELIVERY_FEE_CENTS, TAX_RATE } from "../components/OrderSettingsAside";
+import { useRouter } from "next/router";
 
 /*
   Cart page layout
@@ -304,6 +305,50 @@ function QuickAddTile({ label, img, fallbackImg, sizes, onAdd }) {
   );
 }
 
+// Document icon in the "Food & Drink Details" header (white)
+function DetailsIcon() {
+  return (
+    <svg className="cart-box__icon" viewBox="371 298 512 658" aria-hidden="true">
+      <path
+        fill="currentColor"
+        fillRule="evenodd"
+        d="M371 298H883V956H416L371 913Z M407 339V900L425 918H847V339Z M486 477H768V524H486Z M486 601H768V649H486Z M486 731H768V779H486Z"
+      />
+    </svg>
+  );
+}
+
+// Food & Beverage / (Delivery) / Taxes / Order Total — same maths as the
+// Order Settings sidebar (shared constants from OrderSettingsAside).
+function CartTotals({ cart }) {
+  const subtotal = cart?.subtotalCents ?? 0;
+  const delivery = cart?.service === "delivery" ? DELIVERY_FEE_CENTS : 0;
+  const tax = Math.round(TAX_RATE * (subtotal + delivery));
+  const show = (c) => (cart?.isLoaded ? formatMoney(c) : "···");
+  return (
+    <div className="cart-totals">
+      <div className="cart-totals__row">
+        <span>Food &amp; Beverage:</span>
+        <span>{show(subtotal)}</span>
+      </div>
+      {delivery > 0 && (
+        <div className="cart-totals__row">
+          <span>Delivery:</span>
+          <span>{show(delivery)}</span>
+        </div>
+      )}
+      <div className="cart-totals__row cart-totals__row--beforeTotal">
+        <span>Taxes:</span>
+        <span>{show(tax)}</span>
+      </div>
+      <div className="cart-totals__row cart-totals__row--total">
+        <span>Order Total:</span>
+        <span>{show(subtotal + delivery + tax)}</span>
+      </div>
+    </div>
+  );
+}
+
 function Step({ title, children, columns }) {
   return (
     <section className="cart-step">
@@ -384,6 +429,7 @@ function DrinksDipsStep({ title, pool, fallbackImg, addItem }) {
 }
 
 export default function CartPage() {
+  const router = useRouter();
   const cart = useCart();
   const items = cart?.items || [];
 
@@ -400,7 +446,7 @@ export default function CartPage() {
 
             <div className="cart-box">
               <div className="cart-box__head">
-                {/* Header icon goes here (SVG to be supplied) */}
+                <DetailsIcon />
                 <span>Food &amp; Drink Details</span>
               </div>
 
@@ -451,11 +497,27 @@ export default function CartPage() {
                     fallbackImg={null /* no photo -> plain cream square */}
                     addItem={cart.addItem}
                   />
+                  <CartTotals cart={cart} />
                   <div className="cart-box__deal">
-                    <DealCodeEntry />
+                    <DealCodeEntry variant="reveal" />
+                  </div>
+                  <div className="cart-box__checkout">
+                    <button
+                      type="button"
+                      className="rs-pill-btn cart-box__checkoutBtn"
+                      onClick={() => router.push("/checkout")}
+                    >
+                      Continue Checkout
+                    </button>
                   </div>
                 </>
               )}
+            </div>
+
+            {/* Phones/tablets: the Order Settings card from the desktop
+                sidebar (which is hidden at these sizes), as its own box. */}
+            <div className="cart-settings">
+              <OrderSettingsAside variant="drawer" />
             </div>
           </section>
 
@@ -520,7 +582,60 @@ export default function CartPage() {
           letter-spacing: 0.03em;
         }
         .cart-box__deal {
-          padding: 0 14px 14px;
+          padding: 4px 14px 16px;
+        }
+        .cart-box__checkout {
+          padding: 0 14px 18px;
+        }
+        .cart-box :global(.cart-box__checkoutBtn) {
+          display: block;
+          width: 100%;
+        }
+        .cart-box :global(.cart-box__icon) {
+          width: 20px;
+          height: 26px;
+          flex: 0 0 auto;
+        }
+
+        /* ----- Totals: 3 stacked rows, right-aligned under Step 4 ----- */
+        .cart-box :global(.cart-totals) {
+          width: min(100%, 320px);
+          margin: 0 14px 16px auto;
+          border: 1px solid var(--menu-box-border);
+          border-radius: 0.1875rem;
+          background: ${OFF_WHITE};
+          font-family: var(--font-display);
+          color: var(--text-brown);
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+        }
+        .cart-box :global(.cart-totals__row) {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 8px 12px;
+          border-bottom: 1px solid var(--menu-box-border);
+          font-size: 1rem;
+        }
+        .cart-box :global(.cart-totals__row--total) {
+          border-bottom: 0;
+          border-top: 2px solid var(--menu-box-border); /* thicker line above the total */
+          font-size: 1.2rem;
+          -webkit-text-stroke: 0.4px currentColor; /* a touch bolder */
+        }
+        .cart-box :global(.cart-totals__row--beforeTotal) {
+          border-bottom: 0;
+        }
+
+        /* Order Settings box below the cart (phones/tablets only) */
+        .cart-settings {
+          display: none;
+        }
+        @media (max-width: 860px) {
+          .cart-settings {
+            display: block;
+            margin-bottom: 16px;
+          }
         }
 
         /* ----- Step sections ----- */
