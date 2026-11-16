@@ -8,9 +8,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
 
-/* TT Commons: body-text font being trialled (currently only the checkout
+/* TT Commons (Light 300, Regular 400, Medium 500, Bold 700, Black 900): body-text font being trialled (currently only the checkout
    "Carryout from…" line, via var(--font-text)). Browsers only download a
    weight once something on the page uses it. */
+@font-face {
+  font-family: 'TT Commons';
+  src: url('/fonts/TTCommons-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
 @font-face {
   font-family: 'TT Commons';
   src: url('/fonts/TTCommons-Regular.woff2') format('woff2');

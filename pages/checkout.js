@@ -424,7 +424,7 @@ export default function CheckoutPage() {
           margin: 0 0 16px;
           color: var(--text-brown);
           font-family: var(--font-text);
-          font-weight: 400;
+          font-weight: 300; /* TT Commons Light */
           font-size: 1.1rem;
           line-height: 1.35;
         }
