@@ -225,19 +225,29 @@ export default function CheckoutPage() {
             </>
           ) : service === "delivery" ? (
             <>
-              Delivery to {formatAddress(deliveryAddress)}
+              <strong>Delivery</strong> to <strong>{formatAddress(deliveryAddress)}</strong>
               <br />
-              {scheduleText
-                ? `Your order will be delivered ${scheduleText}.`
-                : `Your order will arrive about ${READY_MINUTES.delivery} minutes after it is placed.`}
+              {scheduleText ? (
+                <>Your order will be delivered <strong>{scheduleText}</strong>.</>
+              ) : (
+                <>
+                  Your order will arrive about <strong>{READY_MINUTES.delivery} minutes</strong> after it
+                  is placed.
+                </>
+              )}
             </>
           ) : (
             <>
-              Carryout from {CARRYOUT_ADDRESS}
+              <strong>Carryout</strong> from <strong>{CARRYOUT_ADDRESS}</strong>
               <br />
-              {scheduleText
-                ? `Your order will be ready ${scheduleText}.`
-                : `Your order will be ready ${READY_MINUTES.carryout} minutes after it is placed.`}
+              {scheduleText ? (
+                <>Your order will be ready <strong>{scheduleText}</strong>.</>
+              ) : (
+                <>
+                  Your order will be ready <strong>{READY_MINUTES.carryout} minutes</strong> after it is
+                  placed.
+                </>
+              )}
             </>
           )}
         </p>
@@ -409,11 +419,17 @@ export default function CheckoutPage() {
           text-align: left;
           margin-bottom: 4px;
         }
+        /* trial of TT Commons (var(--font-text)); key words in Bold */
         .co-sub {
           margin: 0 0 16px;
           color: var(--text-brown);
-          font-size: 0.95rem;
-          line-height: 1.45;
+          font-family: var(--font-text);
+          font-weight: 400;
+          font-size: 1.1rem;
+          line-height: 1.35;
+        }
+        .co-sub strong {
+          font-weight: 700;
         }
         .co-sub__link {
           padding: 0;

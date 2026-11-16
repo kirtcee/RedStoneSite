@@ -8,6 +8,38 @@
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
 
+/* TT Commons: body-text font being trialled (currently only the checkout
+   "Carryout from…" line, via var(--font-text)). Browsers only download a
+   weight once something on the page uses it. */
+@font-face {
+  font-family: 'TT Commons';
+  src: url('/fonts/TTCommons-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'TT Commons';
+  src: url('/fonts/TTCommons-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'TT Commons';
+  src: url('/fonts/TTCommons-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'TT Commons';
+  src: url('/fonts/TTCommons-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Red Stone Display: the site's own custom display font (caps-only).
    Source files live in design/fonts/. Must stay outside :root {}. */
 @font-face {
@@ -42,6 +74,7 @@
   --font-heading: var(--font-display); /* was Oswald */
   --font-body: 'Inter', sans-serif;
   --font-display: 'Red Stone Display', 'Anton', 'Oswald', sans-serif;
+  --font-text: 'TT Commons', 'Inter', sans-serif;
 
   /* effects */
   --radius: 6px;
