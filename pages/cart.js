@@ -5,7 +5,8 @@ import { useCart, DealCodeEntry } from "../components/CartSystem";
 import { priceLineItem, formatMoney, describePizzaFull, describeByoPizzaTitle } from "../components/Pricing";
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { dealNameFor, dealSlotLabel, findDealById } from "../utils/dealCatalog";
-import OrderSettingsAside, { DELIVERY_FEE_CENTS, TAX_RATE } from "../components/OrderSettingsAside";
+import OrderSettingsAside from "../components/OrderSettingsAside";
+import OrderTotals from "../components/OrderTotals";
 import { useRouter } from "next/router";
 
 /*
@@ -318,37 +319,6 @@ function DetailsIcon() {
   );
 }
 
-// Food & Beverage / (Delivery) / Taxes / Order Total — same maths as the
-// Order Settings sidebar (shared constants from OrderSettingsAside).
-function CartTotals({ cart }) {
-  const subtotal = cart?.subtotalCents ?? 0;
-  const delivery = cart?.service === "delivery" ? DELIVERY_FEE_CENTS : 0;
-  const tax = Math.round(TAX_RATE * (subtotal + delivery));
-  const show = (c) => (cart?.isLoaded ? formatMoney(c) : "···");
-  return (
-    <div className="cart-totals">
-      <div className="cart-totals__row">
-        <span>Food &amp; Beverage:</span>
-        <span>{show(subtotal)}</span>
-      </div>
-      {delivery > 0 && (
-        <div className="cart-totals__row">
-          <span>Delivery:</span>
-          <span>{show(delivery)}</span>
-        </div>
-      )}
-      <div className="cart-totals__row cart-totals__row--beforeTotal">
-        <span>Taxes:</span>
-        <span>{show(tax)}</span>
-      </div>
-      <div className="cart-totals__row cart-totals__row--total">
-        <span>Order Total:</span>
-        <span>{show(subtotal + delivery + tax)}</span>
-      </div>
-    </div>
-  );
-}
-
 function Step({ title, children, columns }) {
   return (
     <section className="cart-step">
@@ -497,7 +467,7 @@ export default function CartPage() {
                     fallbackImg={null /* no photo -> plain cream square */}
                     addItem={cart.addItem}
                   />
-                  <CartTotals cart={cart} />
+                  <OrderTotals className="cart-totals" />
                   <div className="cart-box__deal">
                     <DealCodeEntry variant="reveal" />
                   </div>
@@ -601,36 +571,10 @@ export default function CartPage() {
           flex: 0 0 auto;
         }
 
-        /* ----- Totals: 3 stacked rows, right-aligned under Step 4 ----- */
+        /* ----- Totals (components/OrderTotals.js), right edge lined up
+           with the step boxes above ----- */
         .cart-box :global(.cart-totals) {
-          width: min(100% - 28px, 230px);
-          margin: 0 var(--cart-gutter) 16px auto; /* right edge = step boxes' */
-          border: 1px solid var(--menu-box-border);
-          border-radius: 0.1875rem;
-          background: ${OFF_WHITE};
-          font-family: var(--font-display);
-          color: var(--text-brown);
-          text-transform: uppercase;
-          letter-spacing: 0.03em;
-        }
-        /* label right-aligned, snug against its price */
-        .cart-box :global(.cart-totals__row) {
-          display: grid;
-          grid-template-columns: 1fr auto;
-          column-gap: 8px;
-          text-align: right;
-          padding: 8px 12px;
-          border-bottom: 1px solid var(--menu-box-border);
-          font-size: 1rem;
-        }
-        .cart-box :global(.cart-totals__row--total) {
-          border-bottom: 0;
-          border-top: 3px solid var(--menu-box-border); /* thicker line above the total */
-          font-size: 1.2rem;
-          -webkit-text-stroke: 0.4px currentColor; /* a touch bolder */
-        }
-        .cart-box :global(.cart-totals__row--beforeTotal) {
-          border-bottom: 0;
+          margin: 0 var(--cart-gutter) 16px auto;
         }
 
         /* Order Settings box below the cart (phones/tablets only) */

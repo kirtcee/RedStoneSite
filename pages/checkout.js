@@ -1,15 +1,17 @@
 // pages/checkout.js
-import React, { useMemo, useState } from "react";
+import React, { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useCart, DealCodeEntry } from "../components/CartSystem";
+import { useCart } from "../components/CartSystem";
+import OrderTotals, { useOrderTotals } from "../components/OrderTotals";
 import { priceLineItem, formatMoney, describePizzaFull, describeByoPizzaTitle } from "../components/Pricing";
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { dealNameFor, dealSlotLabel, findDealById } from "../utils/dealCatalog";
 import { saveOrder } from "../utils/saveOrder";
 
-const TAX_RATE = 0.13;
-const DELIVERY_FEE_CENTS = 499;
+// Shown under the page title (same numbers as the menu page estimate)
+const CARRYOUT_ADDRESS = "576 Concession Street";
+const READY_MINUTES = { carryout: 20, delivery: 45 };
 
 // Recomputes from the item's raw fields rather than trusting a possibly
 // stale stored `.summary` string, so formatting stays consistent even for
@@ -61,511 +63,705 @@ function formatAddress(addr) {
     .join(", ");
 }
 
+// Options under an item name (toppings, combo parts, etc.)
+function itemOptionRows(item) {
+  if (item?.type === "combo" && item?.meta?.items)
+    return Object.entries(item.meta.items).map(([k, c]) => `${comboItemLabel(k)}: ${c?.summary || "Not customized yet"}`);
+  if (item?.type === "deal" && item?.meta?.items)
+    return Object.entries(item.meta.items).map(
+      ([k, c]) => `${dealSlotLabel(findDealById(item.dealId), k)}: ${c?.summary || "Not customized yet"}`
+    );
+  if (item?.type === "deal" && item?.meta?.builds)
+    return item.meta.builds.map((c, i) => `Item ${i + 1}: ${c?.summary || "Not customized yet"}`);
+  const d = describeItem(item);
+  return d ? [d] : [];
+}
+
+function formatSchedule(date, time) {
+  if (!date || !time) return null;
+  const d = new Date(`${date}T${time}:00`);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleString("en-CA", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+}
+
+// ---- Form fields ----
+const FIELDS = [
+  { key: "firstName", label: "First Name", type: "text", autoComplete: "given-name" },
+  { key: "lastName", label: "Last Name", type: "text", autoComplete: "family-name" },
+  { key: "email", label: "Email Address", type: "email", autoComplete: "email", inputMode: "email" },
+  { key: "phone", label: "Callback Phone Number", type: "tel", autoComplete: "tel", inputMode: "tel" },
+];
+
+function validate(form) {
+  const errors = {};
+  for (const f of FIELDS) {
+    if (!String(form[f.key] || "").trim()) errors[f.key] = "This field is required.";
+  }
+  if (!errors.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+    errors.email = "Please enter a valid email address.";
+  }
+  if (!errors.phone && form.phone.replace(/\D/g, "").length < 10) {
+    errors.phone = "Please enter a 10-digit phone number.";
+  }
+  if (!form.payment) errors.payment = "This field is required.";
+  else if (form.payment === "card") {
+    // TODO(Stripe): Pay Now isn't connected yet — see TODO.md
+    errors.payment = "Paying online isn't available yet. Please choose Pay at Store.";
+  }
+  return errors;
+}
+
+function Field({ field, value, error, onChange, inputRef }) {
+  const id = `co-${field.key}`;
+  return (
+    <div className={`co-field${error ? " has-error" : ""}`}>
+      <label htmlFor={id} className="co-label">
+        <span className="co-req" aria-hidden="true">*</span> {field.label}:
+      </label>
+      <input
+        ref={inputRef}
+        id={id}
+        className="co-input"
+        type={field.type}
+        inputMode={field.inputMode}
+        autoComplete={field.autoComplete}
+        value={value}
+        onChange={(e) => onChange(field.key, e.target.value)}
+        aria-invalid={!!error}
+        aria-describedby={error ? `${id}-err` : undefined}
+        aria-required="true"
+      />
+      {error && (
+        <div id={`${id}-err`} className="co-error">
+          {error}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
   const cart = useCart();
   const items = cart?.items || [];
-  const {
-    service,
-    deliveryAddress,
-    isServiceConfirmed,
-    openServiceGate,
-    orderTiming,
-    setOrderTiming,
-    scheduleDate,
-    setScheduleDate,
-    scheduleTime,
-    setScheduleTime,
-  } = cart || {};
-  const serviceMethod = service === "delivery" ? "Delivery" : "Carryout";
+  const { service, deliveryAddress, isServiceConfirmed, openServiceGate, orderTiming, scheduleDate, scheduleTime } =
+    cart || {};
+  const totals = useOrderTotals();
 
-  const [showHours, setShowHours] = useState(false);
-  const [location, setLocation] = useState("Red Stone Pizza — Hamilton (Main St)");
-  const [changingLoc, setChangingLoc] = useState(false);
-  const [newLoc, setNewLoc] = useState(location);
-  const [contactName, setContactName] = useState("");
-  const [contactPhone, setContactPhone] = useState("");
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "", payment: "" });
+  const [errors, setErrors] = useState({});
   const [placing, setPlacing] = useState(false);
-  const [error, setError] = useState(null);
+  const [submitError, setSubmitError] = useState(null);
+  const fieldRefs = useRef({});
 
-  const subtotalCents = useMemo(
-    () => items.reduce((sum, it) => sum + priceLineItem(it), 0),
-    [items]
-  );
-  const deliveryCents = serviceMethod === "Delivery" ? DELIVERY_FEE_CENTS : 0;
-  const taxCents = Math.round((subtotalCents + deliveryCents) * TAX_RATE);
-  const totalCents = subtotalCents + deliveryCents + taxCents;
-
-  const openHoursForDate = (yyyyMmDd) => {
-    if (!yyyyMmDd) return null;
-    const d = new Date(yyyyMmDd + "T00:00:00");
-    const dow = d.getDay();
-    if (dow === 0) return { open: "12:00", close: "21:00" };
-    return { open: "11:00", close: "22:00" };
+  const update = (key, value) => {
+    setForm((f) => ({ ...f, [key]: value }));
+    // clear that field's error as soon as they fix it
+    if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
   };
-  const hours = openHoursForDate(scheduleDate) || { open: "11:00", close: "22:00" };
 
-  const canPlaceOrder =
-    items.length > 0 &&
-    isServiceConfirmed &&
-    contactName.trim().length > 0 &&
-    contactPhone.trim().length > 0 &&
-    !placing;
+  const scheduleText = orderTiming === "later" ? formatSchedule(scheduleDate, scheduleTime) : null;
 
   const handlePlaceOrder = async () => {
-    if (!canPlaceOrder) return;
-    setPlacing(true);
-    setError(null);
-
-    const orderData = {
-      items,
-      serviceMethod,
-      orderTiming,
-      schedule:
-        orderTiming === "later"
-          ? { date: scheduleDate, time: scheduleTime }
-          : { date: null, time: null },
-      location,
-      contact: { name: contactName.trim(), phone: contactPhone.trim() },
-      fees: { deliveryCents, taxCents },
-      subtotalCents,
-      totalCents,
-    };
-
-    const id = await saveOrder(orderData);
-    setPlacing(false);
-
-    if (!id) {
-      setError("Something went wrong placing your order. Please try again.");
+    if (placing) return;
+    setSubmitError(null);
+    if (!isServiceConfirmed) {
+      openServiceGate?.();
+      return;
+    }
+    const found = validate(form);
+    setErrors(found);
+    const firstBad = [...FIELDS.map((f) => f.key), "payment"].find((k) => found[k]);
+    if (firstBad) {
+      const el = fieldRefs.current[firstBad];
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (el?.focus) setTimeout(() => el.focus({ preventScroll: true }), 350);
       return;
     }
 
+    setPlacing(true);
+    const serviceMethod = service === "delivery" ? "Delivery" : "Carryout";
+    const firstName = form.firstName.trim();
+    const lastName = form.lastName.trim();
+    const id = await saveOrder({
+      items,
+      serviceMethod,
+      orderTiming,
+      schedule: orderTiming === "later" ? { date: scheduleDate, time: scheduleTime } : { date: null, time: null },
+      location: CARRYOUT_ADDRESS,
+      deliveryAddress: serviceMethod === "Delivery" ? deliveryAddress || null : null,
+      contact: {
+        name: `${firstName} ${lastName}`.trim(),
+        firstName,
+        lastName,
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+      },
+      paymentMethod: form.payment,
+    });
+    setPlacing(false);
+    if (!id) {
+      setSubmitError("Something went wrong placing your order. Please try again.");
+      return;
+    }
     cart?.clearCart?.();
     router.push(`/order-confirmation?orderId=${id}`);
   };
 
-  const sectionHeader = (title) => (
-    <div
-      style={{
-        background: "#000",
-        color: "white",
-        padding: "0.6rem 0.9rem",
-        fontWeight: 900,
-        textTransform: "uppercase",
-        letterSpacing: ".3px",
-        fontFamily: "var(--font-heading, Oswald, sans-serif)",
-      }}
-    >
-      {title}
-    </div>
-  );
-
   return (
     <main className="page page--checkout">
-      <div className="container" style={{ paddingTop: "16px", paddingBottom: "32px" }}>
-        <h1 className="page-title" style={{ margin: "0 0 16px", textTransform: "uppercase" }}>
-          Checkout
-        </h1>
+      <div className="container co-wrap">
+        <h1 className="menu-title co-title">Checkout</h1>
+
+        {/* Carryout / delivery line */}
+        <p className="co-sub">
+          {!isServiceConfirmed ? (
+            <>
+              No order method selected yet.{" "}
+              <button type="button" className="co-sub__link" onClick={() => openServiceGate?.()}>
+                Choose carryout or delivery
+              </button>
+            </>
+          ) : service === "delivery" ? (
+            <>
+              Delivery to {formatAddress(deliveryAddress)}
+              <br />
+              {scheduleText
+                ? `Your order will be delivered ${scheduleText}.`
+                : `Your order will arrive about ${READY_MINUTES.delivery} minutes after it is placed.`}
+            </>
+          ) : (
+            <>
+              Carryout from {CARRYOUT_ADDRESS}
+              <br />
+              {scheduleText
+                ? `Your order will be ready ${scheduleText}.`
+                : `Your order will be ready ${READY_MINUTES.carryout} minutes after it is placed.`}
+            </>
+          )}
+        </p>
 
         {!cart?.isLoaded ? (
-          <div style={{ background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "var(--text-brown)" }}>
-            Loading your cart…
-          </div>
+          <div className="co-empty">Loading your cart…</div>
         ) : items.length === 0 ? (
-          <div style={{ background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "var(--text-brown)" }}>
-            Your cart is empty.{" "}
-            <Link href="/menu" style={{ color: "var(--text-brown)", fontWeight: 700, textDecoration: "underline" }}>
-              Browse the menu
-            </Link>
-            .
+          <div className="co-empty">
+            Your cart is empty. <Link href="/menu">Browse the menu</Link>.
           </div>
         ) : (
-          <div
-            className="checkout-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 1.9fr) 360px",
-              gap: 24,
-              alignItems: "flex-start",
-            }}
-          >
-            {/* LEFT COLUMN: contact + order summary */}
-            <div>
-              <div style={{ marginBottom: 16, padding: 0, overflow: "hidden", background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem" }}>
-                {sectionHeader("Contact Information")}
-                <div style={{ padding: 12, display: "grid", gap: 10 }}>
-                  <label style={{ display: "grid", gap: 4 }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-brown)" }}>
-                      Name *
-                    </span>
-                    <input
-                      value={contactName}
-                      onChange={(e) => setContactName(e.target.value)}
-                      placeholder="Your name"
-                      style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid var(--menu-box-border)" }}
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 4 }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-brown)" }}>
-                      Phone *
-                    </span>
-                    <input
-                      value={contactPhone}
-                      onChange={(e) => setContactPhone(e.target.value)}
-                      placeholder="Phone number"
-                      style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid var(--menu-box-border)" }}
-                    />
-                  </label>
-                </div>
-              </div>
+          <>
+            {/* ---- Total + expandable order summary ---- */}
+            <div className={`co-summary${summaryOpen ? " is-open" : ""}`}>
+              <button
+                type="button"
+                className="co-summary__bar"
+                onClick={() => setSummaryOpen((v) => !v)}
+                aria-expanded={summaryOpen}
+                aria-controls="co-summary-panel"
+              >
+                <span className="co-summary__total">Total: {formatMoney(totals.total)}</span>
+                <span className="co-summary__toggle">
+                  <span>
+                    {summaryOpen ? "Hide" : "Show"} Order
+                    <br />
+                    Summary
+                  </span>
+                  <span className="co-summary__tri" aria-hidden="true" />
+                </span>
+              </button>
 
-              <div style={{ padding: 0, overflow: "hidden", background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem" }}>
-                {sectionHeader("Order Summary")}
-                <div style={{ padding: "0.75rem" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      marginBottom: 8,
-                    }}
-                  >
-                    <div style={{ color: "var(--text-brown)", fontSize: 13 }}>
-                      {items.length} item{items.length === 1 ? "" : "s"}
+              {summaryOpen && (
+                <div id="co-summary-panel" className="co-summary__panel">
+                  <div className="co-items">
+                    <div className="co-items__head">
+                      <span>Item</span>
+                      <span>Qty</span>
+                      <span>Price</span>
                     </div>
-                    <Link
-                      href="/cart"
-                      style={{ color: "var(--text-brown)", textDecoration: "underline", fontSize: 13, fontWeight: 700 }}
-                    >
-                      Edit Cart
-                    </Link>
-                  </div>
-
-                  {items.map((it) => {
-                    const lineCents = priceLineItem(it);
-                    const isCombo = it.type === "combo" && it.meta?.items;
-                    const isDealBundle = it.type === "deal" && it.meta?.items;
-                    const isDealList = it.type === "deal" && it.meta?.builds;
-                    return (
-                      <div
-                        key={it.id}
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          gap: 12,
-                          padding: "8px 0",
-                          borderBottom: "1px solid var(--menu-box-border)",
-                        }}
-                      >
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontWeight: 700 }}>
-                            {itemTitle(it)}{" "}
-                            <span style={{ fontWeight: 400, color: "#777" }}>× {it.qty || 1}</span>
+                    <div className="co-items__body">
+                      {items.map((it) => (
+                        <div key={it.id} className="co-items__row">
+                          <div className="co-items__name">
+                            <div className="co-items__title">{itemTitle(it)}</div>
+                            {itemOptionRows(it).map((t, i) => (
+                              <div key={i} className="co-items__opt">{t}</div>
+                            ))}
                           </div>
-                          {isCombo ? (
-                            <div style={{ marginTop: 3, display: "flex", flexDirection: "column", gap: 3 }}>
-                              {Object.entries(it.meta.items).map(([key, child]) => (
-                                <div key={key} style={{ display: "flex", gap: 6, fontSize: 12, color: "#555" }}>
-                                  <span style={{ fontWeight: 700, color: "#333", flex: "0 0 auto" }}>
-                                    {comboItemLabel(key)}:
-                                  </span>
-                                  <span>{child?.summary || "Not customized yet"}</span>
-                                </div>
-                              ))}
-                            </div>
-                          ) : isDealBundle ? (
-                            <div style={{ marginTop: 3, display: "flex", flexDirection: "column", gap: 3 }}>
-                              {Object.entries(it.meta.items).map(([key, child]) => (
-                                <div key={key} style={{ display: "flex", gap: 6, fontSize: 12, color: "#555" }}>
-                                  <span style={{ fontWeight: 700, color: "#333", flex: "0 0 auto" }}>
-                                    {dealSlotLabel(findDealById(it.dealId), key)}:
-                                  </span>
-                                  <span>{child?.summary || "Not customized yet"}</span>
-                                </div>
-                              ))}
-                            </div>
-                          ) : isDealList ? (
-                            <div style={{ marginTop: 3, display: "flex", flexDirection: "column", gap: 3 }}>
-                              {it.meta.builds.map((child, idx) => (
-                                <div key={idx} style={{ display: "flex", gap: 6, fontSize: 12, color: "#555" }}>
-                                  <span style={{ fontWeight: 700, color: "#333", flex: "0 0 auto" }}>
-                                    Item {idx + 1}:
-                                  </span>
-                                  <span>{child?.summary || "Not customized yet"}</span>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div style={{ fontSize: 12, color: "#555" }}>{describeItem(it)}</div>
-                          )}
+                          <span className="co-items__qty">{Math.max(1, Number(it.qty) || 1)}</span>
+                          <span className="co-items__price">{formatMoney(priceLineItem(it))}</span>
                         </div>
-                        <div style={{ fontWeight: 700, whiteSpace: "nowrap" }}>
-                          {formatMoney(lineCents)}
-                        </div>
-                      </div>
-                    );
-                  })}
+                      ))}
+                    </div>
+                  </div>
+                  <div className="co-summary__foot">
+                    <Link href="/cart" className="rs-pill-btn co-change">
+                      Change Your Order
+                    </Link>
+                    <OrderTotals />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
-            {/* RIGHT COLUMN: order settings / totals / place order */}
-            <aside style={{ position: "sticky", top: 16 }}>
-              <div style={{ background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem", overflow: "hidden" }}>
-                {sectionHeader("Review Order Settings")}
-
-                <div style={{ padding: 12 }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "baseline",
-                    }}
-                  >
-                    <div style={{ fontWeight: 700 }}>My Location</div>
-                    <button
-                      onClick={() => setChangingLoc((v) => !v)}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: "var(--text-brown)",
-                        textDecoration: "underline",
-                        cursor: "pointer",
-                      }}
-                    >
-                      CHANGE
-                    </button>
-                  </div>
-
-                  {!changingLoc ? (
-                    <div style={{ marginTop: 4 }}>{location}</div>
-                  ) : (
-                    <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-                      <input
-                        value={newLoc}
-                        onChange={(e) => setNewLoc(e.target.value)}
-                        style={{ flex: 1, padding: "6px 8px", border: "1px solid var(--menu-box-border)", borderRadius: 6 }}
-                        placeholder="Enter address or postal code"
-                      />
-                      <button
-                        onClick={() => {
-                          setLocation(newLoc || location);
-                          setChangingLoc(false);
-                        }}
-                        style={{
-                          padding: "6px 10px",
-                          borderRadius: 6,
-                          border: "1px solid var(--menu-box-border)",
-                          background: "white",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Save
-                      </button>
-                    </div>
-                  )}
-
-                  <div
-                    style={{
-                      marginTop: 16,
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "baseline",
-                    }}
-                  >
-                    <div style={{ fontWeight: 700 }}>Service Method</div>
-                    <button
-                      onClick={() => openServiceGate?.()}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: "var(--text-brown)",
-                        textDecoration: "underline",
-                        cursor: "pointer",
-                      }}
-                    >
-                      CHANGE
-                    </button>
-                  </div>
-                  <div style={{ marginTop: 4 }}>
-                    {!service
-                      ? "Not selected yet"
-                      : service === "carryout"
-                      ? "Carryout"
-                      : `Delivery — ${formatAddress(deliveryAddress)}`}
-                  </div>
-                  {!isServiceConfirmed && (
-                    <div style={{ marginTop: 4, fontSize: 12, color: "#b00020" }}>
-                      Please choose carryout or delivery before placing your order.
-                    </div>
-                  )}
-
-                  <div style={{ marginTop: 16, fontWeight: 700 }}>Order Timing</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 6 }}>
-                    {[
-                      { key: "now", label: "Now" },
-                      { key: "later", label: "Later" },
-                    ].map((opt) => (
-                      <label
-                        key={opt.key}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                          background: "white",
-                          padding: 8,
-                          borderRadius: 8,
-                          border: "1px solid var(--menu-box-border)",
-                        }}
-                      >
-                        <input
-                          type="radio"
-                          name="orderTiming"
-                          checked={orderTiming === opt.key}
-                          onChange={() => setOrderTiming(opt.key)}
-                        />
-                        {opt.label}
-                      </label>
-                    ))}
-                  </div>
-
-                  {orderTiming === "later" && (
-                    <div
-                      style={{
-                        marginTop: 10,
-                        background: "white",
-                        padding: 8,
-                        borderRadius: 8,
-                        border: "1px solid var(--menu-box-border)",
-                      }}
-                    >
-                      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                        <span role="img" aria-label="calendar">📅</span>
-                        <input
-                          type="date"
-                          value={scheduleDate}
-                          onChange={(e) => setScheduleDate(e.target.value)}
-                          style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid var(--menu-box-border)" }}
-                        />
-                        <input
-                          type="time"
-                          value={scheduleTime}
-                          onChange={(e) => setScheduleTime(e.target.value)}
-                          min={hours.open}
-                          max={hours.close}
-                          step={300}
-                          style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid var(--menu-box-border)" }}
-                        />
-                      </div>
-                      <div style={{ marginTop: 6, fontSize: 12, color: "#666" }}>
-                        Available hours for selected day: {hours.open}–{hours.close}
-                      </div>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={() => setShowHours((v) => !v)}
-                    style={{
-                      marginTop: 8,
-                      background: "none",
-                      border: "none",
-                      color: "var(--text-brown)",
-                      textDecoration: "underline",
-                      cursor: "pointer",
-                      padding: 0,
-                    }}
-                  >
-                    View Store Hours
-                  </button>
-                  {showHours && (
-                    <div style={{ marginTop: 6, fontSize: 13, color: "#333", lineHeight: 1.4 }}>
-                      Mon–Sat: 11:00–22:00
-                      <br />
-                      Sun: 12:00–21:00
-                    </div>
-                  )}
-
-                  <div style={{ marginTop: 8 }}>
-                    <div style={{ fontSize: 12, marginBottom: 4 }}>Have a coupon or promotion code?</div>
-                    <DealCodeEntry compact />
-                  </div>
-
-                  <div style={{ marginTop: 16, borderTop: "1px solid var(--menu-box-border)", paddingTop: 12 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                      <div>Food &amp; Beverage:</div>
-                      <div style={{ fontWeight: 700 }}>{formatMoney(subtotalCents)}</div>
-                    </div>
-
-                    {serviceMethod === "Delivery" && (
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                        <div>Delivery:</div>
-                        <div style={{ fontWeight: 700 }}>{formatMoney(deliveryCents)}</div>
-                      </div>
-                    )}
-
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                      <div>Taxes:</div>
-                      <div style={{ fontWeight: 700 }}>{formatMoney(taxCents)}</div>
-                    </div>
-
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        marginTop: 8,
-                        fontWeight: 900,
-                        fontSize: 18,
-                      }}
-                    >
-                      <div>Order Total:</div>
-                      <div>{formatMoney(totalCents)}</div>
-                    </div>
-                  </div>
-
-                  <div style={{ marginTop: 8, fontSize: 12, color: "#666" }}>
-                    Pay at {serviceMethod === "Delivery" ? "the door" : "pickup"} — online payment
-                    isn&apos;t available yet.
-                  </div>
-
-                  {error && (
-                    <div style={{ marginTop: 10, color: "#b00020", fontSize: 13, fontWeight: 600 }}>
-                      {error}
-                    </div>
-                  )}
-
-                  {!canPlaceOrder &&
-                    !placing &&
-                    isServiceConfirmed &&
-                    (!contactName.trim() || !contactPhone.trim()) && (
-                      <div style={{ marginTop: 10, fontSize: 12, color: "#b00020" }}>
-                        Please enter your name and phone number to place the order.
-                      </div>
-                    )}
-
-                  <button
-                    onClick={handlePlaceOrder}
-                    disabled={!canPlaceOrder}
-                    style={{
-                      marginTop: 12,
-                      width: "100%",
-                      padding: "0.9rem 1rem",
-                      background: "#8b1a1a",
-                      color: "white",
-                      border: "none",
-                      borderRadius: 8,
-                      fontWeight: 800,
-                      cursor: canPlaceOrder ? "pointer" : "not-allowed",
-                      opacity: canPlaceOrder ? 1 : 0.6,
-                    }}
-                  >
-                    {placing ? "Placing Order…" : "Place Order"}
-                  </button>
-                </div>
+            {/* ---- 1 of 2: Your information ---- */}
+            <section className="co-section">
+              <div className="co-section__head">
+                <span>Your Information</span>
+                <span>1 of 2</span>
               </div>
-            </aside>
-          </div>
+              <div className="co-section__body">
+                {FIELDS.map((f) => (
+                  <React.Fragment key={f.key}>
+                    <Field
+                      field={f}
+                      value={form[f.key]}
+                      error={errors[f.key]}
+                      onChange={update}
+                      inputRef={(el) => (fieldRefs.current[f.key] = el)}
+                    />
+                    {f.key === "phone" && (
+                      <p className="co-hint">
+                        We may need to call you for quality control purposes. Please enter a phone
+                        number where we can reach you.
+                      </p>
+                    )}
+                  </React.Fragment>
+                ))}
+                <p className="co-reqnote">
+                  <span className="co-req">*</span>Indicates required field.
+                </p>
+              </div>
+            </section>
+
+            {/* ---- 2 of 2: Payment ---- */}
+            <section className="co-section">
+              <div className="co-section__head">
+                <span>Payment Method</span>
+                <span>2 of 2</span>
+              </div>
+              <div className="co-section__body">
+                <div className="co-balance">
+                  <div className="co-balance__label">Payment Information</div>
+                  <div className="co-balance__due">Balance Due: {formatMoney(totals.total)}</div>
+                </div>
+
+                <div
+                  className={`co-field co-pay${errors.payment ? " has-error" : ""}`}
+                  ref={(el) => (fieldRefs.current.payment = el)}
+                  tabIndex={-1}
+                  role="radiogroup"
+                  aria-labelledby="co-pay-label"
+                  aria-required="true"
+                  aria-describedby={errors.payment ? "co-pay-err" : undefined}
+                >
+                  <div id="co-pay-label" className="co-label">
+                    <span className="co-req" aria-hidden="true">*</span> Payment Type:
+                  </div>
+                  {[
+                    { value: "store", label: "Pay at Store" },
+                    { value: "card", label: "Pay Now with Debit or Credit Card" },
+                  ].map((o) => (
+                    <label key={o.value} className="co-radio">
+                      <input
+                        type="radio"
+                        name="payment"
+                        value={o.value}
+                        checked={form.payment === o.value}
+                        onChange={() => update("payment", o.value)}
+                      />
+                      <span>{o.label}</span>
+                    </label>
+                  ))}
+                  {form.payment === "store" && (
+                    <p className="co-hint co-hint--note">
+                      <strong>Note:</strong> At the store you can pay with cash, credit card, debit
+                      card or gift card.
+                    </p>
+                  )}
+                  {/* TODO(Stripe): card details form goes here once integrated */}
+                  {errors.payment && (
+                    <div id="co-pay-err" className="co-error">
+                      {errors.payment}
+                    </div>
+                  )}
+                </div>
+                <p className="co-reqnote">
+                  <span className="co-req">*</span>Indicates required field.
+                </p>
+              </div>
+            </section>
+
+            {submitError && <div className="co-submitError">{submitError}</div>}
+            <button type="button" className="rs-pill-btn co-place" onClick={handlePlaceOrder} disabled={placing}>
+              {placing ? "Placing Your Order…" : "Place Your Order"}
+            </button>
+          </>
         )}
       </div>
+
+      <style jsx>{`
+        .co-wrap {
+          max-width: 820px;
+          padding-top: 16px;
+          padding-bottom: 40px;
+        }
+        .co-title {
+          text-align: left;
+          margin-bottom: 4px;
+        }
+        .co-sub {
+          margin: 0 0 16px;
+          color: var(--text-brown);
+          font-size: 0.95rem;
+          line-height: 1.45;
+        }
+        .co-sub__link {
+          padding: 0;
+          border: 0;
+          background: none;
+          color: var(--text-brown);
+          font-weight: 700;
+          text-decoration: underline;
+          cursor: pointer;
+        }
+        .co-empty {
+          padding: 24px;
+          text-align: center;
+          color: var(--text-brown);
+          background: var(--menu-box-bg);
+          border: 1px solid var(--menu-box-border);
+          border-radius: 0.1875rem;
+        }
+        .co-empty :global(a) {
+          color: var(--text-brown);
+          font-weight: 700;
+          text-decoration: underline;
+        }
+
+        /* ----- Total bar + expandable summary ----- */
+        .co-summary {
+          margin-bottom: 18px;
+          border: 1px solid var(--menu-box-border);
+          border-radius: 0.1875rem;
+          background: #f9f9f9; /* same as the page background */
+        }
+        .co-summary__bar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          width: 100%;
+          padding: 14px 16px;
+          border: 0;
+          background: none;
+          cursor: pointer;
+          text-align: left;
+        }
+        .co-summary__total {
+          font-family: var(--font-display);
+          font-size: 1.7rem;
+          line-height: 1;
+          color: #000;
+          text-transform: uppercase;
+        }
+        .co-summary__toggle {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-family: var(--font-display);
+          font-size: 0.9rem;
+          line-height: 1.05;
+          text-align: right;
+          text-transform: uppercase;
+          color: #000;
+        }
+        .co-summary__tri {
+          width: 0;
+          height: 0;
+          border-left: 7px solid transparent;
+          border-right: 7px solid transparent;
+          border-top: 10px solid currentColor;
+          transition: transform 0.2s ease;
+        }
+        .co-summary.is-open .co-summary__tri {
+          transform: rotate(180deg);
+        }
+        .co-summary__panel {
+          padding: 0 14px 14px;
+        }
+        .co-items {
+          border: 1px solid var(--menu-box-border);
+          border-radius: 0.1875rem;
+          overflow: hidden;
+        }
+        .co-items__head,
+        .co-items__row {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 44px 72px;
+          column-gap: 10px;
+        }
+        .co-items__head {
+          padding: 0.65rem 0.8rem;
+          background: #000;
+          color: #fff;
+          font-family: var(--font-heading);
+          font-size: 1.05rem;
+          line-height: 1;
+          text-transform: uppercase;
+        }
+        .co-items__head span:nth-child(2) {
+          text-align: center;
+        }
+        .co-items__head span:nth-child(3) {
+          text-align: right;
+        }
+        .co-items__body {
+          background: #fefaf6;
+          padding: 0 0.8rem;
+        }
+        .co-items__row {
+          padding: 10px 0;
+          border-bottom: 1px solid var(--menu-box-border);
+          align-items: start;
+        }
+        .co-items__row:last-child {
+          border-bottom: 0;
+        }
+        .co-items__title {
+          font-weight: 700;
+          color: #000;
+        }
+        .co-items__opt {
+          font-size: 0.82rem;
+          line-height: 1.35;
+          color: var(--text-brown);
+          overflow-wrap: anywhere;
+        }
+        .co-items__qty {
+          text-align: center;
+          color: var(--text-brown);
+          font-weight: 700;
+        }
+        .co-items__price {
+          text-align: right;
+          color: var(--text-brown);
+          font-weight: 700;
+        }
+        .co-summary__foot {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 10px;
+          margin-top: 12px;
+        }
+        /* totals keep their width; the button takes what's left */
+        .co-summary__foot :global(.order-totals) {
+          flex: 0 0 auto;
+        }
+        .co-summary__foot :global(.co-change) {
+          flex: 0 1 auto;
+          padding: 0.55rem 1.1rem;
+          font-size: 1.05rem;
+        }
+
+        /* ----- Numbered sections ----- */
+        .co-section {
+          margin-bottom: 18px;
+          border: 1px solid var(--menu-box-border);
+          border-radius: 0.1875rem;
+          overflow: hidden;
+        }
+        .co-section__head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 0.75rem 0.9rem;
+          background: #000;
+          color: #fff;
+          font-family: var(--font-heading);
+          font-size: 1.3rem;
+          line-height: 1;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+        }
+        .co-section__body {
+          padding: 16px 16px 12px;
+          background: var(--menu-box-bg); /* cream #faf2e9 */
+        }
+        .co-wrap :global(.co-field) {
+          margin: 0 0 14px;
+        }
+        .co-wrap :global(.co-label) {
+          display: block;
+          margin-bottom: 6px;
+          padding: 0;
+          font-family: var(--font-display);
+          font-size: 1rem;
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+          color: var(--text-brown);
+        }
+        .co-wrap :global(.co-req) {
+          color: #d0021b;
+        }
+        .co-wrap :global(.co-input) {
+          display: block;
+          width: 100%;
+          height: 44px;
+          padding: 0 12px;
+          border: 1px solid var(--menu-box-border);
+          border-radius: 0.1875rem;
+          background: #fff;
+          color: #000;
+        }
+        .co-wrap :global(.co-input:focus) {
+          outline: 2px solid var(--text-brown);
+          outline-offset: 1px;
+        }
+        /* missing / invalid: red border + thick red bar on the left */
+        .co-wrap :global(.co-field.has-error .co-input) {
+          border-color: #d0021b;
+          box-shadow: inset 5px 0 0 #d0021b;
+          padding-left: 16px;
+        }
+        .co-wrap :global(.co-error) {
+          margin-top: 5px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #d0021b;
+        }
+        .co-wrap :global(.co-hint) {
+          margin: -6px 0 14px;
+          font-size: 0.75rem;
+          line-height: 1.35;
+          color: var(--text-brown);
+        }
+        .co-wrap :global(.co-hint--note) {
+          margin: 8px 0 0;
+          font-size: 0.85rem;
+        }
+        .co-wrap :global(.co-hint--note strong) {
+          color: #000;
+        }
+        .co-wrap :global(.co-reqnote) {
+          margin: 4px 0 0;
+          font-size: 0.8rem;
+          color: var(--text-brown);
+        }
+
+        /* ----- Payment ----- */
+        .co-balance {
+          margin-bottom: 14px;
+          text-align: right;
+          font-family: var(--font-display);
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+        }
+        .co-balance__label {
+          color: var(--text-brown);
+          font-size: 1rem;
+        }
+        .co-balance__due {
+          color: #000;
+          font-size: 1.35rem;
+        }
+        .co-pay {
+          border: 0;
+          min-width: 0;
+          padding: 0;
+          outline: none;
+        }
+        .co-pay.has-error {
+          padding: 8px 10px 10px 14px;
+          border: 1px solid #d0021b;
+          border-radius: 0.1875rem;
+          box-shadow: inset 5px 0 0 #d0021b;
+        }
+        .co-radio {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin: 8px 0;
+          color: var(--text-brown);
+          cursor: pointer;
+        }
+        /* white circle with brown ring; selected = brown with a white dot */
+        .co-radio input {
+          appearance: none;
+          -webkit-appearance: none;
+          flex: 0 0 auto;
+          width: 20px;
+          height: 20px;
+          margin: 0;
+          border: 2px solid var(--text-brown);
+          border-radius: 50%;
+          background: #fff;
+          cursor: pointer;
+        }
+        .co-radio input:checked {
+          background: radial-gradient(circle, #fff 0 3px, var(--text-brown) 3.5px);
+        }
+        .co-radio input:focus-visible {
+          outline: 2px solid var(--text-brown);
+          outline-offset: 2px;
+        }
+
+        .co-submitError {
+          margin-bottom: 10px;
+          color: #d0021b;
+          font-weight: 600;
+        }
+        .co-wrap :global(.co-place) {
+          display: block;
+          width: 100%;
+        }
+        .co-wrap :global(.co-place:disabled) {
+          opacity: 0.7;
+          cursor: wait;
+        }
+
+        @media (max-width: 640px) {
+          .co-summary__foot :global(.order-totals) {
+            width: 196px;
+          }
+          .co-summary__foot :global(.order-totals .order-totals__row) {
+            font-size: 0.88rem;
+            padding: 7px 10px;
+          }
+          .co-summary__foot :global(.order-totals .order-totals__row--total) {
+            font-size: 1.05rem;
+          }
+          .co-summary__total {
+            font-size: 1.4rem;
+          }
+          .co-section__head {
+            font-size: 1.15rem;
+          }
+          .co-summary__panel {
+            padding: 0 10px 10px;
+          }
+          /* two tidy lines ("Change your / order") so it fits beside the totals */
+          .co-summary__foot :global(.co-change) {
+            max-width: 132px;
+            font-size: 0.9rem;
+            line-height: 1.1;
+            padding: 0.55rem 0.9rem;
+            border-radius: 22px;
+          }
+        }
+        /* very small phones (e.g. iPhone SE): totals first, button below */
+        @media (max-width: 360px) {
+          .co-summary__foot {
+            flex-direction: column;
+            align-items: flex-end;
+          }
+          .co-summary__foot :global(.co-change) {
+            align-self: flex-start;
+            max-width: none;
+          }
+        }
+      `}</style>
     </main>
   );
 }

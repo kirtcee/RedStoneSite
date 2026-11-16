@@ -11,6 +11,10 @@ Running list of things to finish before `mac-handoff` is merged into `main`
       Google Cloud Console (APIs & Services → Library).
 - [ ] **Button design pass** — restyle the remaining buttons together
       (map popup CARRYOUT, CONTINUE FOR CARRYOUT/DELIVERY, etc.).
+- [ ] **Stripe for "Pay Now with Debit or Credit Card"** on checkout. The
+      option is shown but blocked for now (the page asks for Pay at Store,
+      and `pages/api/placeOrder.js` rejects any payment method except
+      `store`). Look for `TODO(Stripe)` in `pages/checkout.js`.
 - [ ] **Merge `mac-handoff` → `main`** to go live.
 
 ## Should do

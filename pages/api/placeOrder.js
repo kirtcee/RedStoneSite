@@ -81,7 +81,7 @@ export default async function handler(req, res) {
   }
 
   const body = req.body || {};
-  const { items, serviceMethod, orderTiming, schedule, location, contact, deliveryAddress, idToken } = body;
+  const { items, serviceMethod, orderTiming, schedule, location, contact, deliveryAddress, paymentMethod, idToken } = body;
 
   // ---- Require a real Firebase session, same as the old Firestore rule's
   // "request.auth != null" (anonymous auth included) — just enforced here
@@ -105,9 +105,19 @@ export default async function handler(req, res) {
     return reject(res, 400, "bad_service_method");
   }
 
-  const name = String(contact?.name || "").trim().slice(0, 100);
+  const firstName = String(contact?.firstName || "").trim().slice(0, 60);
+  const lastName = String(contact?.lastName || "").trim().slice(0, 60);
+  // `name` stays the full name the kitchen screen / confirmation page show
+  const name = (String(contact?.name || "").trim() || `${firstName} ${lastName}`.trim()).slice(0, 100);
   const phone = String(contact?.phone || "").trim().slice(0, 30);
+  const email = String(contact?.email || "").trim().slice(0, 120);
   if (!name || !phone) return reject(res, 400, "missing_contact");
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return reject(res, 400, "bad_email");
+
+  // Only "Pay at Store" is live. "card" (Pay Now) is accepted once Stripe is
+  // integrated — see TODO.md — and must never create an unpaid order before.
+  const payment = paymentMethod === undefined ? "store" : paymentMethod;
+  if (payment !== "store") return reject(res, 400, "payment_method_unavailable");
 
   // ---- Authoritative pricing: recompute every line item from scratch.
   // priceLineItem() returns 0 for a type/id/name it doesn't recognize
@@ -150,7 +160,9 @@ export default async function handler(req, res) {
       schedule: isLater ? { date, time } : { date: null, time: null },
       location: String(location || "").slice(0, 200),
       deliveryAddress: serviceMethod === "Delivery" ? deliveryAddress || null : null,
-      contact: { name, phone },
+      contact: { name, firstName, lastName, phone, email },
+      paymentMethod: payment,
+      paid: false,
       fees: { deliveryCents, taxCents },
       subtotalCents,
       totalCents,
