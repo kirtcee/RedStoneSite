@@ -703,13 +703,10 @@ export default function CartPage() {
           white-space: pre-wrap;
           overflow-wrap: anywhere;
         }
-        /* Left: / Right: / Whole: labels keep the regular bold body font;
-           only the details text uses Red Stone Display Medium */
+        /* Left: / Right: / Whole: labels — Red Stone Display Medium, black */
         .cart-box :global(.cart-line__opts strong) {
           color: #000;
-          font-family: var(--font-body);
-          font-weight: 700;
-          font-size: 0.8rem;
+          font-weight: 400;
         }
         .cart-box :global(.cart-line__opts--byo > div + div) {
           margin-top: 4px; /* a little space between Left / Right / Whole */

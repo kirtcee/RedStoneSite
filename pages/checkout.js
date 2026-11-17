@@ -575,9 +575,16 @@ export default function CheckoutPage() {
         .co-items__row:last-child {
           border-bottom: 0;
         }
+        /* item name in Red Stone Display (caps-only), like the cart */
         .co-items__title {
-          font-weight: 700;
+          font-family: var(--font-display);
+          font-weight: 400;
+          font-size: 1.05rem;
+          line-height: 1.1;
+          letter-spacing: 0.02em;
+          text-transform: uppercase;
           color: #000;
+          margin-bottom: 2px;
         }
         .co-items__opt {
           font-family: var(--font-display-text); /* Red Stone Display Medium */
@@ -590,12 +597,9 @@ export default function CheckoutPage() {
         .co-items__opt--sec + .co-items__opt--sec {
           margin-top: 4px; /* a little space between Left / Right / Whole */
         }
-        /* Left: / Right: / Whole: labels keep the regular bold body font;
-           only the details text uses Red Stone Display Medium */
+        /* Left: / Right: / Whole: labels — Red Stone Display Medium, black */
         .co-items__optLabel {
-          font-family: var(--font-body);
-          font-size: 0.82rem;
-          font-weight: 700;
+          font-weight: 400;
           color: #000;
         }
         .co-items__qty {
