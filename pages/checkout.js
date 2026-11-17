@@ -419,28 +419,25 @@ export default function CheckoutPage() {
           text-align: left;
           margin-bottom: 4px;
         }
-        /* trial of TT Commons (var(--font-text)); key words in Bold */
+        /* Whole line in Red Stone Display Medium (custom font with
+           lowercase). The key words are still wrapped in <strong> so a
+           bolder weight can be given to them later — for now they match
+           the rest. */
         .co-sub {
           margin: 0 0 16px;
           color: var(--text-brown);
-          font-family: var(--font-text);
-          font-weight: 500; /* TT Commons Medium */
+          font-family: var(--font-display-text);
+          font-weight: 400;
           font-size: 1.1rem;
           line-height: 1.35;
-          /* spacing for the TT Commons words only — tweak these two */
-          --tt-letter-spacing: 0em; /* space between letters, e.g. 0.02em */
-          --tt-word-spacing: 0em;   /* extra space between words, e.g. 0.1em */
-          letter-spacing: var(--tt-letter-spacing);
-          word-spacing: var(--tt-word-spacing);
+          /* spacing — tweak these two */
+          --sub-letter-spacing: 0em; /* space between letters, e.g. 0.02em */
+          --sub-word-spacing: 0em;   /* extra space between words, e.g. 0.1em */
+          letter-spacing: var(--sub-letter-spacing);
+          word-spacing: var(--sub-word-spacing);
         }
-        /* key words (Carryout / address / minutes) in Red Stone Display
-           Condensed (has lowercase); they keep their own spacing so the
-           TT Commons settings above don't affect them */
         .co-sub strong {
-          font-family: var(--font-display-condensed);
-          font-weight: 400;
-          letter-spacing: 0.02em;
-          word-spacing: normal;
+          font-weight: inherit;
         }
         .co-sub__link {
           padding: 0;
