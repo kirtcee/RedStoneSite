@@ -1755,3 +1755,25 @@ body::before {
     font-size: 1.1rem;
   }
 }
+
+/* ===========================
+   Builder option buttons as a connected grid (sauce, size, serve style…)
+   Each button keeps its size; they sit 1px apart and every button draws a
+   1px outline, so neighbouring outlines land on the same pixel = single
+   lines between buttons plus a border around the whole group.
+   =========================== */
+.rs-optgrid {
+  gap: 1px !important;
+  padding: 1px;
+}
+.rs-optgrid > button {
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 1px solid var(--menu-box-border);
+  outline-offset: 0;
+}
+.rs-optgrid > button:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid var(--text-brown);
+}

@@ -21,6 +21,8 @@ const sectionBar = {
   textTransform: "uppercase",
   letterSpacing: ".3px",
   margin: 0,
+  fontSize: "1.3rem",
+  lineHeight: 1.1,
 };
 const dividerInset = {
   borderTop: `1px solid ${LIGHT_BORDER}`,
@@ -164,10 +166,11 @@ export function DrinksCategoryPanel({
       }}
     >
       <SectionBox>
-        <h3 style={sectionBar}>1. {title}</h3>
+        <h3 style={sectionBar}>{title}</h3>
 
         <div style={{ padding: "1.15rem 1rem", background: LIGHTER_BG }}>
           <div
+            className="rs-optgrid"
             style={{
               display: "grid",
               gridTemplateColumns: isNarrow ? "1fr 1fr" : "repeat(3, 1fr)",
@@ -278,7 +281,7 @@ export function DrinksCategoryPanel({
       </SectionBox>
 
       <SectionBox>
-        <h3 style={sectionBar}>2. Item</h3>
+        <h3 style={sectionBar}>Item</h3>
 
         <div style={{ padding: "1.15rem 1rem", background: LIGHTER_BG }}>
           {items.length === 0 ? (

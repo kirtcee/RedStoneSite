@@ -193,13 +193,15 @@ export default function WingsBuilder({
         style={{
           background: "#000",
           color: "white",
-          padding: "0.5rem 0.75rem",
+          padding: "0.6rem 0.75rem",
           fontWeight: 900,
+          fontSize: "1.3rem",
+          lineHeight: 1.1,
           textTransform: "uppercase",
           fontFamily: "var(--font-heading), Oswald, sans-serif"
         }}
       >
-        {index}. {title}
+        {title}
       </div>
       <div style={{ padding: "1rem", background: LIGHT_BG }}>{children}</div>
     </div>
@@ -262,6 +264,7 @@ export default function WingsBuilder({
           Choose Sauce
         </p>
         <div
+          className="rs-optgrid"
           style={{
             display: "grid",
             gridTemplateColumns: isNarrow ? "1fr 1fr" : "repeat(3, 1fr)",
@@ -310,8 +313,9 @@ export default function WingsBuilder({
           Sauced &amp; Tossed or Sauce on Side?
         </p>
         <div
+          className="rs-optgrid"
           style={{
-            display: "flex",
+            display: "inline-flex",
             gap: "0.55rem",
             marginBottom: "0.4rem",
             flexWrap: "wrap",
@@ -354,6 +358,7 @@ export default function WingsBuilder({
           Choose Size
         </p>
         <div
+          className="rs-optgrid"
           style={{
             display: "flex",
             // phones: one full-width button per row (easier to tap)

@@ -33,7 +33,9 @@ export default function SideBuilder({
     textTransform: "uppercase",
     letterSpacing: ".3px",
     margin: 0,
-  };
+    fontSize: "1.3rem",
+    lineHeight: 1.1,
+};
   const subHeader = {
     margin: "0.9rem 0 0.45rem",
     color: TEXT_BROWN,
@@ -159,13 +161,13 @@ export default function SideBuilder({
     >
       {/* Section 1 – Serving Options */}
       <SectionBox>
-        <h3 style={sectionBar}>1. Serving Options</h3>
+        <h3 style={sectionBar}>Serving Options</h3>
 
         <div style={{ padding: `${PAD_Y} 1rem`, background: LIGHT_BG }}>
           {isSizeSelectable && canPickSize && (
             <>
               <h4 style={subHeader}>Choose Size</h4>
-              <div style={{ display: "flex", gap: "0.7rem", marginBottom: ".9rem" }}>
+              <div className="rs-optgrid" style={{ display: "flex", gap: "0.7rem", marginBottom: ".9rem" }}>
                 {SIZE_OPTIONS.map((size) => {
                   const optionName = `${side} (${sizeToPricingLabel(size)})`;
                   const optionPrice = formatMoney(priceLineItem({ type: "side", name: optionName, qty: 1 }));
@@ -194,7 +196,7 @@ export default function SideBuilder({
           {hasHotSauceToggle && (
             <>
               <h4 style={subHeader}>Hot Sauce Drizzle</h4>
-              <div style={{ display: "flex", gap: "0.7rem" }}>
+              <div className="rs-optgrid" style={{ display: "flex", gap: "0.7rem" }}>
                 {["Yes", "No"].map((opt) => (
                   <button
                     key={opt}
@@ -249,7 +251,7 @@ export default function SideBuilder({
 
       {(hasDips || hasGravy) && (
         <SectionBox>
-          <h3 style={sectionBar}>2. {hasGravy ? "Gravy" : "Dips"}</h3>
+          <h3 style={sectionBar}>{hasGravy ? "Gravy" : "Dips"}</h3>
 
           <div style={{ padding: `${PAD_Y} 1rem`, background: LIGHT_BG }}>
             {hasGravy ? (
@@ -328,7 +330,7 @@ export default function SideBuilder({
 
       {/* Summary */}
       <SectionBox>
-        <h3 style={sectionBar}>{itemSectionIndex}. Item</h3>
+        <h3 style={sectionBar}>Item</h3>
         <div style={{ padding: `${PAD_Y} 1rem`, background: LIGHT_BG }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.6rem" }}>
             <ItemCheck />

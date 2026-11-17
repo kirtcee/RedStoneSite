@@ -32,7 +32,9 @@ export default function SpecialMenuBuilder({
     textTransform: "uppercase",
     letterSpacing: ".3px",
     margin: 0,
-  };
+    fontSize: "1.3rem",
+    lineHeight: 1.1,
+};
   const subHeader = {
     margin: "0.9rem 0 0.45rem",
     color: TEXT_BROWN,
@@ -226,7 +228,7 @@ export default function SpecialMenuBuilder({
         }}
       >
         <SectionBox>
-          <h3 style={sectionBar}>1. {selectedItem}</h3>
+          <h3 style={sectionBar}>{selectedItem}</h3>
 
           <div style={{ padding: "1rem", background: LIGHTER_BG }}>
             <div style={{ marginTop: 2, fontWeight: 800, fontSize: ".95rem" }}>
@@ -341,7 +343,7 @@ export default function SpecialMenuBuilder({
 
         {showsDips && (
           <SectionBox>
-            <h3 style={sectionBar}>2. Dips</h3>
+            <h3 style={sectionBar}>Dips</h3>
 
             <div style={{ padding: "1rem", background: LIGHTER_BG }}>
               {DIPS.map((dip) => (
@@ -397,7 +399,7 @@ export default function SpecialMenuBuilder({
         )}
 
         <SectionBox>
-          <h3 style={sectionBar}>{itemSectionIndex}. Item</h3>
+          <h3 style={sectionBar}>Item</h3>
           <div style={{ padding: "1rem", background: LIGHTER_BG }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
               <ItemCheck />
