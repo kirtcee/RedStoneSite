@@ -47,14 +47,22 @@
   font-display: swap;
 }
 
-/* Red Stone Display Medium: the custom font's style with real lowercase,
-   for sentences. Used via var(--font-display-text). Bolder/lighter
-   weights to come — add them as extra @font-face blocks with the same
-   family name and their own font-weight. */
+/* Red Stone Display text family: the custom font's style with real
+   lowercase, for sentences. One family name, one file per weight:
+     300 = Red Stone Display Light, 400 = Red Stone Display Medium.
+   Add more weights as extra @font-face blocks with this family name.
+   ?v= is bumped whenever a file is replaced so browsers refetch it. */
 @font-face {
-  font-family: 'Red Stone Display Medium';
-  src: url('/fonts/RedStoneDisplayMedium-Regular.woff2') format('woff2');
-  font-weight: 100 900; /* one weight for now; don't fake-bold it */
+  font-family: 'Red Stone Display Text';
+  src: url('/fonts/RedStoneDisplayLight-Regular.woff2?v=1') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Red Stone Display Text';
+  src: url('/fonts/RedStoneDisplayMedium-Regular.woff2?v=2') format('woff2');
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
@@ -105,7 +113,7 @@
   --font-display: 'Red Stone Display', 'Anton', 'Oswald', sans-serif;
   --font-text: 'TT Commons', 'Inter', sans-serif;
   --font-display-condensed: 'Red Stone Display Condensed', var(--font-display);
-  --font-display-text: 'Red Stone Display Medium', var(--font-text);
+  --font-display-text: 'Red Stone Display Text', var(--font-text);
 
   /* effects */
   --radius: 6px;

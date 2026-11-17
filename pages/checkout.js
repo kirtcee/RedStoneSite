@@ -419,15 +419,13 @@ export default function CheckoutPage() {
           text-align: left;
           margin-bottom: 4px;
         }
-        /* Whole line in Red Stone Display Medium (custom font with
-           lowercase). The key words are still wrapped in <strong> so a
-           bolder weight can be given to them later — for now they match
-           the rest. */
+        /* Whole line in the Red Stone Display text family: Light for the
+           sentence, Medium for the key words (<strong>). */
         .co-sub {
           margin: 0 0 16px;
           color: var(--text-brown);
           font-family: var(--font-display-text);
-          font-weight: 400;
+          font-weight: 300; /* Light */
           font-size: 1.1rem;
           line-height: 1.35;
           /* spacing — tweak these two */
@@ -437,7 +435,7 @@ export default function CheckoutPage() {
           word-spacing: var(--sub-word-spacing);
         }
         .co-sub strong {
-          font-weight: inherit;
+          font-weight: 400; /* Medium */
         }
         .co-sub__link {
           padding: 0;
