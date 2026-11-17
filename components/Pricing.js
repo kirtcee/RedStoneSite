@@ -671,7 +671,8 @@ const AMOUNT_WORD = { None: "No", Light: "Light", Less: "Light", Normal: "", Ext
 const withAmount = (amount, name) => [AMOUNT_WORD[amount] ?? amount, name].filter(Boolean).join(" ");
 
 // Lines under the title, grouped by where on the pizza they go:
-//   Left: …  /  Right: …  /  Whole: …   (only the ones that apply)
+//   Left: …  /  Right: …  /  Whole: …   (only the ones that apply; the
+//   "Whole" label is dropped (label: null) when there are no halves)
 // followed by Dips and Instructions if any. Each item reads like
 // "Extra Mushroom", "Light Garlic Base", "No Cheese". Plain defaults
 // (normal cheese and normal pizza sauce on the whole pizza) are left out;
@@ -725,7 +726,10 @@ export function describeByoPizzaSections(data = {}) {
   const sections = [];
   if (left.length) sections.push({ label: "Left", text: left.join(", ") });
   if (right.length) sections.push({ label: "Right", text: right.join(", ") });
-  if (whole.length) sections.push({ label: "Whole", text: whole.join(", ") });
+  // "Whole:" is only needed to tell it apart from Left/Right halves
+  if (whole.length) {
+    sections.push({ label: left.length || right.length ? "Whole" : null, text: whole.join(", ") });
+  }
 
   const dipBits = Object.entries(data.dips || {})
     .filter(([, qty]) => Number(qty) > 0)

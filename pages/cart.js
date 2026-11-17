@@ -203,9 +203,9 @@ function ItemOptions({ item }) {
     // Left / Right / Whole, one line each (see describeByoPizzaSections)
     return (
       <div className="cart-line__opts cart-line__opts--byo">
-        {describeByoPizzaSections(item).map((sec) => (
-          <div key={sec.label}>
-            <strong>{sec.label}:</strong> {sec.text}
+        {describeByoPizzaSections(item).map((sec, i) => (
+          <div key={i}>
+            {sec.label && <strong>{sec.label}:</strong>} {sec.text}
           </div>
         ))}
       </div>
@@ -695,13 +695,16 @@ export default function CartPage() {
           cursor: pointer;
         }
         .cart-box :global(.cart-line__opts) {
-          font-size: 0.8rem;
+          font-family: var(--font-display-text); /* Red Stone Display Medium */
+          font-weight: 400;
+          font-size: 0.85rem;
           line-height: 1.35;
           white-space: pre-wrap;
           overflow-wrap: anywhere;
         }
         .cart-box :global(.cart-line__opts strong) {
           color: #000;
+          font-weight: 400; /* one weight for now — no fake bold */
         }
         .cart-box :global(.cart-line__opts--byo > div + div) {
           margin-top: 4px; /* a little space between Left / Right / Whole */

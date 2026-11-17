@@ -317,7 +317,7 @@ export default function CheckoutPage() {
                                 <div key={i} className="co-items__opt">{t}</div>
                               ) : (
                                 <div key={i} className="co-items__opt co-items__opt--sec">
-                                  <span className="co-items__optLabel">{t.label}:</span> {t.text}
+                                  {t.label && <span className="co-items__optLabel">{t.label}:</span>} {t.text}
                                 </div>
                               )
                             )}
@@ -579,7 +579,9 @@ export default function CheckoutPage() {
           color: #000;
         }
         .co-items__opt {
-          font-size: 0.82rem;
+          font-family: var(--font-display-text); /* Red Stone Display Medium */
+          font-weight: 400;
+          font-size: 0.88rem;
           line-height: 1.35;
           color: var(--text-brown);
           overflow-wrap: anywhere;
@@ -588,7 +590,7 @@ export default function CheckoutPage() {
           margin-top: 4px; /* a little space between Left / Right / Whole */
         }
         .co-items__optLabel {
-          font-weight: 700;
+          font-weight: 400; /* one weight for now — no fake bold */
           color: #000;
         }
         .co-items__qty {

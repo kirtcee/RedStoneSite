@@ -64,6 +64,12 @@ export default function OrderTotals({ className = "" }) {
         .order-totals__row--beforeTotal {
           border-bottom: 0;
         }
+        /* Food & Beverage / Delivery / Taxes in Red Stone Display Medium;
+           Order Total stays in the display font */
+        .order-totals__row:not(.order-totals__row--total) {
+          font-family: var(--font-display-text);
+          font-weight: 400;
+        }
         .order-totals__row--total {
           border-bottom: 0;
           border-top: 3px solid var(--menu-box-border); /* thicker line above the total */
