@@ -179,9 +179,9 @@ export default function WingsBuilder({
   const Divider = ({ style = {} }) => (
     <div
       style={{
-        borderTop: 0, // spacing only — no line between groups
+        borderTop: 0, // former divider: no line and no extra space
         width: "calc(100% - 2rem)",
-        margin: "12px auto",
+        margin: 0,
         ...style
       }}
     />
@@ -203,7 +203,7 @@ export default function WingsBuilder({
       >
         {title}
       </div>
-      <div style={{ padding: "1rem", background: LIGHT_BG }}>{children}</div>
+      <div className="rs-bsec" style={{ padding: "1rem", background: LIGHT_BG }}>{children}</div>
     </div>
   );
 
@@ -496,7 +496,7 @@ export default function WingsBuilder({
                 </button>
               </div>
             </div>
-            {i < dipsOptions.length - 1 && <Divider />}
+            {i < dipsOptions.length - 1 && <Divider style={{ margin: "8px auto" }} />}
           </React.Fragment>
         ))}
       </Section>

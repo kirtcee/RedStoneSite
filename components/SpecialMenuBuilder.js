@@ -46,9 +46,9 @@ export default function SpecialMenuBuilder({
   const labelStyle = { fontSize: ".95rem", lineHeight: 1.25 };
 
   const dividerInset = {
-    borderTop: 0, // spacing only — no line between groups
+    borderTop: 0, // former divider: no line and no extra space
     width: "calc(100% - 2rem)",
-    margin: "10px auto",
+    margin: 0,
   };
 
   // Wraps a numbered section (black header bar + cream body) in the same
@@ -230,7 +230,7 @@ export default function SpecialMenuBuilder({
         <SectionBox>
           <h3 style={sectionBar}>{selectedItem}</h3>
 
-          <div style={{ padding: "1rem", background: LIGHTER_BG }}>
+          <div className="rs-bsec" style={{ padding: "1rem", background: LIGHTER_BG }}>
             <div style={{ marginTop: 2, fontWeight: 800, fontSize: ".95rem" }}>
               Price: {unitPrice}
             </div>
@@ -345,7 +345,7 @@ export default function SpecialMenuBuilder({
           <SectionBox>
             <h3 style={sectionBar}>Dips</h3>
 
-            <div style={{ padding: "1rem", background: LIGHTER_BG }}>
+            <div className="rs-bsec" style={{ padding: "1rem", background: LIGHTER_BG }}>
               {DIPS.map((dip) => (
                 <div
                   key={dip}
@@ -400,7 +400,7 @@ export default function SpecialMenuBuilder({
 
         <SectionBox>
           <h3 style={sectionBar}>Item</h3>
-          <div style={{ padding: "1rem", background: LIGHTER_BG }}>
+          <div className="rs-bsec" style={{ padding: "1rem", background: LIGHTER_BG }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
               <ItemCheck />
               <span>{buildSummary()}</span>

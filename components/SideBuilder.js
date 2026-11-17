@@ -22,7 +22,7 @@ export default function SideBuilder({
   const LIGHT_BG = "var(--menu-box-bg)";     // cream box fill (--menu-box-bg)
   const TEXT_BROWN = "var(--text-brown)";   // body text color inside the boxes
   const BOX_RADIUS = ".1875rem";
-  const PAD_Y = "1.25rem"; // extra vertical padding in sections
+  const PAD_Y = "1rem"; // vertical padding in sections
 
   const sectionBar = {
     background: "#000",
@@ -45,9 +45,9 @@ export default function SideBuilder({
     fontSize: ".9rem",
   };
   const dividerInset = {
-    borderTop: 0, // spacing only — no line between groups
+    borderTop: 0, // former divider: no line and no extra space
     width: "calc(100% - 2rem)",
-    margin: "12px auto",
+    margin: 0,
   };
   // Wraps a numbered section (black header bar + cream body) in the same
   // bordered/rounded box used by the Pizza Builder's Section component.
@@ -164,7 +164,7 @@ export default function SideBuilder({
       <SectionBox>
         <h3 style={sectionBar}>Serving Options</h3>
 
-        <div style={{ padding: `${PAD_Y} 1rem`, background: LIGHT_BG }}>
+        <div className="rs-bsec" style={{ padding: `${PAD_Y} 1rem`, background: LIGHT_BG }}>
           {isSizeSelectable && canPickSize && (
             <>
               <h4 style={subHeader}>Choose Size</h4>
@@ -254,7 +254,7 @@ export default function SideBuilder({
         <SectionBox>
           <h3 style={sectionBar}>{hasGravy ? "Gravy" : "Dips"}</h3>
 
-          <div style={{ padding: `${PAD_Y} 1rem`, background: LIGHT_BG }}>
+          <div className="rs-bsec" style={{ padding: `${PAD_Y} 1rem`, background: LIGHT_BG }}>
             {hasGravy ? (
               <div
                 style={{
@@ -332,7 +332,7 @@ export default function SideBuilder({
       {/* Summary */}
       <SectionBox>
         <h3 style={sectionBar}>Item</h3>
-        <div style={{ padding: `${PAD_Y} 1rem`, background: LIGHT_BG }}>
+        <div className="rs-bsec" style={{ padding: `${PAD_Y} 1rem`, background: LIGHT_BG }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.6rem" }}>
             <ItemCheck />
             <span style={{ fontWeight: "bold" }}>({quantity})</span>

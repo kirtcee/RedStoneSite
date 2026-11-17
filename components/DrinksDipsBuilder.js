@@ -25,9 +25,9 @@ const sectionBar = {
   lineHeight: 1.1,
 };
 const dividerInset = {
-  borderTop: 0, // spacing only — no line between groups
+  borderTop: 0, // former divider: no line and no extra space
   width: "calc(100% - 2rem)",
-  margin: "12px auto",
+  margin: 0,
 };
 // Wraps a numbered section (black header bar + cream body) in the same
 // bordered/rounded box used by the Pizza Builder's Section component.
@@ -168,7 +168,7 @@ export function DrinksCategoryPanel({
       <SectionBox>
         <h3 style={sectionBar}>{title}</h3>
 
-        <div style={{ padding: "1.15rem 1rem", background: LIGHTER_BG }}>
+        <div className="rs-bsec" style={{ padding: "1rem", background: LIGHTER_BG }}>
           <div
             className="rs-optgrid"
             style={{
@@ -283,7 +283,7 @@ export function DrinksCategoryPanel({
       <SectionBox>
         <h3 style={sectionBar}>Item</h3>
 
-        <div style={{ padding: "1.15rem 1rem", background: LIGHTER_BG }}>
+        <div className="rs-bsec" style={{ padding: "1rem", background: LIGHTER_BG }}>
           {items.length === 0 ? (
             <p style={{ margin: 0, color: "var(--text-brown)" }}>
               No items added yet.

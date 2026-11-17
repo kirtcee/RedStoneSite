@@ -1774,3 +1774,13 @@ body::before {
   z-index: 1;
   outline: 2px solid var(--text-brown);
 }
+
+/* Builder section bodies (wings, sides, drinks & dips, special menu): no
+   extra space above the first item or below the last one, so the padding
+   is the same all round. (!important: the items use inline margins.) */
+.rs-bsec > :first-child {
+  margin-top: 0 !important;
+}
+.rs-bsec > :last-child {
+  margin-bottom: 0 !important;
+}
