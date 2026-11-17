@@ -427,9 +427,21 @@ export default function CheckoutPage() {
           font-weight: 500; /* TT Commons Medium */
           font-size: 1.1rem;
           line-height: 1.35;
+          /* spacing for the TT Commons words only — tweak these two */
+          --tt-letter-spacing: 0em; /* space between letters, e.g. 0.02em */
+          --tt-word-spacing: 0em;   /* extra space between words, e.g. 0.1em */
+          letter-spacing: var(--tt-letter-spacing);
+          word-spacing: var(--tt-word-spacing);
         }
+        /* key words (Carryout / address / minutes) in Red Stone Display;
+           they keep their own spacing so the TT Commons settings above
+           don't affect them */
         .co-sub strong {
-          font-weight: 700;
+          font-family: var(--font-display);
+          font-weight: 400;
+          letter-spacing: 0.03em;
+          word-spacing: normal;
+          text-transform: uppercase;
         }
         .co-sub__link {
           padding: 0;
