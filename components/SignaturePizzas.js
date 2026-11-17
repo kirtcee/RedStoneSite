@@ -3,17 +3,9 @@ import PizzaBuilder from "../components/PizzaBuilder";
 import { priceLineItem } from "../components/Pricing";
 import { useCart } from "../components/CartSystem";
 import DebugPizzaOverlay from "../components/modals/DebugPizzaOverlay";
+import { SIGNATURE_PIZZAS } from "../utils/pizzaRecipes";
 
-const signaturePizzas = [
-  { name: "Greek",           toppings: ["Onion", "Black Olives", "Tomato", "Spinach", "Feta Cheese"] },
-  { name: "Bourbon",         toppings: ["BBQ Chicken", "Onion", "Green Pepper", "BBQ Drizzle"], base: "BBQ Base" },
-  { name: "Shawarma",        toppings: ["Shawarma Chicken", "Onion", "Pickle", "Tomato", "Sumac Seasoning"], base: "Garlic Base" },
-  { name: "All-Star",        toppings: ["Pepperoni", "Mushroom", "Real Bacon", "Green Pepper", "Onion"] },
-  { name: "Butter Chicken",  toppings: ["Butter Chicken", "Green Pepper", "Onion", "Tomato", "Ginger", "Coriander"], base: "Butter Chicken Base" },
-  { name: "Shahi Paneer",    toppings: ["Shahi Paneer", "Green Pepper", "Onion", "Tomato", "Ginger", "Coriander"], base: "Shahi Paneer Base" },
-  { name: "Mexican",         toppings: ["Onion", "Beef", "Jalapeno", "Tomato"] },
-  { name: "Loaded Veggie",   toppings: ["Green Pepper", "Mushroom", "Onion", "Tomato", "Corn", "Black Olives"] }
-];
+const signaturePizzas = SIGNATURE_PIZZAS;
 
 const DEFAULT_SIZE = "12";
 const sizeLabel = (s) =>
@@ -216,23 +208,28 @@ export default function SignaturePizzasPage() {
         }
         .feastCard__name:hover{ text-decoration: underline; }
 
+        /* Card buttons match the Sides cards: 0.6rem padding, 30px rounding,
+           bigger text. Red buttons and the size buttons get an invisible 3px
+           border so they're exactly as tall as the 3px-bordered Customize. */
         .btn{
           display: block;
           width: 100%;
-          padding: 0.48rem 1.5rem;  /* short height, wide look */
+          padding: 0.6rem 0.6rem;
           font-family: var(--font-heading, Oswald, sans-serif);
           font-weight: 900;
           text-transform: uppercase;
           letter-spacing: .45px;
+          font-size: 1.15rem;
+          line-height: 1.1;
           cursor: pointer;
-          border-radius: 4px;
+          border-radius: 30px;
         }
         .btn + .btn{ margin-top: 8px; }
 
         .btn-add{
           background: var(--red);
           color: #fff;
-          border: none;
+          border: 3px solid transparent;
         }
         .btn-add:hover{ filter: brightness(0.96); }
 
@@ -240,15 +237,18 @@ export default function SignaturePizzasPage() {
           display: flex;
           gap: 6px;
           padding: 0;
+          border: 0;
           background: transparent;
           overflow: visible;
         }
         .btn-add__seg{
           flex: 1;
           color: #fff;
-          border: none;
-          border-radius: 4px;
-          padding: 0.48rem 0.2rem;
+          border: 3px solid transparent;
+          border-radius: 30px;
+          padding: 0.6rem 0.2rem;
+          font-size: 1.15rem;
+          line-height: 1.1;
           font-family: var(--font-heading, Oswald, sans-serif);
           font-weight: 900;
           letter-spacing: .45px;

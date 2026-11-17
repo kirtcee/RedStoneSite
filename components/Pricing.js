@@ -1,5 +1,6 @@
 // pricing.js — single source of truth for menu prices + helpers
 import { findDealById } from "../utils/dealCatalog";
+import { findPizzaRecipe } from "../utils/pizzaRecipes";
 
 // 🔢 currency formatter (no tax logic here on purpose)
 // pricing.js
@@ -154,7 +155,6 @@ export const PRICES = {
   glutenFree: { base1: 1299, perToppingUpTo4: 100, base4: 1599, extra: 175 },
 
   dairyFreeCheese: 300,
-  garlicCrust: 100,
 };
 
 // ===== TOPPING WEIGHTING =====
@@ -455,7 +455,16 @@ export function priceLineItem(item) {
 
   switch (item?.type) {
     case "pizza-byo": {
-      const w = weightedToppingCount(item);
+      let w = weightedToppingCount(item);
+      // A customized Signature/Specialty pizza never gets cheaper than its
+      // original recipe: removing toppings keeps the recipe's topping tier.
+      const recipe = findPizzaRecipe(item.pizzaName);
+      if (recipe) {
+        w = Math.max(
+          w,
+          weightedToppingCount({ ...item, toppings: recipe.toppings, toppingPlacement: {}, toppingAmount: {} })
+        );
+      }
       let pizzaCents;
       if (item.size === "gf") {
         pizzaCents = priceGlutenFree(w);
@@ -469,8 +478,7 @@ export function priceLineItem(item) {
       }
       const dipCents = sumDipUnits(item.dips) * PRICES.dips.each;
       const dairyFreeCents = item.dairyFreeCheese ? PRICES.dairyFreeCheese : 0;
-      const garlicCrustCents = item.garlicCrust === "with" ? PRICES.garlicCrust : 0;
-      return (pizzaCents + dipCents + dairyFreeCents + garlicCrustCents) * qty;
+      return (pizzaCents + dipCents + dairyFreeCents) * qty;
     }
 
     case "pizza-specialty": {
@@ -647,10 +655,9 @@ export function describePizzaFull(data = {}) {
     instructionBits.push(data.bake === "light" ? "Lightly done" : "Well done");
   }
   if (data.oregano === "with") instructionBits.push("With oregano");
-  if (data.crushedRedPepper === "with") instructionBits.push("With crushed red peppers");
+  if (data.crushedRedPepper === "with") instructionBits.push("With chili flakes");
   if (data.coriander === "with") instructionBits.push("With coriander");
   if (data.ginger === "with") instructionBits.push("With ginger");
-  if (data.garlicCrust === "with") instructionBits.push("Garlic crust");
   if (instructionBits.length) bits.push(instructionBits.join(", "));
 
   return bits.filter(Boolean).join(" • ");
@@ -738,9 +745,8 @@ export function describeByoPizzaSections(data = {}) {
 
   const instructions = [];
   if (data.bake && data.bake !== "normal") instructions.push(data.bake === "light" ? "Lightly Done" : "Well Done");
-  if (data.garlicCrust === "with") instructions.push("Garlic Crust");
   if (data.oregano === "with") instructions.push("Oregano");
-  if (data.crushedRedPepper === "with") instructions.push("Crushed Red Peppers");
+  if (data.crushedRedPepper === "with") instructions.push("Chili Flakes");
   if (data.coriander === "with") instructions.push("Coriander");
   if (data.ginger === "with") instructions.push("Ginger");
   if (instructions.length) sections.push({ label: "Instructions", text: instructions.join(", ") });

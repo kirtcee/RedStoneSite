@@ -146,7 +146,6 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
   const [crushedRedPepper, setCrushedRedPepper] = useState(initialData.crushedRedPepper || "without");
   const [coriander, setCoriander] = useState(initialData.coriander || "without");
   const [ginger, setGinger] = useState(initialData.ginger || "without");
-  const [garlicCrust, setGarlicCrust] = useState(initialData.garlicCrust || "without");
   const [qty, setQty] = useState(initialData.qty || 1);
 
   // Dips (with images)
@@ -466,6 +465,7 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
 
   const currentItem = {
     type: "pizza-byo",
+    pizzaName: pizzaName || "",
     size: String(selectedSize),
     crust: selectedCrust,
     toppings: selectedToppings,
@@ -477,7 +477,6 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
     secondAmount,
     dairyFreeCheese,
     dips: dipsQty,
-    garlicCrust,
     qty,
   };
   const lineSubtotalCents = priceLineItem(currentItem);
@@ -564,7 +563,6 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
       crushedRedPepper,
       coriander,
       ginger,
-      garlicCrust,
       qty,
       summary: describePizzaFull({
         size: selectedSize,
@@ -587,10 +585,10 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
         crushedRedPepper,
         coriander,
         ginger,
-        garlicCrust,
       }),
       lineSubtotalCents: priceLineItem({
         type: "pizza-byo",
+        pizzaName: pizzaName || "",
         size: String(selectedSize),
         toppings: selectedToppings,
         toppingPlacement,
@@ -601,7 +599,6 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
         secondAmount,
         dairyFreeCheese,
         dips: dipsQty,
-        garlicCrust,
         qty
       })
     };
@@ -1354,7 +1351,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                     onChange={(e) => { e.stopPropagation(); setCrushedRedPepper("with"); }}
                     style={{ marginRight: "0.5rem" }}
                   />
-                  With Crushed Red Peppers
+                  With Chili Flakes
                 </label>
                 <label style={{ display: "flex", alignItems: "center" }}>
                   <input
@@ -1365,7 +1362,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                     onChange={(e) => { e.stopPropagation(); setCrushedRedPepper("without"); }}
                     style={{ marginRight: "0.5rem" }}
                   />
-                  Without Crushed Red Peppers
+                  Without Chili Flakes
                 </label>
               </InstrGroup>
             </div>
@@ -1425,32 +1422,9 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                 </label>
               </InstrGroup>
 
-              <VRule />
-
-              <InstrGroup title="Garlic Crust">
-                <label style={{ display: "flex", alignItems: "center" }}>
-                  <input
-                    type="radio"
-                    name="garlicCrust"
-                    value="with"
-                    checked={garlicCrust === "with"}
-                    onChange={(e) => { e.stopPropagation(); setGarlicCrust("with"); }}
-                    style={{ marginRight: "0.5rem" }}
-                  />
-                  With Garlic Crust (+{formatMoney(PRICES.garlicCrust)})
-                </label>
-                <label style={{ display: "flex", alignItems: "center" }}>
-                  <input
-                    type="radio"
-                    name="garlicCrust"
-                    value="without"
-                    checked={garlicCrust === "without"}
-                    onChange={(e) => { e.stopPropagation(); setGarlicCrust("without"); }}
-                    style={{ marginRight: "0.5rem" }}
-                  />
-                  Without Garlic Crust
-                </label>
-              </InstrGroup>
+              {/* Empty third column so this row's columns line up with the row above. */}
+              <div aria-hidden="true" style={{ width: 1, margin: "0 1.25rem" }} />
+              <div aria-hidden="true" style={{ flex: 1, minWidth: 0 }} />
             </div>
           </Section>
         </div>
@@ -1515,15 +1489,12 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
               )}
 
               <p style={{ fontWeight: "bold", marginTop: "0.6rem" }}>Special Instructions:</p>
-              <ul style={{ paddingLeft: "1.2rem", margin: 0 }}>
+              <ul style={{ listStyle: "none", paddingLeft: 0, margin: 0 }}>
                 <li>Bake: {{ light: "Lightly done", normal: "Normal bake", well: "Well done" }[bake]}</li>
                 {oregano === "with" && <li>With oregano</li>}
-                {crushedRedPepper === "with" && <li>With crushed red peppers</li>}
+                {crushedRedPepper === "with" && <li>With chili flakes</li>}
                 {coriander === "with" && <li>With coriander</li>}
                 {ginger === "with" && <li>With ginger</li>}
-                {garlicCrust === "with" && (
-                  <li>Garlic crust (+{formatMoney(PRICES.garlicCrust)})</li>
-                )}
               </ul>
 
               <Divider />

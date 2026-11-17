@@ -3,14 +3,9 @@ import PizzaBuilder from "../components/PizzaBuilder";
 import { priceLineItem } from "../components/Pricing";
 import { useCart } from "../components/CartSystem";
 import DebugPizzaOverlay from "../components/modals/DebugPizzaOverlay";
+import { SPECIALTY_PIZZAS } from "../utils/pizzaRecipes";
 
-const specialtyPizzas = [
-  { name: "Deluxe",       toppings: ["Pepperoni", "Mushroom", "Green Pepper"] },
-  { name: "Hawaiian",     toppings: ["Pineapple", "Bacon Crumble", "Ham"] },
-  { name: "Veggie Lover", toppings: ["Mushroom", "Green Pepper", "Onion"] },
-  { name: "Meat Lover",   toppings: ["Pepperoni", "Hot Italian Sausage", "Bacon Crumble"] },
-  { name: "Canadian",     toppings: ["Pepperoni", "Mushroom", "Real Bacon"] }
-];
+const specialtyPizzas = SPECIALTY_PIZZAS;
 
 const DEFAULT_SIZE = "12";
 const sizeLabel = (s) =>
@@ -94,7 +89,6 @@ export default function SpecialtyPizzasPage() {
                 {pizza.name}
               </button>
 
-              {/* wide + short buttons */}
               {sizePickerFor === pizza.name ? (
                 <div className="btn btn-add btn-add--split" role="group" aria-label={`Choose a size for ${pizza.name}`}>
                   {SIZE_CHOICES.map((s) => (
@@ -217,23 +211,28 @@ export default function SpecialtyPizzasPage() {
         }
         .feastCard__name:hover{ text-decoration: underline; }
 
+        /* Card buttons match the Sides cards: 0.6rem padding, 30px rounding,
+           bigger text. Red buttons and the size buttons get an invisible 3px
+           border so they're exactly as tall as the 3px-bordered Customize. */
         .btn{
           display: block;
           width: 100%;
-          padding: 0.48rem 1.5rem;   /* short height, wide feel */
+          padding: 0.6rem 0.6rem;
           font-family: var(--font-heading, Oswald, sans-serif);
           font-weight: 900;
           text-transform: uppercase;
           letter-spacing: .45px;
+          font-size: 1.15rem;
+          line-height: 1.1;
           cursor: pointer;
-          border-radius: 4px;
+          border-radius: 30px;
         }
         .btn + .btn{ margin-top: 8px; }
 
         .btn-add{
           background: var(--red);
           color: #fff;
-          border: none;
+          border: 3px solid transparent;
         }
         .btn-add:hover{ filter: brightness(0.96); }
 
@@ -241,15 +240,18 @@ export default function SpecialtyPizzasPage() {
           display: flex;
           gap: 6px;
           padding: 0;
+          border: 0;
           background: transparent;
           overflow: visible;
         }
         .btn-add__seg{
           flex: 1;
           color: #fff;
-          border: none;
-          border-radius: 4px;
-          padding: 0.48rem 0.2rem;
+          border: 3px solid transparent;
+          border-radius: 30px;
+          padding: 0.6rem 0.2rem;
+          font-size: 1.15rem;
+          line-height: 1.1;
           font-family: var(--font-heading, Oswald, sans-serif);
           font-weight: 900;
           letter-spacing: .45px;

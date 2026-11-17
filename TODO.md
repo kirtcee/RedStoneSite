@@ -37,5 +37,5 @@ placeholders cut from the old full-pizza layers.
 - [ ] Ginger / Fresh Garlic and Coriander / Sumac currently share the same art.
 - [ ] Spreads still use full layers: BBQ Drizzle, Chipotle Mayo Drizzle (and
       sauces/cheese). BBQ Drizzle has no left/right half images yet.
-- [ ] Sauce Less/Extra, crust type, garlic crust and dairy-free cheese aren't
+- [ ] Sauce Less/Extra, crust type and dairy-free cheese aren't
       shown on the pizza yet.
