@@ -8,6 +8,7 @@ import React, {
   useEffect,
   useRef,
 } from "react";
+import { useRouter } from "next/router";
 import { formatMoney, priceLineItem } from "./Pricing";
 import { loadCart, saveCart, subscribeCart } from "../utils/cartPersistence";
 import { auth } from "../utils/firebaseConfig";
@@ -354,9 +355,36 @@ export function useCart() {
 }
 
 // Header cart icon + count badge. The header wraps it in a link to /cart.
+// The badge (a red circle, shown even at 0) does a double "pop" when the
+// site loads, on every page change, and whenever the item count goes up.
+// Size/color/pop are CSS variables on .cart-toggle__badge in globals.css.
 export function CartToggle() {
-  const { items } = useCart();
+  const { items, isLoaded } = useCart();
+  const router = useRouter();
   const qty = items.reduce((n, it) => n + (Number(it.qty) || 0), 0);
+
+  // Bumping popKey remounts the badge, which restarts its CSS animation.
+  const [popKey, setPopKey] = useState(0);
+  const pop = useCallback(() => setPopKey((k) => k + 1), []);
+
+  // Site load / reload: wait for the saved cart so the pop shows the real
+  // count (and doesn't fire a second time when it arrives).
+  useEffect(() => {
+    if (isLoaded) pop();
+  }, [isLoaded, pop]);
+
+  // Page changes (the header stays mounted between pages).
+  useEffect(() => {
+    router.events.on("routeChangeComplete", pop);
+    return () => router.events.off("routeChangeComplete", pop);
+  }, [router.events, pop]);
+
+  // Something added to the cart.
+  const prevQty = useRef(qty);
+  useEffect(() => {
+    if (isLoaded && qty > prevQty.current) pop();
+    prevQty.current = qty;
+  }, [qty, isLoaded, pop]);
 
   return (
     <span className="cart-toggle">
@@ -365,7 +393,9 @@ export function CartToggle() {
         <circle cx="9" cy="21" r="1" />
         <circle cx="20" cy="21" r="1" />
       </svg>
-      {qty > 0 && <span className="cart-toggle__badge">{qty}</span>}
+      <span key={popKey} className={`cart-toggle__badge${popKey ? " is-popping" : ""}`}>
+        {qty}
+      </span>
     </span>
   );
 }

@@ -242,12 +242,38 @@ h3 { font-size: 1.25rem; }
 .cart-toggle {
   position: relative; display: inline-flex; background: transparent; border: none; cursor: pointer; padding: .25rem;
 }
+/* Cart count: red circle with the number, top-right of the cart icon.
+   Edit these variables in Inspect (select .cart-toggle__badge, Styles panel)
+   to try sizes/colors/the pop live. */
 .cart-toggle__badge {
-  position: absolute; top: -4px; right: -4px;
-  background: var(--color-primary); color: #fff;
-  font-size: 12px; line-height: 16px; min-width: 18px; height: 18px;
+  --badge-size: 18px;          /* circle diameter */
+  --badge-font-size: 11px;     /* number size */
+  --badge-bg: #ff0000;         /* circle color */
+  --badge-color: #fefaf6;      /* number color */
+  --badge-top: -4px;           /* position: up/down (more negative = higher) */
+  --badge-right: -6px;         /* position: left/right (more negative = further right) */
+  --badge-pop-scale: 1.35;     /* how big each pop gets (1 = no pop) */
+  --badge-pop-duration: 700ms; /* total time for both pops */
+
+  position: absolute; top: var(--badge-top); right: var(--badge-right);
+  width: var(--badge-size); height: var(--badge-size);
+  border-radius: 50%;
+  background: var(--badge-bg); color: var(--badge-color);
+  font-family: var(--font-body); font-size: var(--badge-font-size); font-weight: 700;
+  line-height: 1; letter-spacing: 0;
   display: inline-flex; align-items: center; justify-content: center;
-  padding: 0 4px; font-weight: 700;
+  pointer-events: none;
+}
+.cart-toggle__badge.is-popping {
+  animation: cart-badge-pop var(--badge-pop-duration) ease-in-out;
+}
+/* Two pops: grow and back, twice. Scales from its center, so it never moves. */
+@keyframes cart-badge-pop {
+  0%, 50%, 100% { transform: scale(1); }
+  25%, 75%      { transform: scale(var(--badge-pop-scale)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cart-toggle__badge.is-popping { animation: none; }
 }
 
 .cart-empty { padding: 1rem; color: #777; }
