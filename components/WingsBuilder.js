@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo, useLayoutEffect, useRef } from "react";
 import { priceLineItem, formatMoney } from "./Pricing";
 import { useCart } from "./CartSystem";
+import ItemCheck from "./ItemCheck";
 
 /* ---- STABLE DEFAULTS (no new refs every render) ---- */
 const DEFAULT_SAUCE_OPTIONS = [
@@ -11,26 +12,6 @@ const DEFAULT_SERVE_STYLE_OPTIONS = ["Sauced & Tossed", "Sauce on Side"];
 const DEFAULT_PIECE_OPTIONS = [6, 12, 20, 30];
 const DEFAULT_DIPS_OPTIONS  = ["Blue Cheese", "Garlic", "Ranch"];
 const DEFAULT_INCLUDED_DIPS_MAP = { 6: 1, 12: 2, 20: 3, 30: 4 };
-
-// Green check-in-a-circle shown beside each line in the "Item" summary
-// (cropped from the 76x62 artwork to just the 39x39 circle)
-function ItemCheck() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="12.5 11.5 39 39"
-      aria-hidden="true"
-      style={{ flex: "0 0 auto", display: "block" }}
-    >
-      <path
-        fill="#6F9F47"
-        fillRule="evenodd"
-        d="M 32 11.5 A 19.5 19.5 0 1 1 32 50.5 A 19.5 19.5 0 1 1 32 11.5 Z M 29.50 40.00 L 43.50 26.00 L 43.50 24.00 L 42.00 22.50 L 41.00 22.50 L 29.00 34.50 L 28.00 34.50 L 24.00 30.50 L 23.00 30.50 L 20.50 33.00 L 22.50 35.00 L 22.50 36.00 L 23.00 36.50 L 24.00 36.50 L 24.50 37.00 L 24.50 38.00 L 27.00 40.50 L 29.00 40.50 Z"
-      />
-    </svg>
-  );
-}
 
 export default function WingsBuilder({
   onClose = () => {},
@@ -256,7 +237,7 @@ export default function WingsBuilder({
       style={{
         maxWidth: isNarrow ? "100%" : "880px",
         margin: "0 auto",
-        background: "white",
+        background: "transparent", // page bg on the menu, white panel in popups
         color: TEXT_BROWN,
         borderRadius: "0px",
         overflow: "visible",

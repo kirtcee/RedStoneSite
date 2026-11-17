@@ -729,8 +729,12 @@ function MenuBody() {
                   aria-label="Build Your Own Pizza"
                 >
                   <img className="cta-byo__img" src="/images/byo_thumb.png" alt="" />
-                  <div>
-                    <div className="cta-byo__title">Build Your Own Pizza</div>
+                  <div className="cta-byo__text">
+                    {/* phones show just "Build Your Pizza" (no "Own", no
+                        description) — see .cta-byo__own in globals.css */}
+                    <div className="cta-byo__title">
+                      Build Your <span className="cta-byo__own">Own </span>Pizza
+                    </div>
                     <div className="cta-byo__sub">Watch the pizza of your wildest dreams come to life.</div>
                   </div>
                 </button>

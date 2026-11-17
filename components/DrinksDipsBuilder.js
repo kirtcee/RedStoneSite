@@ -2,6 +2,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { priceLineItem, formatMoney } from "./Pricing";
 import { useCart } from "./CartSystem";
+import ItemCheck from "./ItemCheck";
 
 /* ===== Theme (matches the Pizza Builder's cream-box makeover) ===== */
 const PANEL_INNER_MAX = 840;
@@ -308,7 +309,7 @@ export function DrinksCategoryPanel({
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
-                      <span style={{ color: "green", fontWeight: "bold" }}>✔</span>
+                      <ItemCheck />
                       <span style={{ fontWeight: 900 }}>({it.qty})</span>
                       <span>{it.label}</span>
                     </div>

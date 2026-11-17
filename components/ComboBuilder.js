@@ -7,6 +7,7 @@ import PopsPicker from "./PopsPicker";
 import { priceLineItem, formatMoney, describePizzaFull } from "./Pricing";
 import { useCart } from "./CartSystem";
 import DebugPizzaOverlay from "./modals/DebugPizzaOverlay";
+import ItemCheck from "./ItemCheck";
 import {
   comboSections,
   comboThumbFor,
@@ -315,12 +316,12 @@ export default function ComboBuilder({
                       <div style={{ marginTop: "0.5rem", fontSize: "0.9rem", color: TEXT_BROWN }}>
                         {isFixedItem ? (
                           <span className="combo-item-status combo-item-status--ok">
-                            <span className="combo-item-status__check">✓</span>
+                            <span className="combo-item-status__check"><ItemCheck size={16} /></span>
                             Garlic Bread
                           </span>
                         ) : savedItems[item] ? (
                           <span className="combo-item-status combo-item-status--ok">
-                            <span className="combo-item-status__check">✓</span>
+                            <span className="combo-item-status__check"><ItemCheck size={16} /></span>
                             {savedItems[item].summary}
                           </span>
                         ) : (

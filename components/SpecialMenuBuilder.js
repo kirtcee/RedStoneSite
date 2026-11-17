@@ -3,6 +3,7 @@ import React, { useMemo, useState } from "react";
 import { priceLineItem, formatMoney, weightedToppingCount, PRICES } from "./Pricing";
 import { useCart } from "./CartSystem";
 import DebugPizzaOverlay from "./modals/DebugPizzaOverlay";
+import ItemCheck from "./ItemCheck";
 
 export default function SpecialMenuBuilder({
   itemType = "panzerotti",
@@ -399,7 +400,7 @@ export default function SpecialMenuBuilder({
           <h3 style={sectionBar}>{itemSectionIndex}. Item</h3>
           <div style={{ padding: "1rem", background: LIGHTER_BG }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
-              <span style={{ color: "green", fontWeight: "bold" }}>✔</span>
+              <ItemCheck />
               <span>{buildSummary()}</span>
             </div>
             {showsDips &&
@@ -408,7 +409,7 @@ export default function SpecialMenuBuilder({
                   key={idx}
                   style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}
                 >
-                  <span style={{ color: "green", fontWeight: "bold" }}>✔</span>
+                  <ItemCheck />
                   <span>({d.qty}) {d.label}</span>
                 </div>
               ))}

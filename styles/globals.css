@@ -672,6 +672,26 @@ h3 { font-size: 1.25rem; }
   font-size: 1rem;
 }
 
+/* Phones: just "BUILD YOUR PIZZA", centred top-to-bottom beside the image */
+@media (max-width: 640px) {
+  .cta-byo__own,
+  .cta-byo__sub {
+    display: none;
+  }
+  .cta-byo {
+    align-items: center;
+  }
+  .cta-byo__text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-self: stretch;
+  }
+  .cta-byo__title {
+    margin: 0;
+  }
+}
+
 
 /* Size links — the small/medium/large/xl row connected under the BYO CTA,
    inside the same .byo-box card. Spread evenly across the full width. */
@@ -1630,7 +1650,8 @@ body::before {
    =========================== */
 /* No white panel behind the item grids: the cream item boxes sit straight
    on the page background. */
-.card:has(.feast) {
+.card:has(.feast),
+.card:has(> .feast--edge) {
   background: transparent;
   border: 0;
   box-shadow: none;

@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { priceLineItem, formatMoney } from "./Pricing";
 import { useCart } from "./CartSystem";
+import ItemCheck from "./ItemCheck";
 
 export default function SideBuilder({
   side,
@@ -330,7 +331,7 @@ export default function SideBuilder({
         <h3 style={sectionBar}>{itemSectionIndex}. Item</h3>
         <div style={{ padding: `${PAD_Y} 1rem`, background: LIGHT_BG }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.6rem" }}>
-            <span style={{ color: "green", fontWeight: "bold" }}>✔</span>
+            <ItemCheck />
             <span style={{ fontWeight: "bold" }}>({quantity})</span>
             <span>
               {side}
@@ -340,14 +341,14 @@ export default function SideBuilder({
 
           {hasHotSauceToggle && (
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.6rem" }}>
-              <span style={{ color: "green", fontWeight: "bold" }}>✔</span>
+              <ItemCheck />
               <span>{`Hot Sauce Drizzle: ${hotSauce}`}</span>
             </div>
           )}
 
           {hasGravy && gravyQty > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.6rem" }}>
-              <span style={{ color: "green", fontWeight: "bold" }}>✔</span>
+              <ItemCheck />
               <span style={{ fontWeight: "bold" }}>({gravyQty})</span>
               <span>Gravy</span>
             </div>
@@ -358,7 +359,7 @@ export default function SideBuilder({
               key={idx}
               style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.6rem" }}
             >
-              <span style={{ color: "green", fontWeight: "bold" }}>✔</span>
+              <ItemCheck />
               <span style={{ fontWeight: "bold" }}>({item.qty})</span>
               <span>{item.label}</span>
             </div>
