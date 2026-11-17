@@ -46,7 +46,7 @@ export default function SpecialMenuBuilder({
   const labelStyle = { fontSize: ".95rem", lineHeight: 1.25 };
 
   const dividerInset = {
-    borderTop: `1px solid ${LIGHT_BORDER}`,
+    borderTop: 0, // spacing only — no line between groups
     width: "calc(100% - 2rem)",
     margin: "10px auto",
   };

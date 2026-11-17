@@ -45,7 +45,7 @@ export default function SideBuilder({
     fontSize: ".9rem",
   };
   const dividerInset = {
-    borderTop: `1px solid ${LIGHT_BORDER}`,
+    borderTop: 0, // spacing only — no line between groups
     width: "calc(100% - 2rem)",
     margin: "12px auto",
   };
@@ -85,6 +85,7 @@ export default function SideBuilder({
     color: active ? "#fff" : "#111",
     fontWeight: 800,
     fontFamily: "var(--font-heading, Oswald, sans-serif)",
+    fontSize: "1.15rem",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
@@ -167,7 +168,7 @@ export default function SideBuilder({
           {isSizeSelectable && canPickSize && (
             <>
               <h4 style={subHeader}>Choose Size</h4>
-              <div className="rs-optgrid" style={{ display: "flex", gap: "0.7rem", marginBottom: ".9rem" }}>
+              <div className="rs-optgrid" style={{ display: "flex", flexDirection: "column", gap: "0.7rem", marginBottom: ".9rem" }}>
                 {SIZE_OPTIONS.map((size) => {
                   const optionName = `${side} (${sizeToPricingLabel(size)})`;
                   const optionPrice = formatMoney(priceLineItem({ type: "side", name: optionName, qty: 1 }));
@@ -196,7 +197,7 @@ export default function SideBuilder({
           {hasHotSauceToggle && (
             <>
               <h4 style={subHeader}>Hot Sauce Drizzle</h4>
-              <div className="rs-optgrid" style={{ display: "flex", gap: "0.7rem" }}>
+              <div className="rs-optgrid" style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>
                 {["Yes", "No"].map((opt) => (
                   <button
                     key={opt}
@@ -366,11 +367,15 @@ export default function SideBuilder({
               <span>{item.label}</span>
             </div>
           ))}
+
+          <div style={{ fontWeight: 900, marginTop: "0.9rem" }}>
+            Item Subtotal: <span>{lineSubtotal}</span>
+          </div>
         </div>
       </SectionBox>
 
       {/* Footer actions */}
-      <div className="rs-pill-row">
+      <div className="rs-pill-row rs-pill-row--compact">
         <button
           type="button"
           onClick={onClose}
@@ -397,7 +402,7 @@ export default function SideBuilder({
           }}
           className="rs-pill-btn"
         >
-          Add To Order<span className="rs-pill-btn__dash"> — </span><span className="rs-pill-btn__price">{lineSubtotal}</span>
+          Add To Order
         </button>
       </div>
     </div>

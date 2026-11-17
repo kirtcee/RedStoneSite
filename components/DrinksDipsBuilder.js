@@ -25,7 +25,7 @@ const sectionBar = {
   lineHeight: 1.1,
 };
 const dividerInset = {
-  borderTop: `1px solid ${LIGHT_BORDER}`,
+  borderTop: 0, // spacing only — no line between groups
   width: "calc(100% - 2rem)",
   margin: "12px auto",
 };
@@ -355,13 +355,16 @@ export function DrinksCategoryPanel({
                   </div>
                 );
               })}
+              <div style={{ fontWeight: 900, marginTop: "0.9rem" }}>
+                Item Subtotal: <span>{panelSubtotal}</span>
+              </div>
             </div>
           )}
         </div>
       </SectionBox>
 
       {/* Footer */}
-      <div className="rs-pill-row">
+      <div className="rs-pill-row rs-pill-row--compact">
         <button
           type="button"
           onClick={onClose}
@@ -375,7 +378,7 @@ export function DrinksCategoryPanel({
           className="rs-pill-btn"
           aria-label={`Add ${categoryLabel} to order (Subtotal ${panelSubtotal})`}
         >
-          Add To Order<span className="rs-pill-btn__dash"> — </span><span className="rs-pill-btn__price">{panelSubtotal}</span>
+          Add To Order
         </button>
       </div>
     </div>

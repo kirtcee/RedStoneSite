@@ -179,7 +179,7 @@ export default function WingsBuilder({
   const Divider = ({ style = {} }) => (
     <div
       style={{
-        borderTop: `1px solid ${LIGHT_BORDER}`,
+        borderTop: 0, // spacing only — no line between groups
         width: "calc(100% - 2rem)",
         margin: "12px auto",
         ...style

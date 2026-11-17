@@ -1739,16 +1739,13 @@ body::before {
     padding: 0.8rem 0.5rem;
     font-size: 1.3rem;
   }
-  /* "Add To Order — $8.99" -> price on its own smaller line on phones */
-  .rs-pill-btn__dash {
-    display: none;
-  }
-  .rs-pill-btn__price {
-    display: block;
-    font-size: 0.8em;
-    margin-top: 2px;
-  }
 }
+/* Sides / Drinks & Dips footers: slimmer pills (0.1rem top/bottom) */
+.rs-pill-row.rs-pill-row--compact .rs-pill-btn {
+  padding-top: 0.1rem;
+  padding-bottom: 0.1rem;
+}
+
 /* very small phones (e.g. iPhone SE): keep "Add To Order" on one line */
 @media (max-width: 360px) {
   .rs-pill-row .rs-pill-btn {
