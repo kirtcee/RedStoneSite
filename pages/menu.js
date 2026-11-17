@@ -450,17 +450,22 @@ function SidesView({ selectedSide, setSelectedSide }) {
         }
         .feastCard__name:hover{ text-decoration:underline; }
 
+        /* Sides card buttons: 1rem padding, 30px rounding, bigger text.
+           Red buttons and the S/R/L size buttons get an invisible 3px
+           border so they're exactly as tall as the 3px-bordered Customize. */
         .btn{
-          display:block; width:100%; padding:0.48rem 1.5rem;
+          display:block; width:100%; padding:1rem 0.6rem;
           font-family:var(--font-heading, Oswald, sans-serif); font-weight:900; text-transform:uppercase; letter-spacing:.45px;
-          border-radius:4px; cursor:pointer;
+          font-size:1.15rem; line-height:1.1;
+          border-radius:30px; cursor:pointer;
         }
         .btn + .btn{ margin-top:8px; }
-        .btn-add{ background:var(--red); color:#fff; border:none; }
+        .btn-add{ background:var(--red); color:#fff; border:3px solid transparent; }
         .btn-add:hover{ filter:brightness(0.96); }
-        .btn-add--split{ display:flex; gap:6px; padding:0; background:transparent; overflow:visible; }
+        .btn-add--split{ display:flex; gap:6px; padding:0; border:0; background:transparent; overflow:visible; }
         .btn-add__seg{
-          flex:1; color:#fff; border:none; border-radius:4px; padding:0.48rem 0.2rem;
+          flex:1; color:#fff; border:3px solid transparent; border-radius:30px; padding:1rem 0.2rem;
+          font-size:1.15rem; line-height:1.1;
           font-family:var(--font-heading, Oswald, sans-serif); font-weight:900; letter-spacing:.45px; cursor:pointer;
           transition: transform 0.08s ease, filter 0.12s ease;
         }

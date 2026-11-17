@@ -227,34 +227,40 @@ export default function SidesDessertsAll({
         .btn {
           display: block;
           width: 100%;
-          padding: 0.52rem 1.2rem;
+          padding: 1rem 0.6rem;
           font-family: var(--font-heading, Oswald, sans-serif);
           font-weight: 900;
+          font-size: 1.15rem;
+          line-height: 1.1;
           text-transform: uppercase;
           letter-spacing: 0.45px;
-          border-radius: 4px;
+          border-radius: 30px;
           cursor: pointer;
         }
         .btn + .btn { margin-top: 8px; }
 
-        .btn-add { background: var(--red); color: #fff; border: none; }
+        /* invisible 3px border = same height as the 3px-bordered Customize */
+        .btn-add { background: var(--red); color: #fff; border: 3px solid transparent; }
         .btn-add:hover { filter: brightness(0.96); }
 
         .btn-add--split{
           display: flex;
           gap: 6px;
           padding: 0;
+          border: 0;
           background: transparent;
           overflow: visible;
         }
         .btn-add__seg{
           flex: 1;
           color: #fff;
-          border: none;
-          border-radius: 4px;
-          padding: 0.52rem 0.2rem;
+          border: 3px solid transparent;
+          border-radius: 30px;
+          padding: 1rem 0.2rem;
           font-family: var(--font-heading, Oswald, sans-serif);
           font-weight: 900;
+          font-size: 1.15rem;
+          line-height: 1.1;
           letter-spacing: .45px;
           cursor: pointer;
           transition: transform 0.08s ease, filter 0.12s ease;

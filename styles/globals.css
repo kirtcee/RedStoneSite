@@ -1740,10 +1740,10 @@ body::before {
     font-size: 1.3rem;
   }
 }
-/* Sides / Drinks & Dips footers: slimmer pills (0.1rem top/bottom) */
+/* Sides / Drinks & Dips footers: slimmer pills (0.5rem top/bottom) */
 .rs-pill-row.rs-pill-row--compact .rs-pill-btn {
-  padding-top: 0.1rem;
-  padding-bottom: 0.1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 
 /* very small phones (e.g. iPhone SE): keep "Add To Order" on one line */
