@@ -39,6 +39,11 @@ export default function PopsPicker({
     [picks]
   );
   const remaining = Math.max(0, count - total);
+  // e.g. { Coke: 2, Sprite: 1 } -> ["Coke", "Coke", "Sprite"]
+  const slots = useMemo(
+    () => options.flatMap((o) => Array.from({ length: picks[o] || 0 }, () => o)),
+    [options, picks]
+  );
 
   const updatePick = (opt, delta) => {
     setAssorted(false);
@@ -67,22 +72,6 @@ export default function PopsPicker({
       .map(([label, n]) => `${label} × ${n}`);
     return `${count} Pops: ${bits.join(", ")}`;
   };
-
-  const circleBtn = (enabled) => ({
-    background: enabled ? MAROON : "#ddd",
-    color: enabled ? "#fff" : "#888",
-    borderRadius: "50%",
-    width: 34,
-    height: 34,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    border: "none",
-    cursor: enabled ? "pointer" : "not-allowed",
-    fontSize: 18,
-    fontWeight: 900,
-    lineHeight: 1,
-  });
 
   return (
     <div
@@ -117,87 +106,66 @@ export default function PopsPicker({
           <button
             type="button"
             onClick={toggleAssorted}
-            style={{
-              width: "100%",
-              padding: "0.75rem 1rem",
-              marginBottom: "0.9rem",
-              background: assorted ? MAROON : "#fff",
-              color: assorted ? "#fff" : "#111",
-              border: `2px solid ${MAROON}`,
-              borderRadius: 8,
-              fontWeight: 900,
-              fontFamily: "var(--font-heading), Oswald, sans-serif",
-              textTransform: "uppercase",
-              cursor: "pointer",
-            }}
+            className={`pops-assorted${assorted ? " is-on" : ""}`}
+            aria-pressed={assorted}
           >
             {assorted ? "✓ Assorted (Staff's Choice)" : "Assorted (Staff's Choice)"}
           </button>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "0.6rem",
-              opacity: assorted ? 0.45 : 1,
-              pointerEvents: assorted ? "none" : "auto",
-            }}
-          >
-            {options.map((opt) => {
-              const qty = picks[opt] || 0;
-              return (
-                <div
-                  key={opt}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: "0.5rem",
-                    padding: "0.5rem 0.6rem",
-                    background: "#fff",
-                    border: `1px solid ${LIGHT_BORDER}`,
-                    borderRadius: 6,
-                  }}
+          {/* Your picks: one slot per included pop. Tap a filled slot to
+              take that pop back out. */}
+          <div className="pops-slots" aria-label="Your pops">
+            {Array.from({ length: count }).map((_, i) => {
+              const flavor = assorted ? "Assorted" : slots[i];
+              return flavor && !assorted ? (
+                <button
+                  key={i}
+                  type="button"
+                  className="pops-slot is-filled"
+                  onClick={() => updatePick(flavor, -1)}
+                  aria-label={`Remove one ${flavor}`}
                 >
-                  <span style={{ fontSize: ".85rem", fontWeight: 700, minWidth: 0 }}>{opt}</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, flex: "0 0 auto" }}>
-                    <button
-                      type="button"
-                      onClick={() => updatePick(opt, -1)}
-                      style={circleBtn(qty > 0)}
-                      disabled={qty <= 0}
-                      aria-label={`Decrease ${opt}`}
-                    >
-                      −
-                    </button>
-                    <span style={{ minWidth: 18, textAlign: "center", fontWeight: 900 }}>{qty}</span>
-                    <button
-                      type="button"
-                      onClick={() => updatePick(opt, 1)}
-                      style={circleBtn(total < count)}
-                      disabled={total >= count}
-                      aria-label={`Increase ${opt}`}
-                    >
-                      +
-                    </button>
-                  </div>
+                  <span className="pops-slot__name">{flavor}</span>
+                  <span className="pops-slot__x" aria-hidden="true">✕</span>
+                </button>
+              ) : (
+                <div key={i} className={`pops-slot${assorted ? " is-assorted" : ""}`}>
+                  {assorted ? "Assorted" : `Pop ${i + 1}`}
                 </div>
               );
             })}
           </div>
 
+          {/* Flavours: tap to add one (again for another). */}
+          <div className={`pops-grid${assorted ? " is-disabled" : ""}`}>
+            {options.map((opt) => {
+              const qty = picks[opt] || 0;
+              const full = total >= count;
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  className={`pops-flavor${qty ? " is-picked" : ""}`}
+                  onClick={() => updatePick(opt, 1)}
+                  disabled={assorted || (full && qty === 0) || full}
+                  aria-label={`Add ${opt}${qty ? ` (${qty} picked)` : ""}`}
+                >
+                  <span className="pops-flavor__name">{opt}</span>
+                  {qty > 0 && <span className="pops-flavor__count">×{qty}</span>}
+                </button>
+              );
+            })}
+          </div>
+
           <div
-            style={{
-              marginTop: "0.9rem",
-              fontWeight: 900,
-              color: assorted ? "#289c52" : remaining === 0 ? "#289c52" : MAROON,
-            }}
+            className="pops-status"
+            style={{ color: assorted || remaining === 0 ? "#289c52" : MAROON }}
           >
             {assorted
               ? "Assortment selected."
               : remaining === 0
               ? `All ${count} pops selected.`
-              : `${remaining} more pop${remaining === 1 ? "" : "s"} to pick.`}
+              : `Tap a flavour to add it — ${remaining} more pop${remaining === 1 ? "" : "s"} to pick.`}
           </div>
         </div>
       </div>
@@ -219,6 +187,130 @@ export default function PopsPicker({
           Save Pops
         </button>
       </div>
+      <style jsx>{`
+        .pops-assorted {
+          width: 100%;
+          padding: 0.75rem 1rem;
+          margin-bottom: 0.9rem;
+          background: #fff;
+          color: #111;
+          border: 2px solid ${MAROON};
+          border-radius: 30px;
+          font-weight: 900;
+          font-family: var(--font-heading), Oswald, sans-serif;
+          font-size: 1.05rem;
+          text-transform: uppercase;
+          cursor: pointer;
+        }
+        .pops-assorted.is-on {
+          background: ${MAROON};
+          color: #fff;
+        }
+        .pops-slots {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+          margin-bottom: 0.9rem;
+        }
+        .pops-slot {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          min-height: 44px;
+          padding: 0.4rem 0.6rem;
+          border: 2px dashed var(--menu-box-border);
+          border-radius: 8px;
+          background: #fff;
+          color: #999;
+          font-size: 0.9rem;
+          font-weight: 700;
+          text-align: center;
+        }
+        .pops-slot.is-assorted {
+          border-style: solid;
+          color: #289c52;
+        }
+        .pops-slot.is-filled {
+          border: 2px solid ${MAROON};
+          background: ${MAROON};
+          color: #fff;
+          cursor: pointer;
+        }
+        .pops-slot__name {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .pops-slot__x {
+          flex: 0 0 auto;
+          font-size: 0.8rem;
+          opacity: 0.85;
+        }
+        .pops-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+        }
+        @media (min-width: 640px) {
+          .pops-grid,
+          .pops-slots {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+          }
+        }
+        .pops-grid.is-disabled {
+          opacity: 0.45;
+        }
+        .pops-flavor {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 48px;
+          padding: 0.5rem 0.6rem;
+          border: 1px solid var(--menu-box-border);
+          border-radius: 8px;
+          background: #fff;
+          color: #111;
+          font-weight: 700;
+          font-size: 0.92rem;
+          line-height: 1.15;
+          text-align: center;
+          cursor: pointer;
+        }
+        .pops-flavor:disabled {
+          cursor: default;
+          opacity: 0.5;
+        }
+        .pops-flavor.is-picked {
+          border-color: ${MAROON};
+          box-shadow: inset 0 0 0 1px ${MAROON};
+          opacity: 1;
+        }
+        .pops-flavor__name {
+          min-width: 0;
+          overflow-wrap: anywhere;
+        }
+        .pops-flavor__count {
+          position: absolute;
+          top: -8px;
+          right: -6px;
+          min-width: 24px;
+          height: 24px;
+          padding: 0 6px;
+          border-radius: 12px;
+          background: ${MAROON};
+          color: #fff;
+          font-size: 0.8rem;
+          font-weight: 900;
+          line-height: 24px;
+        }
+        .pops-status {
+          margin-top: 0.9rem;
+          font-weight: 900;
+        }
+      `}</style>
     </div>
   );
 }

@@ -40,6 +40,29 @@ export default function ComboBuilder({
   const [isDirty, setIsDirty] = useState(false);
   const [pendingClose, setPendingClose] = useState(null); // fn to run after confirm
 
+  // The pizza size the customer actually gets: the combo's base size, or
+  // the upgraded size when an upgrade is picked (Pizza & Wings combos).
+  const pizzaSize =
+    upgrade === "toMedium" ? "12" : upgrade === "toXL" ? "16" : comboSize;
+
+  // Changing the upgrade after a pizza was already customized: resize it
+  // (and refresh its summary) so the combo, cart and kitchen all agree.
+  useEffect(() => {
+    if (!pizzaSize) return;
+    setSavedItems((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const [key, val] of Object.entries(prev)) {
+        if (key.startsWith("pizza") && val && val.size && val.size !== pizzaSize) {
+          const resized = { ...val, size: pizzaSize };
+          next[key] = { ...resized, summary: describePizzaFull(resized) };
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [pizzaSize]);
+
   const startCombo = (combo) => {
     setSelectedCombo(combo);
     setComboSize(comboDefaultSize[combo.id] || "12");
@@ -87,7 +110,7 @@ export default function ComboBuilder({
     // summary — wings/side slots already carry their own correct summary
     // from their builder's onAdd payload, which must not be overwritten.
     if (itemId.startsWith("pizza")) {
-      const size = data.size ?? comboSize ?? "12";
+      const size = pizzaSize ?? data.size ?? "12";
       const crust = data.crust ?? "Original Hand Tossed";
       const toppings =
         Array.isArray(data.toppings) ? data.toppings :
@@ -227,7 +250,8 @@ export default function ComboBuilder({
                 <h2 style={{ margin: 0 }}>{selectedCombo.name}</h2>
                 <p style={{ margin: "4px 0 8px 0", color: TEXT_BROWN }}>{selectedCombo.subtitle}</p>
                 <p style={{ margin: 0, color: TEXT_BROWN }}>
-                  <strong>Size:</strong> {sizeLabelMap[comboSize] || `${comboSize}"`} (locked for this combo)
+                  <strong>Size:</strong> {sizeLabelMap[pizzaSize] || `${pizzaSize}"`}{" "}
+                  {upgrade ? "(upgraded)" : "(locked for this combo)"}
                 </p>
               </Section>
 
@@ -278,7 +302,7 @@ export default function ComboBuilder({
                       }}
                     >
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <strong>{comboItemLabel(item)}</strong>
+                        <strong className="combo-item-label">{comboItemLabel(item)}</strong>
                         {isFixedItem ? (
                           <span style={{ fontSize: "0.9rem", color: TEXT_BROWN }}>Included: Garlic Bread</span>
                         ) : (
@@ -299,10 +323,12 @@ export default function ComboBuilder({
                               backgroundColor: MAROON,
                               color: "white",
                               border: "none",
-                              padding: "0.5rem 1rem",
-                              borderRadius: BOX_RADIUS,
+                              padding: "0.8rem 2rem",
+                              borderRadius: 30,
                               cursor: "pointer",
                               fontWeight: 900,
+                              fontSize: "1.2rem",
+                              lineHeight: 1,
                               textTransform: "uppercase",
                               letterSpacing: ".3px",
                               fontFamily: "var(--font-heading, Oswald, sans-serif)",
@@ -393,20 +419,9 @@ export default function ComboBuilder({
               <button
                 onClick={addToCart}
                 disabled={!comboIsComplete}
-                style={{
-                  width: "100%",
-                  padding: "1rem",
-                  backgroundColor: comboIsComplete ? MAROON : "#ccc",
-                  color: "white",
-                  fontWeight: 900,
-                  border: "none",
-                  borderRadius: BOX_RADIUS,
-                  cursor: comboIsComplete ? "pointer" : "not-allowed",
-                  textTransform: "uppercase",
-                  fontFamily: "var(--font-heading, Oswald, sans-serif)",
-                }}
+                className="rs-pill-btn combo-add-btn"
               >
-                {editingItem ? "Save Changes" : "Add Combo to Cart"} — {modalPrice}
+                {editingItem ? "Save Changes" : "Add Combo to Cart"}
               </button>
             </div>
           </div>
@@ -434,13 +449,13 @@ export default function ComboBuilder({
           <PizzaBuilder
             initialData={savedItems[customizingItem.id] || {}}
             includedToppings={3}
-            lockedSize={comboSize}
+            lockedSize={pizzaSize}
             allowSizeChoice={false}
             forceResponsiveStack
             onSave={(data) =>
               handleSave(customizingItem.id, {
                 ...data,
-                size: comboSize,
+                size: pizzaSize,
                 crust: data.crust,
                 toppings: Array.isArray(data.toppings) ? data.toppings : data.selectedToppings,
               })
@@ -553,14 +568,14 @@ export default function ComboBuilder({
             <div className="rs-confirm__actions">
               <button
                 type="button"
-                className="rs-btn rs-btn--ghost"
+                className="rs-pill-btn rs-pill-btn--outline"
                 onClick={() => setPendingClose(null)}
               >
                 Keep editing
               </button>
               <button
                 type="button"
-                className="rs-btn rs-btn--danger"
+                className="rs-pill-btn"
                 onClick={() => {
                   const fn = pendingClose;
                   setPendingClose(null);
@@ -622,52 +637,50 @@ export default function ComboBuilder({
         }
         .rs-confirm__panel {
           background: #fff;
-          width: min(420px, 100%);
+          width: min(460px, 100%);
           border: 1px solid rgba(0,0,0,0.08);
           box-shadow: 0 14px 40px rgba(0,0,0,0.16);
           border-radius: 10px;
-          padding: 1.1rem 1.2rem 1rem;
+          padding: 1.4rem 1.3rem 1.3rem;
           font-family: var(--font-body, Inter, system-ui, sans-serif);
         }
         .rs-confirm__title {
           font-family: var(--font-heading, Oswald, sans-serif);
-          font-size: 1.15rem;
-          font-weight: 800;
-          margin-bottom: 0.35rem;
+          font-size: 1.6rem;
+          line-height: 1.1;
+          text-transform: uppercase;
+          margin-bottom: 0.5rem;
         }
         .rs-confirm__body {
-          font-size: 0.9rem;
+          font-size: 1rem;
+          line-height: 1.4;
           color: #333;
-          margin-bottom: 0.9rem;
+          margin-bottom: 1.1rem;
         }
+        /* two big pills side by side: Keep editing (outline) / Discard (red) */
         .rs-confirm__actions {
           display: flex;
-          justify-content: flex-end;
-          gap: 0.55rem;
+          gap: 10px;
         }
-        .rs-btn {
-          border: none;
-          border-radius: 6px;
-          font-weight: 700;
-          padding: 0.4rem 0.9rem;
-          cursor: pointer;
-          font-family: var(--font-heading, Oswald, sans-serif);
+        .rs-confirm__actions :global(.rs-pill-btn) {
+          flex: 1 1 0;
+          padding: 0.75rem 0.6rem;
+          font-size: 1.2rem;
+        }
+        /* combo item names ("Pizza 1", "Wings"…) in Red Stone Display */
+        .combo-item-label {
+          font-family: var(--font-display);
+          font-weight: 400;
+          font-size: 1.15rem;
+          letter-spacing: 0.02em;
           text-transform: uppercase;
-          letter-spacing: .3px;
+          color: #000;
         }
-        .rs-btn--ghost {
-          background: #f5f5f5;
-          color: #222;
-        }
-        .rs-btn--ghost:hover {
-          background: #eaeaea;
-        }
-        .rs-btn--danger {
-          background: #E91E28;
-          color: #fff;
-        }
-        .rs-btn--danger:hover {
-          filter: brightness(0.97);
+        :global(.combo-add-btn) {
+          display: block;
+          width: 100%;
+          padding: 0.8rem 1rem;
+          font-size: 1.4rem;
         }
       `}</style>
     </>

@@ -218,7 +218,7 @@ export default function SidesDessertsAll({
           color: var(--brand-blue);
           font-family: var(--font-heading, Oswald, sans-serif);
           font-weight: 900;
-          font-size: 1.02rem;
+          font-size: 1.1rem;
           text-align: left;
           cursor: pointer;
         }
