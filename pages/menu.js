@@ -34,7 +34,6 @@ function EntreesView({
   selectedSpecialItem,
   setSelectedSpecialItem,
   onAddToCart,
-  openCart,
 }) {
   useEffect(() => {
     if (sub === "build") {
@@ -168,13 +167,11 @@ function EntreesView({
         `}</style>
 
         {/* mount the modal/logic controller */}
+        {/* ComboBuilder adds/updates the cart itself (it holds its own
+            useCart() handle) — don't route it through onAddToCart, which
+            would call addItem() again and double the combo in the cart. */}
         <ComboBuilder
           openComboId={openComboId}
-          // ComboBuilder adds/updates the cart itself (it holds its own
-          // useCart() handle) — onAdd here is just "now open the cart
-          // dropdown", NOT a second add. Routing this through onAddToCart
-          // instead would call addItem() again and double the combo in cart.
-          onAdd={() => openCart?.()}
           onClose={() => setOpenComboId(null)}
         />
       </div>
@@ -603,7 +600,7 @@ function MenuBody() {
   const router = useRouter();
 
   // Cart/totals
-  const { addItem, openCart, service } = useCart();
+  const { addItem, service } = useCart();
 
   const tab = (router.query.tab || "entrees").toString();
   const sub = (router.query.sub || "all").toString();
@@ -679,7 +676,6 @@ function MenuBody() {
 
   const handleAddToCart = (item) => {
     addItem(item);
-    openCart();
   };
 
   const pageTitle = useMemo(() => {
@@ -797,7 +793,6 @@ function MenuBody() {
                 selectedSpecialItem={selectedSpecialItem}
                 setSelectedSpecialItem={setSelectedSpecialItem}
                 onAddToCart={handleAddToCart}
-                openCart={openCart}
               />
             </div>
           )}
@@ -889,7 +884,6 @@ function MenuBody() {
               addItem(payload);
               setEditInitialData(null);
               setEditingId(null);
-              openCart();
               setShowBuilder(false);
             }}
           />

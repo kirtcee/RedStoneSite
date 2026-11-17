@@ -8,32 +8,15 @@ import React, {
   useEffect,
   useRef,
 } from "react";
-import { formatMoney, priceLineItem, describePizzaCompact, describeByoPizzaTitle } from "./Pricing";
+import { formatMoney, priceLineItem } from "./Pricing";
 import { loadCart, saveCart, subscribeCart } from "../utils/cartPersistence";
 import { auth } from "../utils/firebaseConfig";
-import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
-import { dealNameFor, dealSlotLabel, findDealById } from "../utils/dealCatalog";
 
 const CartContext = createContext(null);
 
 export function CartProvider({ children, onEditItem }) {
   const [items, setItems] = useState([]);
-  const [isOpen, setIsOpen] = useState(false);
-
-  // ---- Open/Close helpers ----
-  const openCart = useCallback(() => setIsOpen(true), []);
-  const closeCart = useCallback(() => setIsOpen(false), []);
-  const toggleCart = useCallback(() => setIsOpen((v) => !v), []);
-
-  // Close the dropdown before handing off to the edit overlay, so the two
-  // never sit open on top of each other.
-  const handleEditItem = useCallback(
-    (item) => {
-      setIsOpen(false);
-      onEditItem?.(item);
-    },
-    [onEditItem]
-  );
+  const handleEditItem = useCallback((item) => onEditItem?.(item), [onEditItem]);
 
   // ---- Service method (carryout/delivery) — single source of truth ----
   // Starts unset for a first-time visitor (never defaults to carryout) and
@@ -192,7 +175,6 @@ export function CartProvider({ children, onEditItem }) {
       }
       return [...prev, { ...item, _key: itemKey, id: cryptoRandomId() }];
     });
-    setIsOpen(true);
   }, []);
 
   const addItem = useCallback(
@@ -303,10 +285,6 @@ export function CartProvider({ children, onEditItem }) {
     () => ({
       items,
       isLoaded,
-      isOpen,
-      openCart,
-      closeCart,
-      toggleCart,
       addItem,
       updateQty,
       updateItem,
@@ -337,10 +315,6 @@ export function CartProvider({ children, onEditItem }) {
     [
       items,
       isLoaded,
-      isOpen,
-      openCart,
-      closeCart,
-      toggleCart,
       addItem,
       updateQty,
       updateItem,
@@ -379,239 +353,20 @@ export function useCart() {
   return ctx;
 }
 
+// Header cart icon + count badge. The header wraps it in a link to /cart.
 export function CartToggle() {
-  const { toggleCart, items } = useCart();
+  const { items } = useCart();
   const qty = items.reduce((n, it) => n + (Number(it.qty) || 0), 0);
 
   return (
-    <button onClick={toggleCart} aria-label="Cart" className="cart-toggle">
+    <span className="cart-toggle">
       <svg width="28" height="28" viewBox="2.5 0 24 24" fill="none" aria-hidden="true">
         <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
         <circle cx="9" cy="21" r="1" />
         <circle cx="20" cy="21" r="1" />
       </svg>
       {qty > 0 && <span className="cart-toggle__badge">{qty}</span>}
-    </button>
-  );
-}
-
-/* Dropdown cart (anchored under the header cart icon) */
-export function CartSidebar() {
-  const {
-    isOpen,
-    closeCart,
-    items,
-    updateQty,
-    removeItem,
-    subtotalCents,
-    onEditItem,
-    isServiceConfirmed,
-    openServiceGate,
-  } = useCart();
-
-  // dynamic positioning so the panel's right edge aligns to the container
-  // and the pointer aims at the cart icon
-  const [pos, setPos] = useState({ top: 0, right: 0, arrowRight: 28 });
-
-  const measure = useCallback(() => {
-    if (typeof window === "undefined") return;
-
-    const headerContainer =
-      document.querySelector(".site-header .container") ||
-      document.querySelector(".container");
-
-    const anchorSeg = document.querySelector(".header-seg--cart");
-
-    if (!headerContainer) {
-      // fallback: pin to viewport right, just under header
-      setPos({ top: 90, right: 12, arrowRight: 28 });
-      return;
-    }
-
-    const hc = headerContainer.getBoundingClientRect();
-    const right = Math.max(0, window.innerWidth - hc.right);
-
-    let top = 90; // fallback
-    let arrowRight = 28;
-
-    if (anchorSeg) {
-      const an = anchorSeg.getBoundingClientRect();
-      top = Math.round(an.bottom + 6);
-
-      // pointer position measured FROM the panel’s right edge
-      const anchorCenterX = an.left + an.width / 2;
-      arrowRight = Math.round(hc.right - anchorCenterX - 6); // -6 centers the 12–14px diamond
-      arrowRight = Math.max(12, Math.min(400, arrowRight));   // clamp
-    }
-
-    setPos({ top, right, arrowRight });
-  }, []);
-
-  useEffect(() => {
-    // measure when mounted and whenever we open/resize/scroll
-    measure();
-    window.addEventListener("resize", measure);
-    window.addEventListener("scroll", measure, { passive: true });
-    return () => {
-      window.removeEventListener("resize", measure);
-      window.removeEventListener("scroll", measure);
-    };
-  }, [measure, isOpen]);
-
-  // Close on an outside click — anywhere except the panel itself and the
-  // header cart icon (which has its own toggle behavior).
-  const panelRef = useRef(null);
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const onPointerDown = (e) => {
-      if (panelRef.current?.contains(e.target)) return;
-      if (e.target.closest?.(".header-seg--cart")) return;
-      closeCart();
-    };
-    document.addEventListener("mousedown", onPointerDown);
-    return () => document.removeEventListener("mousedown", onPointerDown);
-  }, [isOpen, closeCart]);
-
-  return (
-    <div
-      ref={panelRef}
-      className="cart-sidebar"
-      data-open={isOpen ? "true" : "false"}
-      style={{ top: pos.top, right: pos.right }}
-    >
-      <div className="cart-sidebar__pointer" style={{ right: pos.arrowRight }} />
-
-      <div className="cart-sidebar__header">
-        <div className="cart-sidebar__title">Your Cart</div>
-        <button onClick={closeCart} aria-label="Close cart" className="cart-sidebar__close">
-          ×
-        </button>
-      </div>
-
-      <div className="cart-sidebar__items">
-        {items.length === 0 ? (
-          <div className="cart-empty">Your cart is empty.</div>
-        ) : (
-          items.map((it) => {
-            const lineCents = priceLineItem(it);
-            const { name, subtitle } = getNameAndSubtitle(it);
-            const img = getImage(it);
-            return (
-              <div key={it.id} className="cart-item">
-                <div>
-                  <img src={img} alt="" className="cart-item__thumb" />
-                </div>
-
-                <div style={{ minWidth: 0 }}>
-                  <button
-                    onClick={() => onEditItem && onEditItem(it)}
-                    className="cart-item__name"
-                  >
-                    {name}
-                  </button>
-                  <div className="cart-item__subtitle">{subtitle}</div>
-                  {it.type === "combo" && it.meta?.items && (
-                    <div className="cart-item__combo-children">
-                      {Object.entries(it.meta.items).map(([key, child]) => (
-                        <div key={key} className="cart-item__combo-child">
-                          <span className="cart-item__combo-child-label">
-                            {comboItemLabel(key)}:
-                          </span>
-                          <span className="cart-item__combo-child-text">
-                            {comboChildCompactSummary(key, child)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {it.type === "deal" && it.meta?.items && (
-                    <div className="cart-item__combo-children">
-                      {Object.entries(it.meta.items).map(([key, child]) => (
-                        <div key={key} className="cart-item__combo-child">
-                          <span className="cart-item__combo-child-label">
-                            {dealSlotLabel(findDealById(it.dealId), key)}:
-                          </span>
-                          <span className="cart-item__combo-child-text">
-                            {comboChildCompactSummary(key, child)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {it.type === "deal" && it.meta?.builds && (
-                    <div className="cart-item__combo-children">
-                      {it.meta.builds.map((child, idx) => (
-                        <div key={idx} className="cart-item__combo-child">
-                          <span className="cart-item__combo-child-label">
-                            Item {idx + 1}:
-                          </span>
-                          <span className="cart-item__combo-child-text">
-                            {child?.summary || "Not customized yet"}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="cart-item__price">{formatMoney(lineCents)}</div>
-
-                <div className="cart-item__controls">
-                  <div className="cart-item__label">Quantity</div>
-                  <select
-                    value={it.qty}
-                    onChange={(e) => updateQty(it.id, e.target.value)}
-                    className="cart-item__qty"
-                  >
-                    {Array.from({ length: 20 }).map((_, i) => (
-                      <option key={i + 1} value={i + 1}>
-                        {i + 1}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    onClick={() => onEditItem && onEditItem(it)}
-                    className="cart-item__btn cart-item__btn--edit"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => removeItem(it.id)}
-                    className="cart-item__btn cart-item__btn--remove"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            );
-          })
-        )}
-      </div>
-
-      <div className="cart-sidebar__footer">
-        <DealCodeEntry compact />
-        <div className="cart-sidebar__footer-row">
-          <div className="cart-sidebar__subtotal">
-            Subtotal: {formatMoney(subtotalCents)}
-          </div>
-          <button
-            className="cart-sidebar__checkout"
-            onClick={() => {
-              if (isServiceConfirmed) {
-                window.location.href = "/cart";
-              } else {
-                openServiceGate(() => {
-                  window.location.href = "/cart";
-                });
-              }
-            }}
-          >
-            View Cart
-          </button>
-        </div>
-      </div>
-    </div>
+    </span>
   );
 }
 
@@ -886,98 +641,6 @@ export function DealCodeEntry({ compact = false, variant = null }) {
       `}</style>
     </form>
   );
-}
-
-// ---- helpers ----
-// Cart dropdown shows only the identity + real deviations from the default
-// build — full customization detail (cheese/sauce/instructions) belongs on
-// the full cart page, not here.
-function getNameAndSubtitle(item) {
-  if (item.type === "pizza-byo") {
-    const name = item.pizzaName || describeByoPizzaTitle(item);
-    const subtitle = describePizzaCompact(item);
-    return { name, subtitle };
-  }
-  if (item.type === "pizza-specialty") {
-    const sizeLabel =
-      ({ "10": "Small", "12": "Medium", "14": "Large", "16": "X-Large" }[
-        String(item.size)
-      ] || `${item.size}"`);
-    const name = item.name || "Specialty Pizza";
-    const subtitle = `${sizeLabel}${item.crust ? ` • ${item.crust}` : ""}`;
-    return { name, subtitle };
-  }
-  if (item.type === "wings") {
-    return {
-      name: `${item.count} Wings`,
-      subtitle: [item.sauce, item.serveStyle].filter(Boolean).join(" • "),
-    };
-  }
-  if (item.type === "side") {
-    const bits = [];
-    if (Number(item.gravy) > 0) bits.push(`Gravy × ${item.gravy}`);
-    const dipBits = Object.entries(item.dips || {})
-      .filter(([, q]) => Number(q) > 0)
-      .map(([k, q]) => `${k} × ${q}`);
-    if (dipBits.length) bits.push(`Dips: ${dipBits.join(", ")}`);
-    if (item.hotSauce === "Yes") bits.push("Hot Sauce Drizzle");
-    // .name doubles as the priceSide() lookup key ("Onion Rings (Medium)",
-    // an internal pricing label) — build the customer-facing name from the
-    // raw .side/.size fields instead (see pages/cart.js's itemTitle).
-    const name = item.side ? `${item.side}${item.size ? ` (${item.size})` : ""}` : item.name || "Side";
-    return { name, subtitle: bits.join(" • ") };
-  }
-  if (item.type === "special") {
-    const bits = [];
-    const t = item.toppings || {};
-    if (t.meats?.length) bits.push(`Meats: ${t.meats.join(", ")}`);
-    if (t.veggies?.length) bits.push(`Veggies: ${t.veggies.join(", ")}`);
-    if (t.cheeses?.length) bits.push(`Cheeses: ${t.cheeses.join(", ")}`);
-    const dipBits = Object.entries(item.dips || {})
-      .filter(([, q]) => Number(q) > 0)
-      .map(([k, q]) => `${k} × ${q}`);
-    if (dipBits.length) bits.push(`Dips: ${dipBits.join(", ")}`);
-    return { name: item.name || "Special", subtitle: bits.join(" • ") };
-  }
-  if (item.type === "drinks-dips") {
-    const subtitle = (item.items || []).map((i) => `${i.label} × ${i.qty}`).join(", ");
-    return { name: item.categoryLabel || "Drinks", subtitle };
-  }
-  if (item.type === "combo") {
-    const subtitle =
-      item.upgrade === "toMedium"
-        ? "Upgraded to Medium"
-        : item.upgrade === "toXL"
-        ? "Upgraded to XL"
-        : "";
-    return { name: comboNameFor(item.comboId), subtitle };
-  }
-  if (item.type === "deal") {
-    const units = Array.isArray(item.meta?.builds) ? item.meta.builds.length : null;
-    const subtitle = units ? `${units} item${units === 1 ? "" : "s"}` : "";
-    return { name: dealNameFor(item.dealId), subtitle };
-  }
-  return { name: "Item", subtitle: "" };
-}
-
-// Short per-slot line for a combo's sub-item in the dropdown — pizzas get
-// just their size/crust (no cheese/sauce/topping detail), everything else
-// already carries a short summary from its own builder.
-function comboChildCompactSummary(key, child) {
-  if (!child) return "Not customized yet";
-  if (key.startsWith("pizza")) return describePizzaCompact(child);
-  return child.summary || "Not customized yet";
-}
-
-function getImage(item) {
-  if (item.image) return item.image;
-  if (item.type?.startsWith("pizza")) return "/pizza_layers/Crust.png";
-  if (item.type === "wings") return "/images/wings.jpg";
-  if (item.type === "side") return "/images/side.jpg";
-  if (item.type === "combo") return "/images/combo.jpg";
-  if (item.type === "special") return "/images/special.jpg";
-  if (item.type === "deal") return "/images/combo.jpg";
-  return "/images/placeholder.jpg";
 }
 
 function cryptoRandomId() {

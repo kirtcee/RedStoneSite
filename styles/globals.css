@@ -131,7 +131,6 @@
   --section-gap: 24px;       /* vertical rhythm */
 
   /* components */
-  --cart-panel-w: 520px;
 }
 
 /* bigger gutters on desktop */
@@ -238,10 +237,10 @@ h3 { font-size: 1.25rem; }
 
 
 /* ===========================
-   Cart (toggle + dropdown)
+   Cart (header icon)
    =========================== */
 .cart-toggle {
-  position: relative; background: transparent; border: none; cursor: pointer; padding: .25rem;
+  position: relative; display: inline-flex; background: transparent; border: none; cursor: pointer; padding: .25rem;
 }
 .cart-toggle__badge {
   position: absolute; top: -4px; right: -4px;
@@ -251,54 +250,10 @@ h3 { font-size: 1.25rem; }
   padding: 0 4px; font-weight: 700;
 }
 
-/* Positioned by inline styles (top/right) from JS measurement */
-.cart-sidebar {
-  position: fixed;
-  width: var(--cart-panel-w);
-  max-width: calc(100vw - 24px);
-  background: #fff;
-  border: 1px solid #cfd8dc;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
-  transform: translateY(-10px);
-  opacity: 0; pointer-events: none;
-  transition: transform 160ms ease, opacity 160ms ease;
-  z-index: 3500;
-  display: flex; flex-direction: column;
-  max-height: 70vh; overflow: hidden;
-}
-.cart-sidebar[data-open="true"] { transform: translateY(0); opacity: 1; pointer-events: auto; }
-.cart-sidebar__pointer {
-  position: absolute; top: -8px; width: 14px; height: 14px;
-  background: #fff; border-left: 1px solid #cfd8dc; border-top: 1px solid #cfd8dc;
-  transform: rotate(45deg);
-}
-.cart-sidebar__header {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 14px 16px; border-bottom: 2px solid #1976d2;
-}
-.cart-sidebar__title { font-weight: 900; color: #0d47a1; text-transform: uppercase; letter-spacing: .3px; }
-.cart-sidebar__close { background: transparent; border: none; font-size: 22px; cursor: pointer; color: #78909c; }
-.cart-sidebar__items { overflow-y: auto; padding: 10px 12px; flex: 1; }
 .cart-empty { padding: 1rem; color: #777; }
-.cart-item { display: grid; grid-template-columns: 76px 1fr auto; gap: 10px; align-items: center; padding: 12px 6px; border-bottom: 1px solid #f0f0f0; }
-.cart-item__thumb { width: 72px; height: 54px; object-fit: cover; border: 1px solid #eee; }
-.cart-item__name { background: none; border: none; padding: 0; margin: 0; cursor: pointer; text-align: left; color: #0b3d91; font-weight: 800; }
-.cart-item__subtitle { color: #666; font-size: 13px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cart-item__combo-children { margin-top: 4px; display: flex; flex-direction: column; gap: 2px; list-style: none; padding: 0; }
-.cart-item__combo-child { display: flex; gap: 5px; font-size: 12px; color: #666; align-items: baseline; }
-.cart-item__combo-child-label { font-weight: 700; color: #444; flex: 0 0 auto; }
-.cart-item__combo-child-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cart-item__price { justify-self: end; font-weight: 700; }
-.cart-item__controls { grid-column: 1 / 4; display: flex; align-items: center; gap: 10px; margin-top: 6px; }
-.cart-item__label { color: #444; font-size: 13px; }
-.cart-item__qty { border: 1px solid #ddd; padding: 6px 8px; }
-.cart-item__btn { border: 1px solid #ddd; padding: 6px 10px; cursor: pointer; font-size: 13px; }
-.cart-item__btn--edit { margin-left: auto; background: #fafafa; }
-.cart-item__btn--remove { background: #fff; color: #e53935; }
-.cart-sidebar__footer { border-top: 1px solid #eee; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
-.cart-sidebar__footer-row { display: flex; align-items: center; gap: 12px; }
-.cart-sidebar__subtotal { color: #666; font-weight: 600; }
-.cart-sidebar__checkout { margin-left: auto; background: var(--color-primary); color: #fff; font-weight: 800; border: none; padding: 10px 14px; cursor: pointer; white-space: nowrap; }
+
+/* The header cart segment is a link to /cart */
+a.header-seg--cart { text-decoration: none; color: #fff; }
 
 /* ===========================
    Header + Subheader

@@ -397,10 +397,10 @@ export default function Header() {
                 {serviceChip}
               </button>
 
-              <div className="header-seg header-seg--cart" role="button" aria-label="Cart">
+              <Link href="/cart" className="header-seg header-seg--cart" aria-label="Cart">
                 <CartToggle />
                 <div className="header-cart__label">CART</div>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
