@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useCart } from "../components/CartSystem";
 import OrderTotals, { useOrderTotals } from "../components/OrderTotals";
-import { priceLineItem, formatMoney, describePizzaFull, describeByoPizzaHeading, describeByoPizzaSections } from "../components/Pricing";
+import { priceLineItem, formatMoney, describePizzaFull, describeByoPizzaTitle, describeByoPizzaSections } from "../components/Pricing";
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { dealNameFor, dealSlotLabel, findDealById } from "../utils/dealCatalog";
 import { saveOrder } from "../utils/saveOrder";
@@ -46,7 +46,7 @@ function itemTitle(item) {
     // customer-facing size — build the label from .side/.size instead.
     (item?.type === "side" && item?.side ? `${item.side}${item.size ? ` (${item.size})` : ""}` : null) ||
     item?.name ||
-    (item?.type === "pizza-byo" ? describeByoPizzaHeading(item) : null) ||
+    (item?.type === "pizza-byo" ? describeByoPizzaTitle(item) : null) ||
     (item?.type === "combo" ? comboNameFor(item.comboId) : null) ||
     (item?.type === "deal" ? dealNameFor(item.dealId) : null) ||
     (item?.type === "wings" ? `${item.count || ""} Wings`.trim() : null) ||
