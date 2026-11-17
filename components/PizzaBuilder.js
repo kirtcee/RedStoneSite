@@ -508,8 +508,8 @@ const Section = ({ index, title, children }) => (
 // brown label over its radio options, laid out several-to-a-row with a
 // vertical rule between (mirrors the reference's Bake/Cut/Oregano rows)
 // instead of the old one-category-per-full-width-row stack.
-const InstrGroup = ({ title, children }) => (
-  <div style={{ flex: 1, minWidth: 0 }}>
+const InstrGroup = ({ title, children, centered = false }) => (
+  <div style={centered ? { flex: "0 1 auto", minWidth: 0 } : { flex: 1, minWidth: 0 }}>
     <p
       style={{
         fontWeight: 900,
@@ -1369,8 +1369,9 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
 
             <Divider style={{ margin: "1rem auto" }} />
 
-            <div style={{ display: "flex" }}>
-              <InstrGroup title="Coriander">
+            {/* Only two groups on this row, so they sit centered under the row above. */}
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <InstrGroup title="Coriander" centered>
                 <label style={{ display: "flex", alignItems: "center" }}>
                   <input
                     type="radio"
@@ -1397,7 +1398,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
 
               <VRule />
 
-              <InstrGroup title="Ginger">
+              <InstrGroup title="Ginger" centered>
                 <label style={{ display: "flex", alignItems: "center" }}>
                   <input
                     type="radio"
@@ -1422,9 +1423,6 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                 </label>
               </InstrGroup>
 
-              {/* Empty third column so this row's columns line up with the row above. */}
-              <div aria-hidden="true" style={{ width: 1, margin: "0 1.25rem" }} />
-              <div aria-hidden="true" style={{ flex: 1, minWidth: 0 }} />
             </div>
           </Section>
         </div>
