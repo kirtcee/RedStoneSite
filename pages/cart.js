@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useCart, DealCodeEntry } from "../components/CartSystem";
-import { priceLineItem, formatMoney, describePizzaFull, describeByoPizzaTitle, describeByoPizzaSections } from "../components/Pricing";
+import { priceLineItem, formatMoney, describePizzaFull, describeByoPizzaHeading, describeByoPizzaSections } from "../components/Pricing";
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { dealNameFor, dealSlotLabel, findDealById } from "../utils/dealCatalog";
 import OrderSettingsAside from "../components/OrderSettingsAside";
@@ -176,7 +176,7 @@ function itemTitle(item) {
     // from the raw .side/.size fields instead, before falling back to .name.
     (item?.type === "side" && item?.side ? `${item.side}${item.size ? ` (${item.size})` : ""}` : null) ||
     item?.name ||
-    (item?.type === "pizza-byo" ? describeByoPizzaTitle(item) : null) ||
+    (item?.type === "pizza-byo" ? describeByoPizzaHeading(item) : null) ||
     (item?.type === "combo" ? comboNameFor(item.comboId) : null) ||
     (item?.type === "deal" ? dealNameFor(item.dealId) : null) ||
     (item?.type === "wings" ? `${item.count || ""} Wings`.trim() : null) ||

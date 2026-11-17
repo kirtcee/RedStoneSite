@@ -656,7 +656,16 @@ export function describePizzaFull(data = {}) {
   return bits.filter(Boolean).join(" • ");
 }
 
-// ===== BYO pizza: cart / checkout details format =====
+// ===== BYO pizza: cart / checkout display format =====
+//
+// Title: size in inches + dough, e.g. `14" Original Hand Tossed`
+// (Gluten Free is one fixed size: `13" Gluten Free`).
+export function describeByoPizzaHeading(data = {}) {
+  const isGlutenFree = data.size === "gf" || data.crust === "Gluten Free";
+  if (isGlutenFree) return '13" Gluten Free';
+  const size = BYO_SIZE_WORDS[String(data.size)] ? `${data.size}"` : "";
+  return [size, data.crust || "Original Hand Tossed"].filter(Boolean).join(" ");
+}
 
 const AMOUNT_WORD = { None: "No", Light: "Light", Less: "Light", Normal: "", Extra: "Extra", Double: "Double" };
 const withAmount = (amount, name) => [AMOUNT_WORD[amount] ?? amount, name].filter(Boolean).join(" ");
