@@ -433,15 +433,14 @@ export default function CheckoutPage() {
           letter-spacing: var(--tt-letter-spacing);
           word-spacing: var(--tt-word-spacing);
         }
-        /* key words (Carryout / address / minutes) in Red Stone Display;
-           they keep their own spacing so the TT Commons settings above
-           don't affect them */
+        /* key words (Carryout / address / minutes) in Red Stone Display
+           Condensed (has lowercase); they keep their own spacing so the
+           TT Commons settings above don't affect them */
         .co-sub strong {
-          font-family: var(--font-display);
+          font-family: var(--font-display-condensed);
           font-weight: 400;
-          letter-spacing: 0.03em;
+          letter-spacing: 0.02em;
           word-spacing: normal;
-          text-transform: uppercase;
         }
         .co-sub__link {
           padding: 0;

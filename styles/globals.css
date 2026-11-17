@@ -47,6 +47,16 @@
   font-display: swap;
 }
 
+/* Red Stone Display Condensed: narrower cut of the custom font with real
+   lowercase letters. Used via var(--font-display-condensed). */
+@font-face {
+  font-family: 'Red Stone Display Condensed';
+  src: url('/fonts/RedStoneDisplayCondensed-Regular.woff2') format('woff2');
+  font-weight: 100 900; /* one weight; don't fake-bold it */
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Red Stone Display: the site's own custom display font (caps-only).
    Source files live in design/fonts/. Must stay outside :root {}. */
 @font-face {
@@ -82,6 +92,7 @@
   --font-body: 'Inter', sans-serif;
   --font-display: 'Red Stone Display', 'Anton', 'Oswald', sans-serif;
   --font-text: 'TT Commons', 'Inter', sans-serif;
+  --font-display-condensed: 'Red Stone Display Condensed', var(--font-display);
 
   /* effects */
   --radius: 6px;
