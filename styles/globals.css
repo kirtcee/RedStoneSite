@@ -54,7 +54,7 @@
    ?v= is bumped whenever a file is replaced so browsers refetch it. */
 @font-face {
   font-family: 'Red Stone Display Text';
-  src: url('/fonts/RedStoneDisplayLight-Regular.woff2?v=3') format('woff2');
+  src: url('/fonts/RedStoneDisplayLight-Regular.woff2?v=4') format('woff2');
   font-weight: 300;
   font-style: normal;
   font-display: swap;
