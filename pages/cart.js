@@ -205,7 +205,8 @@ function ItemOptions({ item }) {
       <div className="cart-line__opts cart-line__opts--byo">
         {describeByoPizzaSections(item).map((sec, i) => (
           <div key={i}>
-            {sec.label && <strong>{sec.label}:</strong>} {sec.text}
+            {sec.label && <strong>{sec.label}: </strong>}
+            {sec.text}
           </div>
         ))}
       </div>
@@ -702,9 +703,13 @@ export default function CartPage() {
           white-space: pre-wrap;
           overflow-wrap: anywhere;
         }
+        /* Left: / Right: / Whole: labels keep the regular bold body font;
+           only the details text uses Red Stone Display Medium */
         .cart-box :global(.cart-line__opts strong) {
           color: #000;
-          font-weight: 400; /* one weight for now — no fake bold */
+          font-family: var(--font-body);
+          font-weight: 700;
+          font-size: 0.8rem;
         }
         .cart-box :global(.cart-line__opts--byo > div + div) {
           margin-top: 4px; /* a little space between Left / Right / Whole */

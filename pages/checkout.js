@@ -317,7 +317,8 @@ export default function CheckoutPage() {
                                 <div key={i} className="co-items__opt">{t}</div>
                               ) : (
                                 <div key={i} className="co-items__opt co-items__opt--sec">
-                                  {t.label && <span className="co-items__optLabel">{t.label}:</span>} {t.text}
+                                  {t.label && <span className="co-items__optLabel">{t.label}: </span>}
+                                  {t.text}
                                 </div>
                               )
                             )}
@@ -589,8 +590,12 @@ export default function CheckoutPage() {
         .co-items__opt--sec + .co-items__opt--sec {
           margin-top: 4px; /* a little space between Left / Right / Whole */
         }
+        /* Left: / Right: / Whole: labels keep the regular bold body font;
+           only the details text uses Red Stone Display Medium */
         .co-items__optLabel {
-          font-weight: 400; /* one weight for now — no fake bold */
+          font-family: var(--font-body);
+          font-size: 0.82rem;
+          font-weight: 700;
           color: #000;
         }
         .co-items__qty {
