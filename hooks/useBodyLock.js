@@ -12,42 +12,37 @@ import { useEffect } from "react";
 let lockCount = 0;
 let savedState = null;
 
+// Freezes the page with overflow:hidden on <html> only, instead of pinning
+// <body> with position:fixed. Pinning made the sticky header and the bars
+// under it un-stick and slide off the top while a builder was open. <body>
+// is left alone on purpose: overflow:hidden there turns it into its own
+// scroll box, which un-sticks the header the same way.
 function applyLock() {
   if (typeof window === "undefined") return;
   const html = document.documentElement;
-  const body = document.body;
 
   savedState = {
-    overflow: body.style.overflow,
-    position: body.style.position,
-    top: body.style.top,
-    width: body.style.width,
+    htmlOverflow: html.style.overflow,
     scrollbarGutter: html.style.scrollbarGutter,
     y: window.scrollY || window.pageYOffset || 0,
   };
 
   html.style.scrollbarGutter = "stable";
-  body.style.overflow = "hidden";
-  body.style.position = "fixed";
-  body.style.top = `-${savedState.y}px`;
-  body.style.width = "100%";
+  html.style.overflow = "hidden";
   html.classList.add("modal-open");
 }
 
 function releaseLock() {
   if (typeof window === "undefined" || !savedState) return;
   const html = document.documentElement;
-  const body = document.body;
-  const { overflow, position, top, width, scrollbarGutter, y } = savedState;
+  const { htmlOverflow, scrollbarGutter, y } = savedState;
 
-  body.style.overflow = overflow || "";
-  body.style.position = position || "";
-  body.style.top = top || "";
-  body.style.width = width || "";
+  html.style.overflow = htmlOverflow || "";
   html.style.scrollbarGutter = scrollbarGutter || "";
   html.classList.remove("modal-open");
   savedState = null;
-  window.scrollTo(0, y);
+  // Should already be here; just in case the browser nudged it.
+  if (Math.abs((window.scrollY || 0) - y) > 1) window.scrollTo(0, y);
 }
 
 /**
