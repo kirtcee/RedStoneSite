@@ -655,3 +655,91 @@ export function describePizzaFull(data = {}) {
 
   return bits.filter(Boolean).join(" • ");
 }
+
+// ===== BYO pizza: cart / checkout display format =====
+//
+// Title: size in inches + dough, e.g. `14" Original Hand Tossed`
+// (Gluten Free is one fixed size: `13" Gluten Free`).
+export function describeByoPizzaHeading(data = {}) {
+  const isGlutenFree = data.size === "gf" || data.crust === "Gluten Free";
+  if (isGlutenFree) return '13" Gluten Free';
+  const size = BYO_SIZE_WORDS[String(data.size)] ? `${data.size}"` : "";
+  return [size, data.crust || "Original Hand Tossed"].filter(Boolean).join(" ");
+}
+
+const AMOUNT_WORD = { None: "No", Light: "Light", Less: "Light", Normal: "", Extra: "Extra", Double: "Double" };
+const withAmount = (amount, name) => [AMOUNT_WORD[amount] ?? amount, name].filter(Boolean).join(" ");
+
+// Lines under the title, grouped by where on the pizza they go:
+//   Left: …  /  Right: …  /  Whole: …   (only the ones that apply)
+// followed by Dips and Instructions if any. Each item reads like
+// "Extra Mushroom", "Light Garlic Base", "No Cheese". Plain defaults
+// (normal cheese and normal pizza sauce on the whole pizza) are left out;
+// when the cheese differs by half, both halves list their cheese.
+export function describeByoPizzaSections(data = {}) {
+  const left = [];
+  const right = [];
+  const whole = [];
+  const cheeseName = data.dairyFreeCheese ? "Dairy-Free Cheese" : "Cheese";
+
+  // Cheese
+  if (data.cheeseIncluded === false) {
+    whole.push("No Cheese");
+  } else {
+    const coverage = data.cheeseCoverage || CHEESE_DEFAULT_COVERAGE;
+    const amount = data.cheeseAmount || CHEESE_DEFAULT_AMOUNT;
+    if (coverage === "left" || coverage === "right") {
+      const other = data.secondAmount || CHEESE_DEFAULT_AMOUNT;
+      const leftAmt = coverage === "left" ? amount : other;
+      const rightAmt = coverage === "right" ? amount : other;
+      left.push(withAmount(leftAmt, cheeseName));
+      right.push(withAmount(rightAmt, cheeseName));
+    } else if (amount !== CHEESE_DEFAULT_AMOUNT || data.dairyFreeCheese) {
+      whole.push(withAmount(amount, cheeseName));
+    }
+  }
+
+  // Sauce (always the whole pizza)
+  if (data.sauceEnabled === false) {
+    whole.push("No Sauce");
+  } else {
+    const sauce = data.sauce || SAUCE_DEFAULT;
+    const amount = data.sauceAmount || SAUCE_DEFAULT_AMOUNT;
+    if (sauce !== SAUCE_DEFAULT || amount !== SAUCE_DEFAULT_AMOUNT) whole.push(withAmount(amount, sauce));
+  }
+
+  // Toppings, in the order they were picked
+  const toppings = Array.isArray(data.toppings)
+    ? data.toppings
+    : Array.isArray(data.selectedToppings)
+    ? data.selectedToppings
+    : [];
+  const placement = data.toppingPlacement || {};
+  const toppingAmount = data.toppingAmount || {};
+  for (const t of toppings) {
+    const label = withAmount(toppingAmount[t] || "Normal", t);
+    const p = placement[t] || "full";
+    (p === "left" ? left : p === "right" ? right : whole).push(label);
+  }
+
+  const sections = [];
+  if (left.length) sections.push({ label: "Left", text: left.join(", ") });
+  if (right.length) sections.push({ label: "Right", text: right.join(", ") });
+  if (whole.length) sections.push({ label: "Whole", text: whole.join(", ") });
+
+  const dipBits = Object.entries(data.dips || {})
+    .filter(([, qty]) => Number(qty) > 0)
+    .map(([key, qty]) => `${PIZZA_DIP_LABELS[key] || key} × ${qty}`);
+  if (dipBits.length) sections.push({ label: "Dips", text: dipBits.join(", ") });
+
+  const instructions = [];
+  if (data.bake && data.bake !== "normal") instructions.push(data.bake === "light" ? "Lightly Done" : "Well Done");
+  if (data.garlicCrust === "with") instructions.push("Garlic Crust");
+  if (data.oregano === "with") instructions.push("Oregano");
+  if (data.crushedRedPepper === "with") instructions.push("Crushed Red Peppers");
+  if (data.coriander === "with") instructions.push("Coriander");
+  if (data.ginger === "with") instructions.push("Ginger");
+  if (instructions.length) sections.push({ label: "Instructions", text: instructions.join(", ") });
+
+  return sections;
+}

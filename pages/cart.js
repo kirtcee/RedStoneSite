@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useCart, DealCodeEntry } from "../components/CartSystem";
-import { priceLineItem, formatMoney, describePizzaFull, describeByoPizzaTitle } from "../components/Pricing";
+import { priceLineItem, formatMoney, describePizzaFull, describeByoPizzaHeading, describeByoPizzaSections } from "../components/Pricing";
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { dealNameFor, dealSlotLabel, findDealById } from "../utils/dealCatalog";
 import OrderSettingsAside from "../components/OrderSettingsAside";
@@ -176,7 +176,7 @@ function itemTitle(item) {
     // from the raw .side/.size fields instead, before falling back to .name.
     (item?.type === "side" && item?.side ? `${item.side}${item.size ? ` (${item.size})` : ""}` : null) ||
     item?.name ||
-    (item?.type === "pizza-byo" ? describeByoPizzaTitle(item) : null) ||
+    (item?.type === "pizza-byo" ? describeByoPizzaHeading(item) : null) ||
     (item?.type === "combo" ? comboNameFor(item.comboId) : null) ||
     (item?.type === "deal" ? dealNameFor(item.dealId) : null) ||
     (item?.type === "wings" ? `${item.count || ""} Wings`.trim() : null) ||
@@ -199,6 +199,18 @@ function ItemOptions({ item }) {
       ? item.meta.builds.map((child, idx) => [`Item ${idx + 1}`, child?.summary])
       : null;
 
+  if (!rows && item?.type === "pizza-byo") {
+    // Left / Right / Whole, one line each (see describeByoPizzaSections)
+    return (
+      <div className="cart-line__opts cart-line__opts--byo">
+        {describeByoPizzaSections(item).map((sec) => (
+          <div key={sec.label}>
+            <strong>{sec.label}:</strong> {sec.text}
+          </div>
+        ))}
+      </div>
+    );
+  }
   if (!rows) return <div className="cart-line__opts">{describeItem(item)}</div>;
   return (
     <div className="cart-line__opts">
@@ -690,6 +702,9 @@ export default function CartPage() {
         }
         .cart-box :global(.cart-line__opts strong) {
           color: #000;
+        }
+        .cart-box :global(.cart-line__opts--byo > div + div) {
+          margin-top: 4px; /* a little space between Left / Right / Whole */
         }
         .cart-box :global(.cart-line__qty) {
           display: flex;

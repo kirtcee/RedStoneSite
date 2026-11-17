@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useCart } from "../components/CartSystem";
 import OrderTotals, { useOrderTotals } from "../components/OrderTotals";
-import { priceLineItem, formatMoney, describePizzaFull, describeByoPizzaTitle } from "../components/Pricing";
+import { priceLineItem, formatMoney, describePizzaFull, describeByoPizzaHeading, describeByoPizzaSections } from "../components/Pricing";
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { dealNameFor, dealSlotLabel, findDealById } from "../utils/dealCatalog";
 import { saveOrder } from "../utils/saveOrder";
@@ -46,7 +46,7 @@ function itemTitle(item) {
     // customer-facing size — build the label from .side/.size instead.
     (item?.type === "side" && item?.side ? `${item.side}${item.size ? ` (${item.size})` : ""}` : null) ||
     item?.name ||
-    (item?.type === "pizza-byo" ? describeByoPizzaTitle(item) : null) ||
+    (item?.type === "pizza-byo" ? describeByoPizzaHeading(item) : null) ||
     (item?.type === "combo" ? comboNameFor(item.comboId) : null) ||
     (item?.type === "deal" ? dealNameFor(item.dealId) : null) ||
     (item?.type === "wings" ? `${item.count || ""} Wings`.trim() : null) ||
@@ -73,6 +73,10 @@ function itemOptionRows(item) {
     );
   if (item?.type === "deal" && item?.meta?.builds)
     return item.meta.builds.map((c, i) => `Item ${i + 1}: ${c?.summary || "Not customized yet"}`);
+  if (item?.type === "pizza-byo") {
+    // Left / Right / Whole, one line each (see describeByoPizzaSections)
+    return describeByoPizzaSections(item).map((sec) => ({ label: sec.label, text: sec.text }));
+  }
   const d = describeItem(item);
   return d ? [d] : [];
 }
@@ -308,9 +312,15 @@ export default function CheckoutPage() {
                         <div key={it.id} className="co-items__row">
                           <div className="co-items__name">
                             <div className="co-items__title">{itemTitle(it)}</div>
-                            {itemOptionRows(it).map((t, i) => (
-                              <div key={i} className="co-items__opt">{t}</div>
-                            ))}
+                            {itemOptionRows(it).map((t, i) =>
+                              typeof t === "string" ? (
+                                <div key={i} className="co-items__opt">{t}</div>
+                              ) : (
+                                <div key={i} className="co-items__opt co-items__opt--sec">
+                                  <span className="co-items__optLabel">{t.label}:</span> {t.text}
+                                </div>
+                              )
+                            )}
                           </div>
                           <span className="co-items__qty">{Math.max(1, Number(it.qty) || 1)}</span>
                           <span className="co-items__price">{formatMoney(priceLineItem(it))}</span>
@@ -573,6 +583,13 @@ export default function CheckoutPage() {
           line-height: 1.35;
           color: var(--text-brown);
           overflow-wrap: anywhere;
+        }
+        .co-items__opt--sec + .co-items__opt--sec {
+          margin-top: 4px; /* a little space between Left / Right / Whole */
+        }
+        .co-items__optLabel {
+          font-weight: 700;
+          color: #000;
         }
         .co-items__qty {
           text-align: center;
