@@ -358,42 +358,21 @@ export function DrinksCategoryPanel({
       </SectionBox>
 
       {/* Footer */}
-      <div style={{ display: "flex", border: `1px solid ${LIGHT_BORDER}`, borderRadius: BOX_RADIUS, overflow: "hidden" }}>
+      <div className="rs-pill-row">
         <button
           type="button"
           onClick={onClose}
-          style={{
-            flex: 1,
-            padding: "1.05rem",
-            background: LIGHTER_BG,
-            color: TEXT_BROWN,
-            border: "none",
-            borderRight: `1px solid ${LIGHT_BORDER}`,
-            fontWeight: 900,
-            cursor: "pointer",
-            textTransform: "uppercase",
-            fontFamily: "var(--font-heading, Oswald, sans-serif)",
-          }}
+          className="rs-pill-btn rs-pill-btn--outline"
         >
           Cancel
         </button>
         <button
           type="button"
           onClick={finishAndAdd}
-          style={{
-            flex: 1,
-            padding: "1.05rem",
-            background: MAROON,
-            color: "#fff",
-            border: "none",
-            fontWeight: 900,
-            cursor: "pointer",
-            textTransform: "uppercase",
-            fontFamily: "var(--font-heading, Oswald, sans-serif)",
-          }}
+          className="rs-pill-btn"
           aria-label={`Add ${categoryLabel} to order (Subtotal ${panelSubtotal})`}
         >
-          Add To Order — {panelSubtotal}
+          Add To Order<span className="rs-pill-btn__dash"> — </span><span className="rs-pill-btn__price">{panelSubtotal}</span>
         </button>
       </div>
     </div>

@@ -202,20 +202,11 @@ export default function PopsPicker({
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 0, border: `1px solid ${LIGHT_BORDER}`, borderRadius: BOX_RADIUS, overflow: "hidden" }}>
+      <div className="rs-pill-row">
         <button
           type="button"
           onClick={onClose}
-          style={{
-            flex: 1,
-            padding: "1rem",
-            background: LIGHT_BG,
-            color: TEXT_BROWN,
-            border: "none",
-            borderRight: `1px solid ${LIGHT_BORDER}`,
-            fontWeight: 900,
-            cursor: "pointer",
-          }}
+          className="rs-pill-btn rs-pill-btn--outline"
         >
           Cancel
         </button>
@@ -223,17 +214,7 @@ export default function PopsPicker({
           type="button"
           disabled={!canSave}
           onClick={() => onSave({ assorted, picks, summary: buildSummary() })}
-          style={{
-            flex: 1,
-            padding: "1rem",
-            background: canSave ? MAROON : "#ccc",
-            color: "#fff",
-            border: "none",
-            fontWeight: 900,
-            cursor: canSave ? "pointer" : "not-allowed",
-            textTransform: "uppercase",
-            fontFamily: "var(--font-heading), Oswald, sans-serif",
-          }}
+          className="rs-pill-btn"
         >
           Save Pops
         </button>

@@ -417,39 +417,18 @@ export default function SpecialMenuBuilder({
         </SectionBox>
 
         {/* Footer actions */}
-        <div style={{ display: "flex", gap: 0, border: `1px solid ${LIGHT_BORDER}`, borderRadius: BOX_RADIUS, overflow: "hidden" }}>
+        <div className="rs-pill-row">
           <button
             type="button"
             onClick={onClose}
-            style={{
-              flex: 1,
-              padding: "1rem",
-              background: LIGHTER_BG,
-              color: TEXT_BROWN,
-              border: "none",
-              borderRight: `1px solid ${LIGHT_BORDER}`,
-              fontWeight: 900,
-              cursor: "pointer",
-              textTransform: "uppercase",
-              fontFamily: "var(--font-heading, Oswald, sans-serif)",
-            }}
+            className="rs-pill-btn rs-pill-btn--outline"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={addToCart}
-            style={{
-              flex: 1,
-              padding: "1rem",
-              background: MAROON,
-              color: "#fff",
-              border: "none",
-              fontWeight: 900,
-              cursor: "pointer",
-              textTransform: "uppercase",
-              fontFamily: "var(--font-heading, Oswald, sans-serif)",
-            }}
+            className="rs-pill-btn"
             aria-label={`Add ${selectedItem} to order (Subtotal ${subtotal})`}
           >
             Add To Order
