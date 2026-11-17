@@ -89,8 +89,22 @@ const FIELDS = [
   { key: "firstName", label: "First Name", type: "text", autoComplete: "given-name" },
   { key: "lastName", label: "Last Name", type: "text", autoComplete: "family-name" },
   { key: "email", label: "Email Address", type: "email", autoComplete: "email", inputMode: "email" },
-  { key: "phone", label: "Callback Phone Number", type: "tel", autoComplete: "tel", inputMode: "tel" },
+  { key: "phone", label: "Callback Phone Number", type: "tel", autoComplete: "tel", inputMode: "numeric" },
 ];
+
+// Callback phone: digits only, max 10, shown as (905) 555-1234 while typing.
+// The closing bracket appears with the 4th digit, so backspacing never gets
+// stuck on the ") " formatting. A pasted leading +1 / 1 country code is
+// dropped.
+function formatPhone(input) {
+  let d = String(input || "").replace(/\D/g, "");
+  if (d.length === 11 && d.startsWith("1")) d = d.slice(1);
+  d = d.slice(0, 10);
+  if (!d) return "";
+  if (d.length <= 3) return `(${d}`;
+  if (d.length <= 6) return `(${d.slice(0, 3)}) ${d.slice(3)}`;
+  return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
+}
 
 function validate(form) {
   const errors = {};
@@ -100,7 +114,7 @@ function validate(form) {
   if (!errors.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
     errors.email = "Please enter a valid email address.";
   }
-  if (!errors.phone && form.phone.replace(/\D/g, "").length < 10) {
+  if (!errors.phone && form.phone.replace(/\D/g, "").length !== 10) {
     errors.phone = "Please enter a 10-digit phone number.";
   }
   if (!form.payment) errors.payment = "This field is required.";
@@ -155,7 +169,8 @@ export default function CheckoutPage() {
   const [submitError, setSubmitError] = useState(null);
   const fieldRefs = useRef({});
 
-  const update = (key, value) => {
+  const update = (key, rawValue) => {
+    const value = key === "phone" ? formatPhone(rawValue) : rawValue;
     setForm((f) => ({ ...f, [key]: value }));
     // clear that field's error as soon as they fix it
     if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
