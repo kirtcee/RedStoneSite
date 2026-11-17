@@ -275,7 +275,7 @@ export default function CouponsPage() {
                   if (!visible.length) return null;
                   return (
                     <div key={sec.type} id={`deal-section-${i}`} style={{ marginBottom: "1.5rem", scrollMarginTop: "var(--header-offset, 74.75px)" }}>
-                      <section className="feast__grid feast__grid--three" style={{ alignItems: "stretch" }}>
+                      <section className="feast__grid feast__grid--three deals-grid" style={{ alignItems: "stretch" }}>
                         {visible.map((deal) => (
                           <DealCard key={deal.id} deal={deal} onAdd={openDeal} />
                         ))}

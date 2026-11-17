@@ -141,7 +141,7 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
   const viewportStyle = {
     position: "fixed",
     inset: 0,
-    zIndex: 3000,
+    zIndex: 1, // above this popup's backdrop
     overflowY: "auto",
     WebkitOverflowScrolling: "touch",
     overscrollBehavior: "contain",
@@ -241,6 +241,10 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
     <div
       role="dialog"
       aria-modal="true"
+      // Each open popup is its own layer: a popup opened from another one
+      // (e.g. a pizza builder inside the deal builder) stacks entirely on
+      // top — its dark backdrop covers the popup underneath too.
+      style={{ position: "fixed", inset: 0, zIndex: 3000 }}
       onMouseDownCapture={snapshotBefore}
       onClickCapture={snapshotBefore}
       onKeyDownCapture={snapshotBefore}
@@ -379,7 +383,7 @@ const backdropStyle = {
   position: "fixed",
   inset: 0,
   background: "rgba(0,0,0,0.45)",
-  zIndex: 2990,
+  zIndex: 0, // within this popup's own layer (see the dialog wrapper)
 };
 const panelStyle = {
   position: "relative",

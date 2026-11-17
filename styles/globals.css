@@ -1784,3 +1784,10 @@ body::before {
 .rs-bsec > :last-child {
   margin-bottom: 0 !important;
 }
+
+/* Deals page: two deals per row on phones (same gaps as before) */
+@media (max-width: 640px) {
+  .deals-grid.feast__grid--three {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
