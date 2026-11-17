@@ -152,13 +152,15 @@ function EntreesView({
             font-family:var(--font-heading, Oswald, sans-serif); font-weight:900; font-size:1.02rem; text-align:left; cursor:pointer;
           }
           .feastCard__name:hover{ text-decoration:underline; }
+          /* card buttons: same pill style as the Sides cards */
           .btn{
-            display:block; width:100%; padding:0.48rem 1.5rem;
+            display:block; width:100%; padding:0.6rem 0.6rem;
             font-family:var(--font-heading, Oswald, sans-serif); font-weight:900; text-transform:uppercase; letter-spacing:.45px;
-            border-radius:4px; cursor:pointer;
+            font-size:1.15rem; line-height:1.1;
+            border-radius:30px; cursor:pointer;
           }
           .btn + .btn{ margin-top:8px; }
-          .btn-add{ background:var(--red); color:#fff; border:none; }
+          .btn-add{ background:var(--red); color:#fff; border:3px solid transparent; }
           .btn-add:hover{ filter:brightness(0.96); }
           .btn-outline{ background:#fff; border:3px solid var(--brand-blue); color:var(--brand-blue); }
           .btn-outline:hover{ background:#f4f9ff; }
@@ -288,13 +290,15 @@ function EntreesView({
             font-family:var(--font-heading, Oswald, sans-serif); font-weight:900; font-size:1.02rem; text-align:left; cursor:pointer;
           }
           .feastCard__name:hover{ text-decoration:underline; }
+          /* card buttons: same pill style as the Sides cards */
           .btn{
-            display:block; width:100%; padding:0.48rem 1.5rem;
+            display:block; width:100%; padding:0.6rem 0.6rem;
             font-family:var(--font-heading, Oswald, sans-serif); font-weight:900; text-transform:uppercase; letter-spacing:.45px;
-            border-radius:4px; cursor:pointer;
+            font-size:1.15rem; line-height:1.1;
+            border-radius:30px; cursor:pointer;
           }
           .btn + .btn{ margin-top:8px; }
-          .btn-add{ background:var(--red); color:#fff; border:none; }
+          .btn-add{ background:var(--red); color:#fff; border:3px solid transparent; }
           .btn-add:hover{ filter:brightness(0.96); }
           .btn-outline{ background:#fff; border:3px solid var(--brand-blue); color:var(--brand-blue); }
           .btn-outline:hover{ background:#f4f9ff; }
@@ -450,11 +454,11 @@ function SidesView({ selectedSide, setSelectedSide }) {
         }
         .feastCard__name:hover{ text-decoration:underline; }
 
-        /* Sides card buttons: 1rem padding, 30px rounding, bigger text.
+        /* Sides card buttons: 0.6rem padding, 30px rounding, bigger text.
            Red buttons and the S/R/L size buttons get an invisible 3px
            border so they're exactly as tall as the 3px-bordered Customize. */
         .btn{
-          display:block; width:100%; padding:1rem 0.6rem;
+          display:block; width:100%; padding:0.6rem 0.6rem;
           font-family:var(--font-heading, Oswald, sans-serif); font-weight:900; text-transform:uppercase; letter-spacing:.45px;
           font-size:1.15rem; line-height:1.1;
           border-radius:30px; cursor:pointer;
@@ -464,7 +468,7 @@ function SidesView({ selectedSide, setSelectedSide }) {
         .btn-add:hover{ filter:brightness(0.96); }
         .btn-add--split{ display:flex; gap:6px; padding:0; border:0; background:transparent; overflow:visible; }
         .btn-add__seg{
-          flex:1; color:#fff; border:3px solid transparent; border-radius:30px; padding:1rem 0.2rem;
+          flex:1; color:#fff; border:3px solid transparent; border-radius:30px; padding:0.6rem 0.2rem;
           font-size:1.15rem; line-height:1.1;
           font-family:var(--font-heading, Oswald, sans-serif); font-weight:900; letter-spacing:.45px; cursor:pointer;
           transition: transform 0.08s ease, filter 0.12s ease;
@@ -555,14 +559,15 @@ function DrinksView() {
           font-family:var(--font-heading, Oswald, sans-serif); font-weight:900; font-size:1.02rem; text-align:left; cursor:pointer;
         }
         .feastCard__name:hover{ text-decoration:underline; }
-
+        /* card buttons: same pill style as the Sides cards */
         .btn{
-          display:block; width:100%; padding:0.48rem 1.5rem;
+          display:block; width:100%; padding:0.6rem 0.6rem;
           font-family:var(--font-heading, Oswald, sans-serif); font-weight:900; text-transform:uppercase; letter-spacing:.45px;
-          border-radius:4px; cursor:pointer;
+          font-size:1.15rem; line-height:1.1;
+          border-radius:30px; cursor:pointer;
         }
         .btn + .btn{ margin-top:8px; }
-        .btn-add{ background:#8b1a1a; color:#fff; border:none; }
+        .btn-add{ background:#8b1a1a; color:#fff; border:3px solid transparent; }
         .btn-add:hover{ filter:brightness(0.96); }
 
         .feastCard__desc{ margin:10px 0 2px; color:var(--text-brown); font-size:.9rem; line-height:1.33; }

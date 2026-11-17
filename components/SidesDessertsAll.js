@@ -227,7 +227,7 @@ export default function SidesDessertsAll({
         .btn {
           display: block;
           width: 100%;
-          padding: 1rem 0.6rem;
+          padding: 0.6rem 0.6rem;
           font-family: var(--font-heading, Oswald, sans-serif);
           font-weight: 900;
           font-size: 1.15rem;
@@ -256,7 +256,7 @@ export default function SidesDessertsAll({
           color: #fff;
           border: 3px solid transparent;
           border-radius: 30px;
-          padding: 1rem 0.2rem;
+          padding: 0.6rem 0.2rem;
           font-family: var(--font-heading, Oswald, sans-serif);
           font-weight: 900;
           font-size: 1.15rem;
