@@ -14,7 +14,7 @@ function reject(res, status, reason) {
   res.status(status).json({ ok: false, reason });
 }
 
-export default async function handler(req, res) {
+async function handle(req, res) {
   if (req.method !== "POST") return reject(res, 405, "method_not_allowed");
   const setupProblem = adminSetupProblem();
   if (setupProblem) return reject(res, 500, setupProblem);
@@ -50,7 +50,7 @@ export default async function handler(req, res) {
 
   let intent;
   try {
-    intent = await getStripe().paymentIntents.create(
+    intent = await (await getStripe()).paymentIntents.create(
       {
         amount: order.totalCents,
         currency: "cad",
@@ -64,7 +64,7 @@ export default async function handler(req, res) {
   } catch (e) {
     // Stripe's own error code (e.g. "api_key_expired"), safe to show — never the key.
     console.error("createPayment: Stripe refused", e?.type, e?.code, e?.message);
-    return reject(res, 502, `stripe_${e?.code || e?.type || "error"}`);
+    return reject(res, 502, `stripe_${e?.code || e?.type || String(e?.message || "error").slice(0, 80)}`);
   }
 
   try {
@@ -74,4 +74,15 @@ export default async function handler(req, res) {
     return reject(res, 500, "order_update_failed");
   }
   res.status(200).json({ ok: true, orderId, clientSecret: intent.client_secret, amount: order.totalCents });
+}
+
+// Any unexpected error comes back as a short readable reason instead of a
+// bare "500", so problems can be diagnosed from the checkout message.
+export default async function handler(req, res) {
+  try {
+    await handle(req, res);
+  } catch (e) {
+    console.error("unexpected error", e);
+    if (!res.headersSent) reject(res, 500, `server_error: ${String(e?.message || e).replace(/\s+/g, " ").slice(0, 140)}`);
+  }
 }

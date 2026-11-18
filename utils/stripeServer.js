@@ -16,17 +16,20 @@
 //      (pages/api/finalizePayment.js) AND by Stripe's webhook
 //      (pages/api/stripeWebhook.js), whichever comes first; running it twice
 //      is harmless.
-import Stripe from "stripe";
 import { adminDb } from "./firebaseAdmin";
 import { FieldValue } from "firebase-admin/firestore";
 import { pickupTimeFor } from "./orderBuilder";
 
+// The Stripe library is loaded on first use (not at import), so if it ever
+// fails to load the route can say so instead of crashing with a bare 500.
 let stripeClient = null;
-export function getStripe() {
-  if (!process.env.STRIPE_SECRET_KEY) {
-    throw new Error("STRIPE_SECRET_KEY is not set (Vercel env vars / .env.local).");
+export async function getStripe() {
+  const key = String(process.env.STRIPE_SECRET_KEY || "").replace(/^[\s"']+|[\s"']+$/g, "");
+  if (!key) throw new Error("STRIPE_SECRET_KEY is not set (Vercel env vars / .env.local).");
+  if (!stripeClient) {
+    const { default: Stripe } = await import("stripe");
+    stripeClient = new Stripe(key);
   }
-  if (!stripeClient) stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY);
   return stripeClient;
 }
 
@@ -44,7 +47,7 @@ export async function finalizeCardOrder(orderId) {
   if (!pending.paymentIntentId) return { ok: true, status: "unpaid" };
 
   // Ask Stripe — never trust the browser's word that it paid.
-  const intent = await getStripe().paymentIntents.retrieve(pending.paymentIntentId);
+  const intent = await (await getStripe()).paymentIntents.retrieve(pending.paymentIntentId);
   if (intent.status === "processing") return { ok: true, status: "processing" };
   if (intent.status !== "succeeded") return { ok: true, status: "unpaid" };
   if (intent.amount_received < pending.order.totalCents || intent.currency !== "cad") {

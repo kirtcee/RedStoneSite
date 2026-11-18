@@ -32,7 +32,7 @@ export default async function handler(req, res) {
   let event;
   try {
     const raw = await readRawBody(req);
-    event = getStripe().webhooks.constructEvent(raw, req.headers["stripe-signature"], secret);
+    event = (await getStripe()).webhooks.constructEvent(raw, req.headers["stripe-signature"], secret);
   } catch (e) {
     // Not really from Stripe (or the secret is wrong).
     res.status(400).send("Invalid signature");

@@ -18,7 +18,7 @@ function reject(res, status, reason) {
   res.status(status).json({ ok: false, reason });
 }
 
-export default async function handler(req, res) {
+async function handle(req, res) {
   if (req.method !== "POST") return reject(res, 405, "method_not_allowed");
   const setupProblem = adminSetupProblem();
   if (setupProblem) return reject(res, 500, setupProblem);
@@ -52,5 +52,16 @@ export default async function handler(req, res) {
   } catch (e) {
     console.error("placeOrder: Firestore write failed", e);
     reject(res, 500, "save_failed");
+  }
+}
+
+// Any unexpected error comes back as a short readable reason instead of a
+// bare "500", so problems can be diagnosed from the checkout message.
+export default async function handler(req, res) {
+  try {
+    await handle(req, res);
+  } catch (e) {
+    console.error("unexpected error", e);
+    if (!res.headersSent) reject(res, 500, `server_error: ${String(e?.message || e).replace(/\s+/g, " ").slice(0, 140)}`);
   }
 }

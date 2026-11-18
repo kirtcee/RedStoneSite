@@ -30,7 +30,8 @@ import { getFirestore } from "firebase-admin/firestore";
 function loadCredential() {
   // Forgiving about how they were pasted: surrounding spaces and quote
   // marks (copied from the JSON file or .env.local) are dropped.
-  const clean = (v) => (v == null ? v : String(v).trim().replace(/^["']|["'],?$/g, "").trim());
+  // Strips any number of layers (e.g. ""red-stone-pizza"" or \"...\").
+  const clean = (v) => (v == null ? v : String(v).replace(/^[\s"'\\]+|[\s"',\\]+$/g, ""));
   const projectId = clean(process.env.FIREBASE_ADMIN_PROJECT_ID);
   const clientEmail = clean(process.env.FIREBASE_ADMIN_CLIENT_EMAIL);
   const rawKey = clean(process.env.FIREBASE_ADMIN_PRIVATE_KEY);
