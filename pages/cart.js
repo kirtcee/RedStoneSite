@@ -434,7 +434,7 @@ function AppliedCoupons({ cart }) {
             </div>
             <div className="cart-coupon__name">
               {deal.name}
-              {deal.perItem ? " — Price is per item." : ""}
+              {deal.perItem ? ". Price is per item." : ""}
             </div>
             {message && <div className="cart-coupon__msg">{message}</div>}
             <div className="cart-coupon__actions">

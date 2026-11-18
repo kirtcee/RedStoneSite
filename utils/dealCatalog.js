@@ -28,7 +28,6 @@ export const dealSections = [
         subtitle: "Carryout Special",
         description: "Carry Out Special — 1 Large 2-Topping Pizza",
         price: 1299,
-        perItem: true, // the cart's coupon box adds "Price is per item."
         serviceRestriction: "carryout",
         mode: "list",
         minQty: 1,
@@ -53,7 +52,7 @@ export const dealSections = [
         description:
           "Get Any 2 or More: Medium 1-Topping Pizza, 6 Wings, Cheesy Garlic Bread, Large Fries, Large Poutine, Medium Shawarma Poutine, Medium Onion Rings. Price is per item.",
         price: 899,
-        perItem: true,
+        perItem: true, // the cart's coupon box adds "Price is per item."
         serviceRestriction: null,
         mode: "list",
         minQty: 2,
