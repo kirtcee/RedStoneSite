@@ -69,6 +69,16 @@ try {
 
 export const adminInitError = initError;
 export const adminDb = adminApp ? getFirestore(adminApp) : null;
+// Talk to Firestore over plain HTTPS instead of its default gRPC connection.
+// On Vercel, a freshly started server's gRPC connection can hang for up to
+// a minute before failing; HTTPS is quick from a cold start.
+if (adminDb) {
+  try {
+    adminDb.settings({ preferRest: true });
+  } catch {
+    // Already configured (hot reload / warm server) — fine.
+  }
+}
 export const adminAuth = adminApp ? getAuth(adminApp) : null;
 
 // Short, safe description of a setup problem for API error responses.

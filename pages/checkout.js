@@ -7,7 +7,7 @@ import OrderTotals, { useOrderTotals } from "../components/OrderTotals";
 import { priceLineItem, formatMoney, describePizzaFull, describeByoPizzaHeading, describeByoPizzaSections } from "../components/Pricing";
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { findDealById } from "../utils/dealCatalog";
-import { saveOrder, startCardPayment, finalizeCardPayment } from "../utils/saveOrder";
+import { saveOrder, startCardPayment, finalizeCardPayment, friendlyOrderError } from "../utils/saveOrder";
 import StripeCardPayment from "../components/StripeCardPayment";
 
 // Shown under the page title (same numbers as the menu page estimate)
@@ -266,9 +266,7 @@ export default function CheckoutPage() {
     setPlacing(false);
     if (!id) {
       // The short code in brackets tells us which step failed.
-      setSubmitError(
-        `Something went wrong placing your order. Please try again.${saveOrder.lastError ? ` (${saveOrder.lastError})` : ""}`
-      );
+      setSubmitError(friendlyOrderError(saveOrder.lastError));
       return;
     }
     cart?.clearCart?.();

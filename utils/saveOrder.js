@@ -63,13 +63,28 @@ export async function saveOrder(orderData) {
   }
 }
 
+// Plain-language message for a failed order/payment setup. The short code
+// stays on the end so a screenshot still tells us which step failed.
+export function friendlyOrderError(code, { card = false } = {}) {
+  const c = String(code || "");
+  let msg;
+  if (c === "too_many_requests") msg = "Too many attempts in a row. Please wait a minute and try again.";
+  else if (c.startsWith("invalid_auth")) msg = "Your session timed out. Please refresh the page and try again.";
+  else if (["empty_cart", "bad_item", "bad_qty", "unpriceable_item", "too_many_items", "bad_deals"].includes(c))
+    msg = "Something in your cart couldn't be processed. Please review your cart and try again.";
+  else if (c === "missing_contact" || c === "bad_email") msg = "Please check your name, phone number and email, then try again.";
+  else if (card) msg = "We couldn't connect to the payment system. Your card has not been charged. Please try again.";
+  else msg = "We couldn't place your order. Please try again.";
+  return c ? `${msg} (Code: ${c.split(":")[0]})` : msg;
+}
+
 // Pay Now, step 1: the server prices the order, parks it until it's paid,
 // and sets up a Stripe payment for that exact total.
 // Resolves { orderId, clientSecret } or { error }.
 export async function startCardPayment(orderData) {
   try {
     const user = await waitForUser();
-    if (!user) return { error: "Couldn't start the payment. Please refresh and try again." };
+    if (!user) return { error: friendlyOrderError("invalid_auth", { card: true }) };
     const idToken = await user.getIdToken();
     const res = await fetch("/api/createPayment", {
       method: "POST",
@@ -81,12 +96,12 @@ export async function startCardPayment(orderData) {
       console.error("startCardPayment: server refused", res.status, body);
       // The short code in brackets tells us which step failed.
       const code = body?.reason || `http_${res.status}`;
-      return { error: `Couldn't start the payment. Please try again. (${code})` };
+      return { error: friendlyOrderError(code, { card: true }) };
     }
     return { orderId: body.orderId, clientSecret: body.clientSecret };
   } catch (e) {
     console.error("startCardPayment error:", e);
-    return { error: "Couldn't start the payment. Please check your connection and try again." };
+    return { error: "We couldn't reach the payment system. Please check your connection and try again. Your card has not been charged." };
   }
 }
 

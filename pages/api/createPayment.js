@@ -37,15 +37,8 @@ async function handle(req, res) {
 
   if (!process.env.STRIPE_SECRET_KEY) return reject(res, 500, "stripe_key_missing");
 
-  // Park the order until it's paid (never in /orders, so the kitchen can't see it).
-  let pendingRef;
-  try {
-    pendingRef = adminDb.collection("pendingOrders").doc();
-    await pendingRef.set({ order, status: "awaiting_payment", createdAt: FieldValue.serverTimestamp() });
-  } catch (e) {
-    console.error("createPayment: saving the pending order failed", e);
-    return reject(res, 500, "order_save_failed");
-  }
+  // The order's id is made here, without touching the database yet.
+  const pendingRef = adminDb.collection("pendingOrders").doc();
   const orderId = pendingRef.id;
 
   let intent;
@@ -67,12 +60,22 @@ async function handle(req, res) {
     return reject(res, 502, `stripe_${e?.code || e?.type || String(e?.message || "error").slice(0, 80)}`);
   }
 
+  // Park the order until it's paid (never in /orders, so the kitchen can't
+  // see it) — one save, with the payment's id already on it.
   try {
-    await pendingRef.update({ paymentIntentId: intent.id });
+    await pendingRef.set({
+      order,
+      paymentIntentId: intent.id,
+      status: "awaiting_payment",
+      createdAt: FieldValue.serverTimestamp(),
+    });
   } catch (e) {
-    console.error("createPayment: saving the payment id failed", e);
-    return reject(res, 500, "order_update_failed");
+    console.error("createPayment: saving the pending order failed", e);
+    // Nothing was charged; cancel the unused payment so it doesn't linger.
+    (await getStripe()).paymentIntents.cancel(intent.id).catch(() => {});
+    return reject(res, 500, "order_save_failed");
   }
+
   res.status(200).json({ ok: true, orderId, clientSecret: intent.client_secret, amount: order.totalCents });
 }
 
