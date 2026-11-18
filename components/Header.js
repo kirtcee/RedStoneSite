@@ -488,6 +488,17 @@ export default function Header() {
           </div>
         </div>
       )}
+
+      {/* Phones/tablets: the header bars above are position:fixed (iPhone
+          Safari kept losing sticky ones when the page jumped), so this
+          empty block holds the page content down by the same height.
+          Sized from this render, so it's right from the very first paint. */}
+      <div
+        aria-hidden="true"
+        className={`header-spacer${showMobileSubbar ? " header-spacer--subbar" : ""}${
+          showSubheader && activeTopKey === "deals" ? " header-spacer--tabs" : ""
+        }`}
+      />
     </>
   );
 }

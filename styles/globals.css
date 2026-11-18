@@ -1772,3 +1772,50 @@ body::before {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
+
+
+/* ===== Phones/tablets: header bars fixed, not sticky =====
+   iPhone Safari sometimes stops drawing a sticky header after the page
+   jumps (opening a category, going Back) until you scroll. Fixed bars don't
+   have that problem. .header-spacer (see Header.js) takes their place in
+   the page so content still starts below them. Desktop is unchanged. */
+.header-spacer {
+  display: none;
+}
+@media (max-width: 860px) {
+  .site-header.site-header--red {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+  .mobile-subbar {
+    position: fixed;
+    top: var(--header-h);
+    left: 0;
+    right: 0;
+  }
+  /* /coupons deal tabs (the only subheader shown on phones) */
+  .subheader {
+    position: fixed;
+    top: var(--header-h);
+    left: 0;
+    right: 0;
+  }
+  html.has-mobile-subbar .subheader {
+    top: calc(var(--header-h) + 48px);
+  }
+  .header-spacer {
+    display: block;
+    height: var(--header-h);
+  }
+  .header-spacer--subbar {
+    height: calc(var(--header-h) + 48px);
+  }
+  .header-spacer--tabs {
+    height: calc(var(--header-h) + var(--subheader-h));
+  }
+  .header-spacer--subbar.header-spacer--tabs {
+    height: calc(var(--header-h) + 48px + var(--subheader-h));
+  }
+}
