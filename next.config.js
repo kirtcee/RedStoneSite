@@ -5,6 +5,12 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // Stripe's card form (its own frame on js.stripe.com) loads our
+        // Red Stone Display font, which needs this to be allowed.
+        source: "/fonts/:path*",
+        headers: [{ key: "Access-Control-Allow-Origin", value: "*" }],
+      },
+      {
         source: "/:path*",
         headers: [
           { key: "X-Frame-Options", value: "SAMEORIGIN" },

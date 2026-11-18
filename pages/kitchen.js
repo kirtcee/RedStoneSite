@@ -230,7 +230,13 @@ export default function KitchenDashboard() {
                   <div className="order-name">{order.contact?.name || "N/A"}</div>
                   <div className="order-phone">{order.contact?.phone || "N/A"}</div>
                 </div>
-                <span className="order-service">{order.serviceMethod || "N/A"}</span>
+                <div className="order-badges">
+                  <span className="order-service">{order.serviceMethod || "N/A"}</span>
+                  {/* So staff never charge a customer who already paid online */}
+                  <span className={`order-pay${order.paid ? " order-pay--paid" : ""}`}>
+                    {order.paid ? "Paid Online" : order.serviceMethod === "Delivery" ? "Pay at Door" : "Pay at Store"}
+                  </span>
+                </div>
               </div>
 
               {scheduledLabel ? (
@@ -349,6 +355,13 @@ export default function KitchenDashboard() {
           <hr />
           <p className="print-receipt__total">
             Total: {printingOrder.totalCents != null ? formatMoney(printingOrder.totalCents) : "N/A"}
+          </p>
+          <p className="print-receipt__total">
+            {printingOrder.paid
+              ? "PAID ONLINE"
+              : printingOrder.serviceMethod === "Delivery"
+              ? "PAY AT DOOR"
+              : "PAY AT STORE"}
           </p>
         </div>
       )}
@@ -500,6 +513,26 @@ export default function KitchenDashboard() {
         .order-phone {
           font-size: 0.85rem;
           color: #666;
+        }
+        .order-badges {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 4px;
+        }
+        .order-pay {
+          background: #fff3cd;
+          color: #7a5b00;
+          font-size: 0.72rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+          padding: 3px 8px;
+          border-radius: 4px;
+        }
+        .order-pay--paid {
+          background: #2e7d32;
+          color: #fff;
         }
         .order-service {
           background: #e91e28;

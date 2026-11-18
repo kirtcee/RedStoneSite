@@ -61,3 +61,45 @@ export async function saveOrder(orderData) {
     return null;
   }
 }
+
+// Pay Now, step 1: the server prices the order, parks it until it's paid,
+// and sets up a Stripe payment for that exact total.
+// Resolves { orderId, clientSecret } or { error }.
+export async function startCardPayment(orderData) {
+  try {
+    const user = await waitForUser();
+    if (!user) return { error: "Couldn't start the payment. Please refresh and try again." };
+    const idToken = await user.getIdToken();
+    const res = await fetch("/api/createPayment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...orderData, idToken }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok || !body?.ok) {
+      console.error("startCardPayment: server refused", res.status, body);
+      return { error: "Couldn't start the payment. Please try again." };
+    }
+    return { orderId: body.orderId, clientSecret: body.clientSecret };
+  } catch (e) {
+    console.error("startCardPayment error:", e);
+    return { error: "Couldn't start the payment. Please check your connection and try again." };
+  }
+}
+
+// Pay Now, last step: the server checks with Stripe that the payment went
+// through and turns the parked order into a real one.
+// Resolves "paid" | "processing" | "unpaid" | "not_found" | "error".
+export async function finalizeCardPayment(orderId) {
+  try {
+    const res = await fetch("/api/finalizePayment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderId }),
+    });
+    const body = await res.json().catch(() => ({}));
+    return body?.status || "error";
+  } catch {
+    return "error";
+  }
+}

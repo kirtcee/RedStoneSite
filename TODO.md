@@ -11,10 +11,13 @@ Running list of things to finish before `mac-handoff` is merged into `main`
       Google Cloud Console (APIs & Services → Library).
 - [ ] **Button design pass** — restyle the remaining buttons together
       (map popup CARRYOUT, CONTINUE FOR CARRYOUT/DELIVERY, etc.).
-- [ ] **Stripe for "Pay Now with Debit or Credit Card"** on checkout. The
-      option is shown but blocked for now (the page asks for Pay at Store,
-      and `pages/api/placeOrder.js` rejects any payment method except
-      `store`). Look for `TODO(Stripe)` in `pages/checkout.js`.
+- [ ] **Stripe "Pay Now"** is built (see `utils/stripeServer.js`). Left to do:
+      - test it on the preview link with Stripe's test card 4242 4242 4242 4242
+      - add the webhook in Stripe (Developers → Webhooks →
+        `https://<domain>/api/stripeWebhook`, event `payment_intent.succeeded`)
+        and put its signing secret in Vercel as `STRIPE_WEBHOOK_SECRET`
+      - at launch: swap the test keys for live ones (and a live webhook)
+      - Apple Pay: add the live domain in Stripe → Payment method domains
 - [ ] **Merge `mac-handoff` → `main`** to go live.
 
 ## Should do

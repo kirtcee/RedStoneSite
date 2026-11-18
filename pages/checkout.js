@@ -7,7 +7,8 @@ import OrderTotals, { useOrderTotals } from "../components/OrderTotals";
 import { priceLineItem, formatMoney, describePizzaFull, describeByoPizzaHeading, describeByoPizzaSections } from "../components/Pricing";
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { findDealById } from "../utils/dealCatalog";
-import { saveOrder } from "../utils/saveOrder";
+import { saveOrder, startCardPayment, finalizeCardPayment } from "../utils/saveOrder";
+import StripeCardPayment from "../components/StripeCardPayment";
 
 // Shown under the page title (same numbers as the menu page estimate)
 const CARRYOUT_ADDRESS = "576 Concession Street";
@@ -111,7 +112,7 @@ function formatPhone(input) {
   return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
 }
 
-function validate(form, payLaterLabel = "Pay at Store") {
+function validate(form) {
   const errors = {};
   for (const f of FIELDS) {
     if (!String(form[f.key] || "").trim()) errors[f.key] = "This field is required.";
@@ -123,10 +124,6 @@ function validate(form, payLaterLabel = "Pay at Store") {
     errors.phone = "Please enter a 10-digit phone number.";
   }
   if (!form.payment) errors.payment = "This field is required.";
-  else if (form.payment === "card") {
-    // TODO(Stripe): Pay Now isn't connected yet — see TODO.md
-    errors.payment = `Paying online isn't available yet. Please choose ${payLaterLabel}.`;
-  }
   return errors;
 }
 
@@ -173,6 +170,7 @@ export default function CheckoutPage() {
   const [placing, setPlacing] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const fieldRefs = useRef({});
+  const cardRef = useRef(null); // the Stripe card form (Pay Now)
 
   const update = (key, rawValue) => {
     const value = key === "phone" ? formatPhone(rawValue) : rawValue;
@@ -194,7 +192,7 @@ export default function CheckoutPage() {
       openServiceGate?.();
       return;
     }
-    const found = validate(form, payLaterLabel);
+    const found = validate(form);
     setErrors(found);
     const firstBad = [...FIELDS.map((f) => f.key), "payment"].find((k) => found[k]);
     if (firstBad) {
@@ -208,7 +206,7 @@ export default function CheckoutPage() {
     const serviceMethod = service === "delivery" ? "Delivery" : "Carryout";
     const firstName = form.firstName.trim();
     const lastName = form.lastName.trim();
-    const id = await saveOrder({
+    const orderData = {
       items,
       appliedDeals: cart?.appliedDeals || [],
       serviceMethod,
@@ -224,7 +222,47 @@ export default function CheckoutPage() {
         phone: form.phone.trim(),
       },
       paymentMethod: form.payment,
-    });
+    };
+
+    // ---- Pay Now: card through Stripe ----
+    if (form.payment === "card") {
+      const result = await cardRef.current?.pay({
+        createPayment: () => startCardPayment(orderData),
+        billing: {
+          name: orderData.contact.name,
+          email: orderData.contact.email || undefined,
+          phone: orderData.contact.phone,
+        },
+        // Only used by payment types that send the customer to their bank's
+        // site; they come back to the confirmation page, which finishes up.
+        returnUrlFor: (orderId) => {
+          try {
+            sessionStorage.setItem("rs_card_order", orderId);
+          } catch {}
+          return `${window.location.origin}/order-confirmation?orderId=${orderId}&card=1`;
+        },
+      });
+      if (!result) {
+        setPlacing(false);
+        setSubmitError("The card form is still loading. Please try again.");
+        return;
+      }
+      if (result.error) {
+        setPlacing(false);
+        // Card problems show inside the card form too; keep the message here
+        // so it's visible next to the button.
+        setSubmitError(result.error);
+        if (result.field) fieldRefs.current.payment?.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+      const status = await finalizeCardPayment(result.orderId);
+      cart?.clearCart?.();
+      router.push(`/order-confirmation?orderId=${result.orderId}&card=1${status === "paid" ? "" : "&check=1"}`);
+      return;
+    }
+
+    // ---- Pay at Store / Pay at Door ----
+    const id = await saveOrder(orderData);
     setPlacing(false);
     if (!id) {
       setSubmitError("Something went wrong placing your order. Please try again.");
@@ -427,7 +465,7 @@ export default function CheckoutPage() {
                         : "At the store you can pay with cash, credit card, debit card or gift card."}
                     </p>
                   )}
-                  {/* TODO(Stripe): card details form goes here once integrated */}
+                  {form.payment === "card" && <StripeCardPayment ref={cardRef} amountCents={totals.total} />}
                   {errors.payment && (
                     <div id="co-pay-err" className="co-error">
                       {errors.payment}
@@ -442,7 +480,13 @@ export default function CheckoutPage() {
 
             {submitError && <div className="co-submitError">{submitError}</div>}
             <button type="button" className="rs-pill-btn co-place" onClick={handlePlaceOrder} disabled={placing}>
-              {placing ? "Placing Your Order…" : "Place Your Order"}
+              {placing
+                ? form.payment === "card"
+                  ? "Processing Payment…"
+                  : "Placing Your Order…"
+                : form.payment === "card"
+                ? `Pay ${formatMoney(totals.total)} & Place Order`
+                : "Place Your Order"}
             </button>
           </>
         )}
@@ -751,6 +795,25 @@ export default function CheckoutPage() {
         .co-balance__due {
           color: #000;
           font-size: 1.35rem;
+        }
+        /* Stripe card form (Pay Now) */
+        .co-wrap :global(.co-card) {
+          margin-top: 12px;
+        }
+        .co-wrap :global(.co-card__loading),
+        .co-wrap :global(.co-card--missing) {
+          padding: 12px;
+          border: 1px solid var(--menu-box-border);
+          border-radius: 0.1875rem;
+          background: #fff;
+          font-size: 0.9rem;
+          color: var(--text-brown);
+        }
+        .co-wrap :global(.co-card__secure) {
+          margin: 10px 0 0;
+          font-size: 0.8rem;
+          line-height: 1.35;
+          color: var(--text-brown);
         }
         .co-pay {
           border: 0;

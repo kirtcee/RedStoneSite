@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { db } from "../utils/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
+import { useCart } from "../components/CartSystem";
+import { finalizeCardPayment } from "../utils/saveOrder";
 import { formatMoney, priceLineItem, describePizzaFull, describeByoPizzaTitle } from "../components/Pricing";
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 
@@ -44,9 +46,14 @@ function getNameAndSubtitle(item) {
 export default function OrderConfirmation() {
   const router = useRouter();
   const { orderId } = router.query;
+  // Card (Pay Now) orders arrive with card=1. Stripe adds payment_intent /
+  // redirect_status when the customer comes back from their bank's page.
+  const isCardFlow = router.query.card === "1" || !!router.query.payment_intent;
+  const cart = useCart();
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [paymentState, setPaymentState] = useState(null); // null | "processing" | "failed"
 
   useEffect(() => {
     // router.query isn't populated until the router finishes hydrating —
@@ -84,9 +91,38 @@ export default function OrderConfirmation() {
     const fetchOrder = async () => {
       try {
         const docRef = doc(db, "orders", orderId);
-        const docSnap = await getDoc(docRef);
+        let docSnap = await getDoc(docRef);
+
+        // A card order only becomes a real order once Stripe confirms the
+        // payment. If it isn't there yet, ask the server to check (a few
+        // tries, in case the bank is a moment behind).
+        if (!docSnap.exists() && isCardFlow) {
+          for (let attempt = 0; attempt < 4 && !cancelled; attempt++) {
+            const status = await finalizeCardPayment(orderId);
+            if (status === "paid") {
+              docSnap = await getDoc(docRef);
+              if (docSnap.exists()) break;
+            } else if (status === "unpaid" || status === "not_found") {
+              if (!cancelled) setPaymentState(status === "unpaid" ? "failed" : null);
+              break;
+            } else if (status === "processing" && attempt === 3) {
+              if (!cancelled) setPaymentState("processing");
+            }
+            await new Promise((r) => setTimeout(r, 1500));
+          }
+        }
         if (cancelled) return;
         setOrder(docSnap.exists() ? docSnap.data() : null);
+
+        // Came back from a bank page: the cart is only cleared once it's paid.
+        if (docSnap.exists() && isCardFlow) {
+          try {
+            if (sessionStorage.getItem("rs_card_order") === orderId) {
+              sessionStorage.removeItem("rs_card_order");
+              cart?.clearCart?.();
+            }
+          } catch {}
+        }
       } catch (error) {
         console.error("Error fetching order:", error);
         if (!cancelled) setOrder(null);
@@ -104,12 +140,36 @@ export default function OrderConfirmation() {
       cancelled = true;
       clearTimeout(timeout);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.isReady, orderId]);
 
   if (loading) {
     return (
       <main className="container" style={{ paddingTop: "32px", paddingBottom: "32px" }}>
         <p>Loading your order...</p>
+      </main>
+    );
+  }
+
+  if (!order && paymentState === "processing") {
+    return (
+      <main className="container" style={{ paddingTop: "32px", paddingBottom: "32px" }}>
+        <div style={{ background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "var(--text-brown)" }}>
+          <p>Your payment is still being confirmed by your bank. This page will show your order once it goes through. You can refresh in a minute, or call the store if it doesn't appear.</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!order && paymentState === "failed") {
+    return (
+      <main className="container" style={{ paddingTop: "32px", paddingBottom: "32px" }}>
+        <div style={{ background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "var(--text-brown)" }}>
+          <p>Your payment didn't go through, so your order wasn't placed and you haven't been charged.</p>
+          <Link href="/checkout" className="rs-pill-btn" style={{ display: "inline-block", width: "auto", marginTop: 8 }}>
+            Back to Checkout
+          </Link>
+        </div>
       </main>
     );
   }

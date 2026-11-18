@@ -1,213 +1,43 @@
 // pages/api/placeOrder.js
 //
-// The one and only place an order gets created. Runs server-side (never
-// shipped to the browser), so nothing here can be edited via devtools.
+// Creates a "pay when you get it" order (Pay at Store / Pay at Door). Runs
+// server-side only, so nothing here can be edited via devtools.
 //
-// The client sends what's in the cart (items, service method, timing,
-// contact info) — it does NOT send a total. Every price is recomputed here
-// from scratch using components/Pricing.js, the exact same pricing logic
-// the UI already uses for display, now acting as the single source of
-// truth instead of something the client could tamper with. The order is
-// then written with the Firebase Admin SDK (utils/firebaseAdmin.js), which
-// bypasses Firestore Security Rules entirely — see firestore.rules, where
-// direct client writes to /orders are denied outright. A tampered client
-// can no longer submit a fake total because it can no longer submit a
-// total at all.
-import { priceLineItem, priceCart } from "../../components/Pricing";
-import { findDealById } from "../../utils/dealCatalog";
-import { adminAuth, adminDb } from "../../utils/firebaseAdmin";
-import { Timestamp, FieldValue } from "firebase-admin/firestore";
-
-const TAX_RATE = 0.13;
-const DELIVERY_FEE_CENTS = 499;
-const MAX_ITEMS = 100;
-const MAX_QTY_PER_ITEM = 50;
-
-// ---- Basic per-IP rate limiting ----
-// A single-location shop doesn't need anything elaborate here — just enough
-// to stop a script from flooding real orders into Firestore (kitchen
-// dashboard spam + billing). In-memory, so it resets on cold start/across
-// serverless instances; that's an acceptable tradeoff for this app's scale
-// rather than standing up a separate rate-limiting service.
-const RATE_LIMIT_WINDOW_MS = 60 * 1000;
-const RATE_LIMIT_MAX = 5;
-const rateLimitHits = new Map(); // ip -> timestamps[]
-
-function isRateLimited(ip) {
-  const now = Date.now();
-  const hits = (rateLimitHits.get(ip) || []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
-  hits.push(now);
-  rateLimitHits.set(ip, hits);
-  // Opportunistic cleanup so the map doesn't grow unbounded on a long-lived instance.
-  if (rateLimitHits.size > 5000) {
-    for (const [key, timestamps] of rateLimitHits) {
-      if (timestamps.every((t) => now - t >= RATE_LIMIT_WINDOW_MS)) rateLimitHits.delete(key);
-    }
-  }
-  return hits.length > RATE_LIMIT_MAX;
-}
-
-function clientIp(req) {
-  const forwarded = req.headers["x-forwarded-for"];
-  if (typeof forwarded === "string" && forwarded.length > 0) return forwarded.split(",")[0].trim();
-  return req.socket?.remoteAddress || "unknown";
-}
-
-// Every type priceLineItem() knows how to price. Anything else is rejected
-// outright rather than silently priced at $0.
-const KNOWN_ITEM_TYPES = new Set([
-  "pizza-byo",
-  "pizza-specialty",
-  "wings",
-  "side",
-  "special",
-  "combo",
-  "drinks-dips",
-]);
-const MAX_DEALS = 20;
+// The client sends what's in the cart — never a total. utils/orderBuilder.js
+// re-prices everything from scratch (same pricing the UI uses, coupons
+// included), and the order is written with the Firebase Admin SDK, which
+// bypasses Firestore Security Rules — see firestore.rules, where direct
+// client writes to /orders are denied outright.
+//
+// Card payments (Pay Now) don't come through here: see createPayment.js.
+import { adminDb } from "../../utils/firebaseAdmin";
+import { FieldValue } from "firebase-admin/firestore";
+import { buildOrder, isRateLimited, verifyUser } from "../../utils/orderBuilder";
 
 function reject(res, status, reason) {
   res.status(status).json({ ok: false, reason });
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    reject(res, 405, "method_not_allowed");
-    return;
-  }
-
-  if (isRateLimited(clientIp(req))) {
-    reject(res, 429, "too_many_requests");
-    return;
-  }
+  if (req.method !== "POST") return reject(res, 405, "method_not_allowed");
+  if (isRateLimited(req, "order")) return reject(res, 429, "too_many_requests");
 
   const body = req.body || {};
-  const { items: rawItems, appliedDeals: rawDeals, serviceMethod, orderTiming, schedule, location, contact, deliveryAddress, paymentMethod, idToken } = body;
+  const uid = await verifyUser(body.idToken);
+  if (!uid) return reject(res, 401, "invalid_auth");
 
-  // ---- Require a real Firebase session, same as the old Firestore rule's
-  // "request.auth != null" (anonymous auth included) — just enforced here
-  // instead, since the Admin SDK write below doesn't go through rules. ----
-  if (!idToken || typeof idToken !== "string") {
-    reject(res, 401, "missing_auth");
-    return;
-  }
-  let uid;
-  try {
-    ({ uid } = await adminAuth.verifyIdToken(idToken));
-  } catch (e) {
-    reject(res, 401, "invalid_auth");
-    return;
-  }
-
-  // ---- Shape validation ----
-  if (!Array.isArray(rawItems) || rawItems.length === 0) return reject(res, 400, "empty_cart");
-  if (rawItems.length > MAX_ITEMS) return reject(res, 400, "too_many_items");
-  // Every line needs its own id so coupon pricing can tell them apart.
-  const items = rawItems.map((it, i) =>
-    it && typeof it === "object" ? { ...it, id: typeof it.id === "string" && it.id ? it.id : `line-${i}` } : it
-  );
-  const seenIds = new Set();
-  for (const it of items) {
-    if (it && seenIds.has(it.id)) return reject(res, 400, "bad_item");
-    if (it) seenIds.add(it.id);
-  }
-
-  // Coupons on the order: [{ id, dealId }]. Only real coupons are kept;
-  // whether each one actually applies (right items, enough of them, right
-  // service method) is decided by priceCart() below, not by the client.
-  if (rawDeals != null && (!Array.isArray(rawDeals) || rawDeals.length > MAX_DEALS)) {
-    return reject(res, 400, "bad_deals");
-  }
-  const appliedDeals = (rawDeals || [])
-    .filter((d) => d && typeof d.id === "string" && typeof d.dealId === "string")
-    .filter((d) => findDealById(d.dealId)?.active)
-    .map((d) => ({ id: d.id.slice(0, 64), dealId: d.dealId }));
-  if (serviceMethod !== "Carryout" && serviceMethod !== "Delivery") {
-    return reject(res, 400, "bad_service_method");
-  }
-
-  const firstName = String(contact?.firstName || "").trim().slice(0, 60);
-  const lastName = String(contact?.lastName || "").trim().slice(0, 60);
-  // `name` stays the full name the kitchen screen / confirmation page show
-  const name = (String(contact?.name || "").trim() || `${firstName} ${lastName}`.trim()).slice(0, 100);
-  const phone = String(contact?.phone || "").trim().slice(0, 30);
-  const email = String(contact?.email || "").trim().slice(0, 120);
-  if (!name || !phone) return reject(res, 400, "missing_contact");
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return reject(res, 400, "bad_email");
-
-  // Only "Pay at Store" is live. "card" (Pay Now) is accepted once Stripe is
-  // integrated — see TODO.md — and must never create an unpaid order before.
-  const payment = paymentMethod === undefined ? "store" : paymentMethod;
+  // Only the pay-later option is accepted here; a card order must go
+  // through Stripe so it can never be created unpaid.
+  const payment = body.paymentMethod === undefined ? "store" : body.paymentMethod;
   if (payment !== "store") return reject(res, 400, "payment_method_unavailable");
 
-  // ---- Authoritative pricing: recompute every line item from scratch.
-  // priceLineItem() returns 0 for a type/id/name it doesn't recognize
-  // (e.g. a made-up comboId) rather than throwing, and no real menu item
-  // ever legitimately costs $0 — so a 0 here means the item referenced
-  // something that doesn't actually exist in the catalog. ----
-  for (const item of items) {
-    if (!item || typeof item !== "object" || !KNOWN_ITEM_TYPES.has(item.type)) {
-      return reject(res, 400, "bad_item");
-    }
-    const qty = Number(item.qty) || 1;
-    if (qty < 1 || qty > MAX_QTY_PER_ITEM) return reject(res, 400, "bad_qty");
-
-    const lineCents = priceLineItem(item);
-    if (!Number.isFinite(lineCents) || lineCents <= 0) {
-      return reject(res, 400, "unpriceable_item");
-    }
-  }
-
-  // Coupon prices applied with the exact same rules the cart shows.
-  const pricing = priceCart(items, appliedDeals, serviceMethod === "Delivery" ? "delivery" : "carryout");
-  const subtotalCents = pricing.subtotalCents;
-  const discountCents = pricing.savingsCents;
-  const pricedItems = items.map((it) => ({
-    ...it,
-    regularCents: pricing.lines[it.id].regularCents,
-    lineCents: pricing.lines[it.id].finalCents,
-  }));
-  const dealsSummary = pricing.deals.map((d) => ({
-    id: d.id,
-    dealId: d.dealId,
-    name: d.deal?.name || d.dealId,
-    active: d.active,
-    savingsCents: d.savingsCents,
-  }));
-
-  const deliveryCents = serviceMethod === "Delivery" ? DELIVERY_FEE_CENTS : 0;
-  const taxCents = Math.round((subtotalCents + deliveryCents) * TAX_RATE);
-  const totalCents = subtotalCents + deliveryCents + taxCents;
-
-  // ---- Pickup/delivery time (moved here from the old client-side
-  // saveOrder.js — same logic, just now server-side with everything else) ----
-  const isLater = orderTiming === "later";
-  const { date, time } = schedule || {};
-  const scheduled = isLater && date && time ? new Date(`${date}T${time}:00`) : null;
-  const pickupTime = Timestamp.fromDate(
-    scheduled && !isNaN(scheduled.getTime()) ? scheduled : new Date(Date.now() + 20 * 60000)
-  );
+  const built = buildOrder(body, { uid, paymentMethod: "store" });
+  if (!built.ok) return reject(res, built.status, built.reason);
 
   try {
     const ref = await adminDb.collection("orders").add({
-      items: pricedItems,
-      appliedDeals: dealsSummary,
-      serviceMethod,
-      orderTiming: isLater ? "later" : "now",
-      schedule: isLater ? { date, time } : { date: null, time: null },
-      location: String(location || "").slice(0, 200),
-      deliveryAddress: serviceMethod === "Delivery" ? deliveryAddress || null : null,
-      contact: { name, firstName, lastName, phone, email },
-      paymentMethod: payment,
-      paid: false,
-      fees: { deliveryCents, taxCents },
-      subtotalCents,
-      discountCents,
-      totalCents,
-      uid,
+      ...built.order,
       createdAt: FieldValue.serverTimestamp(),
-      pickupTime,
-      completed: false,
     });
     res.status(200).json({ ok: true, id: ref.id });
   } catch (e) {
