@@ -26,12 +26,22 @@ export default async function handler(req, res) {
   if (!built.ok) return reject(res, built.status, built.reason);
   const order = built.order;
 
-  try {
-    const pendingRef = adminDb.collection("pendingOrders").doc();
-    const orderId = pendingRef.id;
-    await pendingRef.set({ order, status: "awaiting_payment", createdAt: FieldValue.serverTimestamp() });
+  if (!process.env.STRIPE_SECRET_KEY) return reject(res, 500, "stripe_key_missing");
 
-    const intent = await getStripe().paymentIntents.create(
+  // Park the order until it's paid (never in /orders, so the kitchen can't see it).
+  let pendingRef;
+  try {
+    pendingRef = adminDb.collection("pendingOrders").doc();
+    await pendingRef.set({ order, status: "awaiting_payment", createdAt: FieldValue.serverTimestamp() });
+  } catch (e) {
+    console.error("createPayment: saving the pending order failed", e);
+    return reject(res, 500, "order_save_failed");
+  }
+  const orderId = pendingRef.id;
+
+  let intent;
+  try {
+    intent = await getStripe().paymentIntents.create(
       {
         amount: order.totalCents,
         currency: "cad",
@@ -42,11 +52,17 @@ export default async function handler(req, res) {
       },
       { idempotencyKey: `order-${orderId}` }
     );
-
-    await pendingRef.update({ paymentIntentId: intent.id });
-    res.status(200).json({ ok: true, orderId, clientSecret: intent.client_secret, amount: order.totalCents });
   } catch (e) {
-    console.error("createPayment failed", e);
-    reject(res, 500, "payment_setup_failed");
+    // Stripe's own error code (e.g. "api_key_expired"), safe to show — never the key.
+    console.error("createPayment: Stripe refused", e?.type, e?.code, e?.message);
+    return reject(res, 502, `stripe_${e?.code || e?.type || "error"}`);
   }
+
+  try {
+    await pendingRef.update({ paymentIntentId: intent.id });
+  } catch (e) {
+    console.error("createPayment: saving the payment id failed", e);
+    return reject(res, 500, "order_update_failed");
+  }
+  res.status(200).json({ ok: true, orderId, clientSecret: intent.client_secret, amount: order.totalCents });
 }

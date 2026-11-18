@@ -78,7 +78,9 @@ export async function startCardPayment(orderData) {
     const body = await res.json().catch(() => ({}));
     if (!res.ok || !body?.ok) {
       console.error("startCardPayment: server refused", res.status, body);
-      return { error: "Couldn't start the payment. Please try again." };
+      // The short code in brackets tells us which step failed.
+      const code = body?.reason || `http_${res.status}`;
+      return { error: `Couldn't start the payment. Please try again. (${code})` };
     }
     return { orderId: body.orderId, clientSecret: body.clientSecret };
   } catch (e) {
