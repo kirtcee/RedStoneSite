@@ -23,7 +23,7 @@ import { useRouter } from "next/router";
   │ ┌ STEP 2: CHOOSE YOUR SIDES ┐  3 quick-add tiles                     │
   │ ┌ STEP 3: CHOOSE YOUR DRINKS ┐                                       │
   │ ┌ STEP 4: ADD SOME FLAVOUR ┐                                         │
-  │ [COUPON APPLIED!] [YOU SAVED $x]  + one box per coupon (when applied) │
+  │ [ COUPON APPLIED! ]  + one box per coupon (when applied)             │
   │ deal code                                                            │
   └──────────────────────────────────────────────────────────────────────┘
   Outer box: cream (--menu-box-bg, #faf2e9). Step bodies: off-white #fefaf6.
@@ -403,17 +403,15 @@ function DrinksDipsStep({ title, pool, fallbackImg, addItem }) {
   );
 }
 
-// Shown under the note once a coupon is on the order: "COUPON APPLIED!" and
-// "YOU SAVED $x" side by side, then one box per coupon.
+// Shown under the note once a coupon is on the order: a full-width
+// "COUPON APPLIED!" badge, then one box per coupon.
 function AppliedCoupons({ cart }) {
   const deals = cart?.pricing?.deals || [];
   if (!deals.length) return null;
-  const saved = cart.pricing.savingsCents || 0;
   return (
     <div className="cart-coupons">
       <div className="cart-coupons__badges">
         <div className="cart-coupons__badge cart-coupons__badge--applied">Coupon Applied!</div>
-        <div className="cart-coupons__badge cart-coupons__badge--saved">You Saved {formatMoney(saved)}</div>
       </div>
       {deals.map((d) => {
         const deal = d.deal || findDealById(d.dealId);
@@ -634,9 +632,6 @@ export default function CartPage() {
           margin: 0 var(--cart-gutter) 14px;
         }
         .cart-box :global(.cart-coupons__badges) {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 10px;
           margin-bottom: 10px;
         }
         .cart-box :global(.cart-coupons__badge) {
@@ -646,7 +641,7 @@ export default function CartPage() {
           min-height: 44px;
           padding: 0.5rem 0.6rem;
           border: 2px solid #000;
-          border-radius: 30px;
+          border-radius: 0.1875rem; /* same as the coupon box below */
           font-family: var(--font-display);
           font-size: 1.1rem;
           line-height: 1.05;
@@ -657,10 +652,6 @@ export default function CartPage() {
         .cart-box :global(.cart-coupons__badge--applied) {
           background: #000;
           color: #fff;
-        }
-        .cart-box :global(.cart-coupons__badge--saved) {
-          background: #fff;
-          color: #000;
         }
         .cart-box :global(.cart-coupon) {
           background: #fff;

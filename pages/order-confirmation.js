@@ -255,12 +255,6 @@ export default function OrderConfirmation() {
                 <div>Order Total:</div>
                 <div>{formatMoney(order.totalCents || 0)}</div>
               </div>
-              {order.discountCents > 0 && (
-                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, color: "#e31837", fontWeight: 700 }}>
-                  <div>You Saved:</div>
-                  <div>{formatMoney(order.discountCents)}</div>
-                </div>
-              )}
             </div>
           </div>
         </div>
