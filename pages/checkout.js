@@ -485,8 +485,6 @@ export default function CheckoutPage() {
                 ? form.payment === "card"
                   ? "Processing Payment…"
                   : "Placing Your Order…"
-                : form.payment === "card"
-                ? `Pay ${formatMoney(totals.total)} & Place Order`
                 : "Place Your Order"}
             </button>
           </>
