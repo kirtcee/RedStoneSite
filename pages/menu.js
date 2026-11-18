@@ -607,15 +607,15 @@ function MenuBody() {
 
   // toTop: opening a different category starts at the top of the page;
   // closing a popup back to the list (default) keeps the scroll position.
-  const setTabSub = (next, { toTop = false } = {}) =>
-    router
-      .push({ pathname: "/menu", query: next }, undefined, {
-        scroll: false,
-        shallow: true,
-      })
-      .then(() => {
-        if (toTop) window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-      });
+  // The jump to the top happens BEFORE the content switches — doing it
+  // after made iPhone Safari briefly lose the sticky header.
+  const setTabSub = (next, { toTop = false } = {}) => {
+    if (toTop) window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    return router.push({ pathname: "/menu", query: next }, undefined, {
+      scroll: false,
+      shallow: true,
+    });
+  };
 
   // Wings popup (opened from the Sides "View All" card — should behave like
   // every other side's popup builder, not navigate away to a full page)

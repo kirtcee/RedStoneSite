@@ -50,6 +50,14 @@ export default function Header() {
     return MENU_MODE_PATHS.some((base) => p.startsWith(base));
   }, [router.pathname]);
 
+  // Opening a menu section/category starts at the top. Jump there FIRST, then
+  // switch the content: if the new content drew while still scrolled down
+  // and the jump came after, iPhone Safari briefly lost the sticky header.
+  const goMenu = (q) => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    router.push(buildMenuUrl(q), undefined, { scroll: false });
+  };
+
   const homeNav = [
     { key: "order", label: "ORDER\nONLINE", onClick: () => router.push("/order") },
     { key: "menu", label: "MENU", onClick: () => router.push("/menu") },
@@ -72,33 +80,25 @@ export default function Header() {
       key: "entrees",
       label: "ENTRÉES",
       onClick: () =>
-        router.push(buildMenuUrl({ tab: "entrees" }), undefined, {
-          scroll: true, // switching menu section starts at the top
-        }),
+        goMenu({ tab: "entrees" }),
     },
     {
       key: "sides",
       label: "SIDES",
       onClick: () =>
-        router.push(buildMenuUrl({ tab: "sides", sub: "all" }), undefined, {
-          scroll: true, // switching menu section starts at the top
-        }),
+        goMenu({ tab: "sides", sub: "all" }),
     },
     {
       key: "drinks",
       label: "DRINKS",
       onClick: () =>
-        router.push(buildMenuUrl({ tab: "drinks" }), undefined, {
-          scroll: true, // switching menu section starts at the top
-        }),
+        goMenu({ tab: "drinks" }),
     },
     {
       key: "combos",
       label: "COMBOS",
       onClick: () =>
-        router.push(buildMenuUrl({ tab: "entrees", sub: "combos" }), undefined, {
-          scroll: true, // switching menu section starts at the top
-        }),
+        goMenu({ tab: "entrees", sub: "combos" }),
     },
   ];
 
@@ -185,7 +185,7 @@ export default function Header() {
       document.getElementById(s.anchor)?.scrollIntoView({ behavior: "smooth" });
       return;
     }
-    router.push(buildMenuUrl(s.qp), undefined, { scroll: true }); // new category starts at the top
+    goMenu(s.qp); // new category starts at the top
   };
 
   const topItems = inMenuMode ? menuNav : homeNav;
