@@ -43,12 +43,35 @@ function loadCredential() {
   // Service-account JSON stores the key with literal "\n" escape sequences;
   // env vars can't hold real multi-line newlines cleanly, so it's kept
   // escaped in the environment and unescaped here.
-  return cert({ projectId, clientEmail, privateKey: rawKey.replace(/\\n/g, "\n") });
+  // Forgiving about how it was pasted: surrounding quote marks (copied from
+  // the JSON file or .env.local) are dropped.
+  const privateKey = rawKey.trim().replace(/^["']|["'],?$/g, "").replace(/\\n/g, "\n");
+  return cert({ projectId, clientEmail, privateKey });
 }
 
 // getApps() guards against re-initializing on every hot-reload / warm
 // serverless invocation, which firebase-admin throws on.
-const adminApp = getApps()[0] || initializeApp({ credential: loadCredential() });
+//
+// A missing or badly pasted credential must not crash the whole route at
+// import time (that only shows up as a bare "500"): the error is kept in
+// adminInitError instead, and the API routes report it as
+// "firebase_setup: <what's wrong>" — never the key itself.
+let adminApp = null;
+let initError = null;
+try {
+  adminApp = getApps()[0] || initializeApp({ credential: loadCredential() });
+} catch (e) {
+  initError = e;
+  console.error("Firebase Admin failed to start:", e?.message);
+}
 
-export const adminDb = getFirestore(adminApp);
-export const adminAuth = getAuth(adminApp);
+export const adminInitError = initError;
+export const adminDb = adminApp ? getFirestore(adminApp) : null;
+export const adminAuth = adminApp ? getAuth(adminApp) : null;
+
+// Short, safe description of a setup problem for API error responses.
+export function adminSetupProblem() {
+  if (!initError) return null;
+  const msg = String(initError.message || initError).replace(/\s+/g, " ");
+  return `firebase_setup: ${msg.slice(0, 140)}`;
+}

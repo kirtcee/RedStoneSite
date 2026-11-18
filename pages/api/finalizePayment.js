@@ -5,10 +5,16 @@
 // doesn't take the browser's word for it: finalizeCardOrder() checks the
 // payment with Stripe before turning the pending order into a real one.
 import { finalizeCardOrder } from "../../utils/stripeServer";
+import { adminSetupProblem } from "../../utils/firebaseAdmin";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.status(405).json({ ok: false, reason: "method_not_allowed" });
+    return;
+  }
+  const setupProblem = adminSetupProblem();
+  if (setupProblem) {
+    res.status(500).json({ ok: false, status: "error", reason: setupProblem });
     return;
   }
   try {

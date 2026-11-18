@@ -265,7 +265,10 @@ export default function CheckoutPage() {
     const id = await saveOrder(orderData);
     setPlacing(false);
     if (!id) {
-      setSubmitError("Something went wrong placing your order. Please try again.");
+      // The short code in brackets tells us which step failed.
+      setSubmitError(
+        `Something went wrong placing your order. Please try again.${saveOrder.lastError ? ` (${saveOrder.lastError})` : ""}`
+      );
       return;
     }
     cart?.clearCart?.();

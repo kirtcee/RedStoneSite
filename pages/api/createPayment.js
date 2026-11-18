@@ -5,7 +5,7 @@
 // and creates a Stripe PaymentIntent for that exact amount. Returns the
 // PaymentIntent's client secret so the browser can confirm the card
 // payment with Stripe, plus the order id.
-import { adminDb } from "../../utils/firebaseAdmin";
+import { adminDb, adminSetupProblem } from "../../utils/firebaseAdmin";
 import { FieldValue } from "firebase-admin/firestore";
 import { buildOrder, isRateLimited, verifyUser } from "../../utils/orderBuilder";
 import { getStripe } from "../../utils/stripeServer";
@@ -16,13 +16,21 @@ function reject(res, status, reason) {
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return reject(res, 405, "method_not_allowed");
+  const setupProblem = adminSetupProblem();
+  if (setupProblem) return reject(res, 500, setupProblem);
   if (isRateLimited(req, "payment")) return reject(res, 429, "too_many_requests");
 
   const body = req.body || {};
   const uid = await verifyUser(body.idToken);
   if (!uid) return reject(res, 401, "invalid_auth");
 
-  const built = buildOrder(body, { uid, paymentMethod: "card" });
+  let built;
+  try {
+    built = buildOrder(body, { uid, paymentMethod: "card" });
+  } catch (e) {
+    console.error("createPayment: checking the order failed", e);
+    return reject(res, 500, `order_check_failed: ${String(e?.message || e).slice(0, 100)}`);
+  }
   if (!built.ok) return reject(res, built.status, built.reason);
   const order = built.order;
 

@@ -10,7 +10,7 @@
 // client writes to /orders are denied outright.
 //
 // Card payments (Pay Now) don't come through here: see createPayment.js.
-import { adminDb } from "../../utils/firebaseAdmin";
+import { adminDb, adminSetupProblem } from "../../utils/firebaseAdmin";
 import { FieldValue } from "firebase-admin/firestore";
 import { buildOrder, isRateLimited, verifyUser } from "../../utils/orderBuilder";
 
@@ -20,6 +20,8 @@ function reject(res, status, reason) {
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return reject(res, 405, "method_not_allowed");
+  const setupProblem = adminSetupProblem();
+  if (setupProblem) return reject(res, 500, setupProblem);
   if (isRateLimited(req, "order")) return reject(res, 429, "too_many_requests");
 
   const body = req.body || {};
@@ -31,7 +33,13 @@ export default async function handler(req, res) {
   const payment = body.paymentMethod === undefined ? "store" : body.paymentMethod;
   if (payment !== "store") return reject(res, 400, "payment_method_unavailable");
 
-  const built = buildOrder(body, { uid, paymentMethod: "store" });
+  let built;
+  try {
+    built = buildOrder(body, { uid, paymentMethod: "store" });
+  } catch (e) {
+    console.error("placeOrder: checking the order failed", e);
+    return reject(res, 500, `order_check_failed: ${String(e?.message || e).slice(0, 100)}`);
+  }
   if (!built.ok) return reject(res, built.status, built.reason);
 
   try {

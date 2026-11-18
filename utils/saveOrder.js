@@ -53,6 +53,7 @@ export async function saveOrder(orderData) {
     const body = await res.json().catch(() => ({}));
     if (!res.ok || !body?.ok) {
       console.error("saveOrder: server rejected the order", res.status, body);
+      saveOrder.lastError = body?.reason || `http_${res.status}`;
       return null;
     }
     return body.id || null;

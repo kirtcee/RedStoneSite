@@ -62,7 +62,7 @@ function clientIp(req) {
 // Requires a real Firebase session (anonymous auth included).
 // Returns the uid, or null if the token is missing/invalid.
 export async function verifyUser(idToken) {
-  if (!idToken || typeof idToken !== "string") return null;
+  if (!idToken || typeof idToken !== "string" || !adminAuth) return null;
   try {
     const { uid } = await adminAuth.verifyIdToken(idToken);
     return uid;
