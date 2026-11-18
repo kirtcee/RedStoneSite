@@ -111,7 +111,7 @@ function formatPhone(input) {
   return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
 }
 
-function validate(form) {
+function validate(form, payLaterLabel = "Pay at Store") {
   const errors = {};
   for (const f of FIELDS) {
     if (!String(form[f.key] || "").trim()) errors[f.key] = "This field is required.";
@@ -125,7 +125,7 @@ function validate(form) {
   if (!form.payment) errors.payment = "This field is required.";
   else if (form.payment === "card") {
     // TODO(Stripe): Pay Now isn't connected yet — see TODO.md
-    errors.payment = "Paying online isn't available yet. Please choose Pay at Store.";
+    errors.payment = `Paying online isn't available yet. Please choose ${payLaterLabel}.`;
   }
   return errors;
 }
@@ -181,6 +181,10 @@ export default function CheckoutPage() {
     if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
   };
 
+  // Same "pay when you get it" option either way, worded for the service.
+  const isDelivery = service === "delivery";
+  const payLaterLabel = isDelivery ? "Pay at Door" : "Pay at Store";
+
   const scheduleText = orderTiming === "later" ? formatSchedule(scheduleDate, scheduleTime) : null;
 
   const handlePlaceOrder = async () => {
@@ -190,7 +194,7 @@ export default function CheckoutPage() {
       openServiceGate?.();
       return;
     }
-    const found = validate(form);
+    const found = validate(form, payLaterLabel);
     setErrors(found);
     const firstBad = [...FIELDS.map((f) => f.key), "payment"].find((k) => found[k]);
     if (firstBad) {
@@ -401,7 +405,7 @@ export default function CheckoutPage() {
                     <span className="co-req" aria-hidden="true">*</span> Payment Type:
                   </div>
                   {[
-                    { value: "store", label: "Pay at Store" },
+                    { value: "store", label: payLaterLabel },
                     { value: "card", label: "Pay Now with Debit or Credit Card" },
                   ].map((o) => (
                     <label key={o.value} className="co-radio">
@@ -417,8 +421,10 @@ export default function CheckoutPage() {
                   ))}
                   {form.payment === "store" && (
                     <p className="co-hint co-hint--note">
-                      <strong>Note:</strong> At the store you can pay with cash, credit card, debit
-                      card or gift card.
+                      <strong>Note:</strong>{" "}
+                      {isDelivery
+                        ? "When your order arrives you can pay with cash, credit card or debit card."
+                        : "At the store you can pay with cash, credit card, debit card or gift card."}
                     </p>
                   )}
                   {/* TODO(Stripe): card details form goes here once integrated */}
