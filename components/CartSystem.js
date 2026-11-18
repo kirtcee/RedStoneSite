@@ -9,14 +9,69 @@ import React, {
   useRef,
 } from "react";
 import { useRouter } from "next/router";
-import { formatMoney, priceLineItem } from "./Pricing";
+import { formatMoney, priceCart } from "./Pricing";
 import { loadCart, saveCart, subscribeCart } from "../utils/cartPersistence";
 import { auth } from "../utils/firebaseConfig";
+import { findDealById, dealUnitToCartItem } from "../utils/dealCatalog";
 
 const CartContext = createContext(null);
 
+// Identical items merge into one line with a bigger qty; this key decides
+// what counts as identical (everything but qty / cached price).
+function itemKeyOf(item) {
+  const keyObj = { ...item };
+  delete keyObj.qty;
+  delete keyObj.lineSubtotalCents;
+  delete keyObj.id;
+  delete keyObj._key;
+  return JSON.stringify(keyObj);
+}
+
+// Adds one item to a cart list, merging into a matching line if there is one.
+function mergeIntoItems(prev, raw) {
+  const item = { ...raw };
+  if (!item.qty || item.qty < 1) item.qty = 1;
+  const itemKey = itemKeyOf(item);
+  const idx = prev.findIndex((p) => p._key === itemKey);
+  if (idx !== -1) {
+    const next = prev.slice();
+    next[idx] = { ...next[idx], qty: next[idx].qty + item.qty };
+    return next;
+  }
+  return [...prev, { ...item, _key: itemKey, id: cryptoRandomId() }];
+}
+
+// Carts saved before coupons became separate items held each coupon as one
+// "deal" line. Split those into their real items, tagged with the coupon.
+function migrateLegacyDeals(items, appliedDeals) {
+  if (!items.some((it) => it?.type === "deal")) return { items, appliedDeals };
+  let nextItems = [];
+  const nextDeals = [...appliedDeals];
+  items.forEach((it) => {
+    if (it?.type !== "deal") {
+      nextItems.push(it);
+      return;
+    }
+    const deal = findDealById(it.dealId);
+    if (!deal) return;
+    const ref = cryptoRandomId();
+    nextDeals.push({ id: ref, dealId: deal.id });
+    const units =
+      deal.mode === "bundle"
+        ? Object.entries(it.meta?.items || {}).map(([slot, unit]) => ({ slot, unit }))
+        : (it.meta?.builds || []).map((unit) => ({ slot: unit.itemKey, unit }));
+    units.forEach(({ slot, unit }) => {
+      nextItems = mergeIntoItems(nextItems, dealUnitToCartItem(deal, slot, unit, ref));
+    });
+  });
+  return { items: nextItems, appliedDeals: nextDeals };
+}
+
 export function CartProvider({ children, onEditItem }) {
   const [items, setItems] = useState([]);
+  // Coupons applied to this cart: [{ id, dealId }]. The coupon's items are
+  // ordinary lines in `items`, tagged `deal: { ref: <this id>, slot }`.
+  const [appliedDeals, setAppliedDeals] = useState([]);
   const handleEditItem = useCallback((item) => onEditItem?.(item), [onEditItem]);
 
   // ---- Service method (carryout/delivery) — single source of truth ----
@@ -127,8 +182,17 @@ export function CartProvider({ children, onEditItem }) {
   // also drive. Editing an existing "deal" cart item instead goes through
   // CartEditOverlay's own DealBuilder instance, same pattern as combos. ----
   const [openDealId, setOpenDealId] = useState(null);
-  const openDeal = useCallback((id) => setOpenDealId(id), []);
-  const closeDealBuilder = useCallback(() => setOpenDealId(null), []);
+  // Set when the builder was opened to add more items to a coupon that's
+  // already in the cart ("Add another item to this coupon").
+  const [openDealRef, setOpenDealRef] = useState(null);
+  const openDeal = useCallback((id, ref = null) => {
+    setOpenDealRef(ref);
+    setOpenDealId(id);
+  }, []);
+  const closeDealBuilder = useCallback(() => {
+    setOpenDealId(null);
+    setOpenDealRef(null);
+  }, []);
 
   // Validates a coupon code against the server (the authoritative check —
   // see pages/api/validateDeal.js) and, if valid for the current service
@@ -146,6 +210,7 @@ export function CartProvider({ children, onEditItem }) {
         if (!data?.ok) {
           return { ok: false, reason: data?.reason || "not_found" };
         }
+        setOpenDealRef(null);
         setOpenDealId(data.deal.id);
         return { ok: true, deal: data.deal };
       } catch (e) {
@@ -158,24 +223,45 @@ export function CartProvider({ children, onEditItem }) {
 
   // ---- Add/Update/Remove/clear ----
   const reallyAddItem = useCallback((raw) => {
-    const item = { ...raw };
-    if (!item.qty || item.qty < 1) item.qty = 1;
+    setItems((prev) => mergeIntoItems(prev, raw));
+  }, []);
 
-    // unique key for merging quantities of identical items
-    const keyObj = { ...item };
-    delete keyObj.qty;
-    delete keyObj.lineSubtotalCents;
-    const itemKey = JSON.stringify(keyObj);
+  // Adds a coupon's items to the cart as their own lines, tagged with the
+  // coupon. `ref` is an existing coupon in the cart (adding more items to
+  // it); leave it out to apply the coupon fresh. `units`: [{ slot, unit }],
+  // `unit` being what that item's builder returned.
+  const reallyApplyDealItems = useCallback(({ dealId, ref = null, units = [] }) => {
+    const deal = findDealById(dealId);
+    if (!deal || !units.length) return;
+    const dealRef = ref || cryptoRandomId();
+    setAppliedDeals((prev) => (prev.some((d) => d.id === dealRef) ? prev : [...prev, { id: dealRef, dealId }]));
+    setItems((prev) =>
+      units.reduce((acc, { slot, unit }) => mergeIntoItems(acc, dealUnitToCartItem(deal, slot, unit, dealRef)), prev)
+    );
+  }, []);
 
-    setItems((prev) => {
-      const idx = prev.findIndex((p) => p._key === itemKey);
-      if (idx !== -1) {
-        const next = prev.slice();
-        next[idx] = { ...next[idx], qty: next[idx].qty + item.qty };
-        return next;
+  const applyDealItems = useCallback(
+    (args) => {
+      if (!isServiceConfirmed) {
+        openServiceGate(() => reallyApplyDealItems(args));
+        return;
       }
-      return [...prev, { ...item, _key: itemKey, id: cryptoRandomId() }];
-    });
+      reallyApplyDealItems(args);
+    },
+    [isServiceConfirmed, openServiceGate, reallyApplyDealItems]
+  );
+
+  // Takes a coupon off the order. Its items stay in the cart at their
+  // normal price.
+  const removeDeal = useCallback((ref) => {
+    setAppliedDeals((prev) => prev.filter((d) => d.id !== ref));
+    setItems((prev) =>
+      prev.map((it) => {
+        if (it?.deal?.ref !== ref) return it;
+        const { deal, ...rest } = it;
+        return { ...rest, _key: itemKeyOf(rest) };
+      })
+    );
   }, []);
 
   const addItem = useCallback(
@@ -211,22 +297,22 @@ export function CartProvider({ children, onEditItem }) {
       prev.map((it) => {
         if (it.id !== id) return it;
         const next = { ...raw };
+        delete next._key;
         if (!next.qty || next.qty < 1) next.qty = 1;
-        const keyObj = { ...next };
-        delete keyObj.qty;
-        delete keyObj.lineSubtotalCents;
-        return { ...next, id, _key: JSON.stringify(keyObj) };
+        return { ...next, id, _key: itemKeyOf(next) };
       })
     );
   }, []);
 
-  const clearCart = useCallback(() => setItems([]), []);
+  const clearCart = useCallback(() => {
+    setItems([]);
+    setAppliedDeals([]);
+  }, []);
 
-  // ---- Derived subtotal ----
-  const subtotalCents = useMemo(
-    () => items.reduce((sum, it) => sum + priceLineItem(it), 0),
-    [items]
-  );
+  // ---- Prices: every line's real price (coupons applied), the subtotal,
+  // and how much the coupons save (see priceCart in Pricing.js) ----
+  const pricing = useMemo(() => priceCart(items, appliedDeals, service), [items, appliedDeals, service]);
+  const subtotalCents = pricing.subtotalCents;
 
   // ---- Persistence: Firestore load + realtime subscribe ----
   const suppressSaveRef = useRef(false);
@@ -243,8 +329,15 @@ export function CartProvider({ children, onEditItem }) {
         const remote = await loadCart();
         if (!mounted) return;
         if (Array.isArray(remote.items)) {
-          suppressSaveRef.current = true; // avoid saving the load immediately
-          setItems(remote.items);
+          const migrated = migrateLegacyDeals(
+            remote.items,
+            Array.isArray(remote.appliedDeals) ? remote.appliedDeals : []
+          );
+          // Only skip the save when nothing changed; a migrated cart should
+          // be written back in its new shape.
+          suppressSaveRef.current = migrated.items === remote.items;
+          setItems(migrated.items);
+          setAppliedDeals(migrated.appliedDeals);
         }
       } catch (e) {
         console.error("Cart load error:", e);
@@ -257,6 +350,7 @@ export function CartProvider({ children, onEditItem }) {
       if (!Array.isArray(remote.items)) return;
       suppressSaveRef.current = true;
       setItems(remote.items);
+      setAppliedDeals(Array.isArray(remote.appliedDeals) ? remote.appliedDeals : []);
       setIsLoaded(true);
     });
 
@@ -277,10 +371,19 @@ export function CartProvider({ children, onEditItem }) {
     clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
       const uid = auth?.currentUser?.uid || null;
-      saveCart(items, { uid, subtotalCents }).catch(console.error);
+      saveCart(items, { uid, subtotalCents, appliedDeals }).catch(console.error);
     }, 350);
     return () => clearTimeout(saveTimer.current);
-  }, [items, subtotalCents, isLoaded]);
+  }, [items, appliedDeals, subtotalCents, isLoaded]);
+
+  // A coupon with none of its items left in the cart goes away by itself.
+  useEffect(() => {
+    if (!isLoaded) return;
+    setAppliedDeals((prev) => {
+      const next = prev.filter((d) => items.some((it) => it?.deal?.ref === d.id));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [items, isLoaded]);
 
   const value = useMemo(
     () => ({
@@ -292,6 +395,11 @@ export function CartProvider({ children, onEditItem }) {
       removeItem,
       clearCart,
       subtotalCents,
+      pricing,
+      appliedDeals,
+      applyDealItems,
+      removeDeal,
+      openDealRef,
       onEditItem: handleEditItem,
       service,
       deliveryAddress,
@@ -322,6 +430,11 @@ export function CartProvider({ children, onEditItem }) {
       removeItem,
       clearCart,
       subtotalCents,
+      pricing,
+      appliedDeals,
+      applyDealItems,
+      removeDeal,
+      openDealRef,
       handleEditItem,
       service,
       deliveryAddress,

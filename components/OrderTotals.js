@@ -1,6 +1,6 @@
 // components/OrderTotals.js
 //
-// Food & Beverage / (Delivery) / Taxes / Order Total — the stacked,
+// Food & Beverage / (Delivery) / Taxes / Order Total / (You Saved) — the stacked,
 // brown-bordered rows used on the cart and checkout pages. Same maths as the
 // Order Settings sidebar (shared constants), so the numbers always agree.
 // The parent decides where it sits (width/margins) via `className`.
@@ -14,11 +14,13 @@ export function useOrderTotals() {
   const subtotal = cart?.subtotalCents ?? 0;
   const delivery = cart?.service === "delivery" ? DELIVERY_FEE_CENTS : 0;
   const tax = Math.round(TAX_RATE * (subtotal + delivery));
-  return { subtotal, delivery, tax, total: subtotal + delivery + tax, isLoaded: !!cart?.isLoaded };
+  // What the coupons knock off the items' normal prices (before tax).
+  const saved = cart?.pricing?.savingsCents ?? 0;
+  return { subtotal, delivery, tax, total: subtotal + delivery + tax, saved, isLoaded: !!cart?.isLoaded };
 }
 
 export default function OrderTotals({ className = "" }) {
-  const { subtotal, delivery, tax, total, isLoaded } = useOrderTotals();
+  const { subtotal, delivery, tax, total, saved, isLoaded } = useOrderTotals();
   const show = (c) => (isLoaded ? formatMoney(c) : "···");
   return (
     <div className={`order-totals ${className}`}>
@@ -40,6 +42,12 @@ export default function OrderTotals({ className = "" }) {
         <span>Order Total:</span>
         <span>{show(total)}</span>
       </div>
+      {isLoaded && saved > 0 && (
+        <div className="order-totals__row order-totals__row--saved">
+          <span>You Saved:</span>
+          <span>{formatMoney(saved)}</span>
+        </div>
+      )}
       <style jsx>{`
         .order-totals {
           width: min(100%, 230px);
@@ -75,6 +83,12 @@ export default function OrderTotals({ className = "" }) {
           border-top: 3px solid var(--menu-box-border); /* thicker line above the total */
           font-size: 1.2rem;
           -webkit-text-stroke: 0.4px currentColor; /* a touch bolder */
+        }
+        /* only shows when a coupon/deal saves money */
+        .order-totals__row--saved {
+          border-bottom: 0;
+          border-top: 1px solid var(--menu-box-border);
+          color: #e31837;
         }
       `}</style>
     </div>

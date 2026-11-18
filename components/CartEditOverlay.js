@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import PizzaBuilder from "./PizzaBuilder";
 import SideBuilder from "./SideBuilder";
 import ComboBuilder from "./ComboBuilder";
-import DealBuilder from "./DealBuilder";
+import { DealItemEditor } from "./DealBuilder";
 import SpecialMenuBuilder from "./SpecialMenuBuilder";
 import DebugPizzaOverlay from "./modals/DebugPizzaOverlay";
 import { useCart } from "./CartSystem";
@@ -28,13 +28,19 @@ const SPECIAL_NAME_TO_ITEM_TYPE = {
  * a new one.
  */
 export default function CartEditOverlay({ editingItem, onClose }) {
-  const { updateItem } = useCart();
+  const { updateItem, appliedDeals } = useCart();
   if (!editingItem) return null;
 
   const saveAndClose = (payload) => {
     updateItem(editingItem.id, payload);
     onClose();
   };
+
+  // An item that belongs to a coupon reopens locked to the coupon's rules
+  // (same size, piece count...) and stays on the coupon.
+  if (editingItem.deal?.ref && (appliedDeals || []).some((d) => d.id === editingItem.deal.ref)) {
+    return <DealItemEditor item={editingItem} onClose={onClose} />;
+  }
 
   switch (editingItem.type) {
     // A "pizza-specialty" item (added straight off the Signature/Specialty
@@ -83,11 +89,6 @@ export default function CartEditOverlay({ editingItem, onClose }) {
       // ComboBuilder manages its own overlay/open-state internally, driven
       // by the editingItem prop (see startComboFromEdit in ComboBuilder.js).
       return <ComboBuilder editingItem={editingItem} onClose={onClose} />;
-
-    case "deal":
-      // Same pattern as combo — DealBuilder manages its own overlay, driven
-      // by the editingItem prop.
-      return <DealBuilder editingItem={editingItem} onClose={onClose} />;
 
     case "special":
       // SpecialMenuBuilder also manages its own overlay via its `open` prop.

@@ -6,7 +6,7 @@ import { useCart } from "../components/CartSystem";
 import OrderTotals, { useOrderTotals } from "../components/OrderTotals";
 import { priceLineItem, formatMoney, describePizzaFull, describeByoPizzaHeading, describeByoPizzaSections } from "../components/Pricing";
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
-import { dealNameFor, dealSlotLabel, findDealById } from "../utils/dealCatalog";
+import { findDealById } from "../utils/dealCatalog";
 import { saveOrder } from "../utils/saveOrder";
 
 // Shown under the page title (same numbers as the menu page estimate)
@@ -48,11 +48,18 @@ function itemTitle(item) {
     item?.name ||
     (item?.type === "pizza-byo" ? describeByoPizzaHeading(item) : null) ||
     (item?.type === "combo" ? comboNameFor(item.comboId) : null) ||
-    (item?.type === "deal" ? dealNameFor(item.dealId) : null) ||
     (item?.type === "wings" ? `${item.count || ""} Wings`.trim() : null) ||
     (item?.type === "drinks-dips" ? item.categoryLabel || "Drinks & Dips" : null) ||
     "Menu Item"
   );
+}
+
+// Name of the coupon a cart line belongs to (if that coupon is on the order).
+function couponNameFor(cart, item) {
+  const ref = item?.deal?.ref;
+  if (!ref) return null;
+  const inst = (cart?.appliedDeals || []).find((d) => d.id === ref);
+  return inst ? findDealById(inst.dealId)?.name || null : null;
 }
 
 function formatAddress(addr) {
@@ -67,12 +74,6 @@ function formatAddress(addr) {
 function itemOptionRows(item) {
   if (item?.type === "combo" && item?.meta?.items)
     return Object.entries(item.meta.items).map(([k, c]) => `${comboItemLabel(k)}: ${c?.summary || "Not customized yet"}`);
-  if (item?.type === "deal" && item?.meta?.items)
-    return Object.entries(item.meta.items).map(
-      ([k, c]) => `${dealSlotLabel(findDealById(item.dealId), k)}: ${c?.summary || "Not customized yet"}`
-    );
-  if (item?.type === "deal" && item?.meta?.builds)
-    return item.meta.builds.map((c, i) => `Item ${i + 1}: ${c?.summary || "Not customized yet"}`);
   if (item?.type === "pizza-byo") {
     // Left / Right / Whole, one line each (see describeByoPizzaSections)
     return describeByoPizzaSections(item).map((sec) => ({ label: sec.label, text: sec.text }));
@@ -205,6 +206,7 @@ export default function CheckoutPage() {
     const lastName = form.lastName.trim();
     const id = await saveOrder({
       items,
+      appliedDeals: cart?.appliedDeals || [],
       serviceMethod,
       orderTiming,
       schedule: orderTiming === "later" ? { date: scheduleDate, time: scheduleTime } : { date: null, time: null },
@@ -322,9 +324,14 @@ export default function CheckoutPage() {
                                 </div>
                               )
                             )}
+                            {couponNameFor(cart, it) && (
+                              <div className="co-items__opt co-items__coupon">Coupon: {couponNameFor(cart, it)}</div>
+                            )}
                           </div>
                           <span className="co-items__qty">{Math.max(1, Number(it.qty) || 1)}</span>
-                          <span className="co-items__price">{formatMoney(priceLineItem(it))}</span>
+                          <span className="co-items__price">
+                            {formatMoney(cart.pricing?.lines?.[it.id]?.finalCents ?? priceLineItem(it))}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -593,6 +600,14 @@ export default function CheckoutPage() {
           line-height: 1.35;
           color: var(--text-brown);
           overflow-wrap: anywhere;
+        }
+        .co-items__coupon {
+          margin-top: 4px;
+          font-family: var(--font-display);
+          font-size: 0.8rem;
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+          color: #e31837;
         }
         .co-items__opt--sec + .co-items__opt--sec {
           margin-top: 4px; /* a little space between Left / Right / Whole */

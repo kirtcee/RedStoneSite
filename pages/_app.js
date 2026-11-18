@@ -77,11 +77,9 @@ function RootApp({ Component, pageProps }) {
         </main>
         <CartEditOverlay editingItem={editingItem} onClose={() => setEditingItem(null)} />
         <ServiceGateOverlay />
-        {/* Fresh-open instance — driven by CartProvider's openDealId, so a
-            code redeemed from anywhere (cart dropdown, /cart, checkout) or a
-            card clicked on /coupons opens the same builder. Editing an
-            existing "deal" cart item uses a separate instance inside
-            CartEditOverlay above. */}
+        {/* The coupon builder — driven by CartProvider's openDealId, so a code
+            redeemed anywhere (/cart, checkout), a card clicked on /coupons, or
+            "Add another item to this coupon" all open this same builder. */}
         <DealBuilder />
       </CartProvider>
     </>

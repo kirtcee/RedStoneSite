@@ -13,7 +13,8 @@
 // direct client writes to /orders are denied outright. A tampered client
 // can no longer submit a fake total because it can no longer submit a
 // total at all.
-import { priceLineItem } from "../../components/Pricing";
+import { priceLineItem, priceCart } from "../../components/Pricing";
+import { findDealById } from "../../utils/dealCatalog";
 import { adminAuth, adminDb } from "../../utils/firebaseAdmin";
 import { Timestamp, FieldValue } from "firebase-admin/firestore";
 
@@ -62,8 +63,8 @@ const KNOWN_ITEM_TYPES = new Set([
   "special",
   "combo",
   "drinks-dips",
-  "deal",
 ]);
+const MAX_DEALS = 20;
 
 function reject(res, status, reason) {
   res.status(status).json({ ok: false, reason });
@@ -81,7 +82,7 @@ export default async function handler(req, res) {
   }
 
   const body = req.body || {};
-  const { items, serviceMethod, orderTiming, schedule, location, contact, deliveryAddress, paymentMethod, idToken } = body;
+  const { items: rawItems, appliedDeals: rawDeals, serviceMethod, orderTiming, schedule, location, contact, deliveryAddress, paymentMethod, idToken } = body;
 
   // ---- Require a real Firebase session, same as the old Firestore rule's
   // "request.auth != null" (anonymous auth included) — just enforced here
@@ -99,8 +100,28 @@ export default async function handler(req, res) {
   }
 
   // ---- Shape validation ----
-  if (!Array.isArray(items) || items.length === 0) return reject(res, 400, "empty_cart");
-  if (items.length > MAX_ITEMS) return reject(res, 400, "too_many_items");
+  if (!Array.isArray(rawItems) || rawItems.length === 0) return reject(res, 400, "empty_cart");
+  if (rawItems.length > MAX_ITEMS) return reject(res, 400, "too_many_items");
+  // Every line needs its own id so coupon pricing can tell them apart.
+  const items = rawItems.map((it, i) =>
+    it && typeof it === "object" ? { ...it, id: typeof it.id === "string" && it.id ? it.id : `line-${i}` } : it
+  );
+  const seenIds = new Set();
+  for (const it of items) {
+    if (it && seenIds.has(it.id)) return reject(res, 400, "bad_item");
+    if (it) seenIds.add(it.id);
+  }
+
+  // Coupons on the order: [{ id, dealId }]. Only real coupons are kept;
+  // whether each one actually applies (right items, enough of them, right
+  // service method) is decided by priceCart() below, not by the client.
+  if (rawDeals != null && (!Array.isArray(rawDeals) || rawDeals.length > MAX_DEALS)) {
+    return reject(res, 400, "bad_deals");
+  }
+  const appliedDeals = (rawDeals || [])
+    .filter((d) => d && typeof d.id === "string" && typeof d.dealId === "string")
+    .filter((d) => findDealById(d.dealId)?.active)
+    .map((d) => ({ id: d.id.slice(0, 64), dealId: d.dealId }));
   if (serviceMethod !== "Carryout" && serviceMethod !== "Delivery") {
     return reject(res, 400, "bad_service_method");
   }
@@ -124,7 +145,6 @@ export default async function handler(req, res) {
   // (e.g. a made-up comboId) rather than throwing, and no real menu item
   // ever legitimately costs $0 — so a 0 here means the item referenced
   // something that doesn't actually exist in the catalog. ----
-  let subtotalCents = 0;
   for (const item of items) {
     if (!item || typeof item !== "object" || !KNOWN_ITEM_TYPES.has(item.type)) {
       return reject(res, 400, "bad_item");
@@ -136,8 +156,24 @@ export default async function handler(req, res) {
     if (!Number.isFinite(lineCents) || lineCents <= 0) {
       return reject(res, 400, "unpriceable_item");
     }
-    subtotalCents += lineCents;
   }
+
+  // Coupon prices applied with the exact same rules the cart shows.
+  const pricing = priceCart(items, appliedDeals, serviceMethod === "Delivery" ? "delivery" : "carryout");
+  const subtotalCents = pricing.subtotalCents;
+  const discountCents = pricing.savingsCents;
+  const pricedItems = items.map((it) => ({
+    ...it,
+    regularCents: pricing.lines[it.id].regularCents,
+    lineCents: pricing.lines[it.id].finalCents,
+  }));
+  const dealsSummary = pricing.deals.map((d) => ({
+    id: d.id,
+    dealId: d.dealId,
+    name: d.deal?.name || d.dealId,
+    active: d.active,
+    savingsCents: d.savingsCents,
+  }));
 
   const deliveryCents = serviceMethod === "Delivery" ? DELIVERY_FEE_CENTS : 0;
   const taxCents = Math.round((subtotalCents + deliveryCents) * TAX_RATE);
@@ -154,7 +190,8 @@ export default async function handler(req, res) {
 
   try {
     const ref = await adminDb.collection("orders").add({
-      items,
+      items: pricedItems,
+      appliedDeals: dealsSummary,
       serviceMethod,
       orderTiming: isLater ? "later" : "now",
       schedule: isLater ? { date, time } : { date: null, time: null },
@@ -165,6 +202,7 @@ export default async function handler(req, res) {
       paid: false,
       fees: { deliveryCents, taxCents },
       subtotalCents,
+      discountCents,
       totalCents,
       uid,
       createdAt: FieldValue.serverTimestamp(),

@@ -28,6 +28,7 @@ export const dealSections = [
         subtitle: "Carryout Special",
         description: "Carry Out Special — 1 Large 2-Topping Pizza",
         price: 1299,
+        perItem: true, // the cart's coupon box adds "Price is per item."
         serviceRestriction: "carryout",
         mode: "list",
         minQty: 1,
@@ -52,6 +53,7 @@ export const dealSections = [
         description:
           "Get Any 2 or More: Medium 1-Topping Pizza, 6 Wings, Cheesy Garlic Bread, Large Fries, Large Poutine, Medium Shawarma Poutine, Medium Onion Rings. Price is per item.",
         price: 899,
+        perItem: true,
         serviceRestriction: null,
         mode: "list",
         minQty: 2,
@@ -228,4 +230,72 @@ export function dealAllowsService(deal, service) {
 // back to whatever label the deal's own `build` config supplies.
 export function dealSlotLabel(deal, key) {
   return deal?.build?.[key]?.label || key;
+}
+
+// The coupon's headline value for the cart's coupon box: "$8.99" for a
+// set-price deal, "20% OFF" for a percent-off one (`percentOff: 20`).
+export function dealDiscountLabel(deal) {
+  if (!deal) return "";
+  if (deal.percentOff) return `${deal.percentOff}% OFF`;
+  if (deal.price != null) return `$${(Number(deal.price) / 100).toFixed(2)}`;
+  return "";
+}
+
+// The config for one of a deal's item slots: an `eligibleItems` entry for a
+// "list" deal, a `build` entry for a "bundle" deal.
+export function dealSlotConfig(deal, slot) {
+  if (!deal || !slot) return null;
+  if (deal.mode === "bundle") return deal.build?.[slot] || null;
+  return (deal.eligibleItems || []).find((e) => e.key === slot) || null;
+}
+
+const SIDE_PRICING_SIZE = { Regular: "Medium" }; // UI "Regular" = pricing "(Medium)"
+function dealSidePricingName(config) {
+  if (!config?.lockedSize) return config?.sideName;
+  return `${config.sideName} (${SIDE_PRICING_SIZE[config.lockedSize] || config.lockedSize})`;
+}
+
+// Whether a cart item really is what a deal slot is for (right type, size,
+// piece count...). Pricing only gives the deal price to items that match,
+// so editing a coupon item into something else can't keep the discount.
+export function itemMatchesDealSlot(config, item) {
+  if (!config || !item) return false;
+  switch (config.itemType) {
+    case "pizza-byo":
+      return item.type === "pizza-byo" && String(item.size) === String(config.size);
+    case "wings":
+      return item.type === "wings" && Number(item.count) === Number(config.count);
+    case "side":
+      return item.type === "side" && item.name === dealSidePricingName(config);
+    case "garlic-bread-choice":
+      return (
+        item.type === "side" &&
+        (config.variants || []).some((v) => v.sideName === item.name) &&
+        Number(item.pack || 1) === Number(config.qtyFixed || 1)
+      );
+    default:
+      return false;
+  }
+}
+
+// Turns what a deal's item builder returned into an ordinary cart item,
+// tagged with the coupon it belongs to (`ref`) and the slot it fills.
+export function dealUnitToCartItem(deal, slot, unit, ref) {
+  const config = dealSlotConfig(deal, slot);
+  const { itemKey, itemType, lineSubtotalCents, ...rest } = unit || {};
+  let item;
+  if (config?.itemType === "garlic-bread-choice") {
+    const pack = Number(config.qtyFixed) || 1;
+    item = {
+      type: "side",
+      name: rest.sideName,
+      side: rest.sideName,
+      pack,
+      qty: 1,
+      summary: `${pack} × ${rest.sideName}`,
+    };
+  } else {
+    item = { ...rest, qty: Math.max(1, Number(rest.qty) || 1) };
+  }
+  return { ...item, deal: { ref, slot } };
 }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCart, DealCodeEntry } from "../components/CartSystem";
 import { priceLineItem, formatMoney, describePizzaFull, describeByoPizzaHeading, describeByoPizzaSections } from "../components/Pricing";
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
-import { dealNameFor, dealSlotLabel, findDealById } from "../utils/dealCatalog";
+import { findDealById, dealDiscountLabel } from "../utils/dealCatalog";
 import OrderSettingsAside from "../components/OrderSettingsAside";
 import OrderTotals from "../components/OrderTotals";
 import { useRouter } from "next/router";
@@ -23,6 +23,7 @@ import { useRouter } from "next/router";
   │ ┌ STEP 2: CHOOSE YOUR SIDES ┐  3 quick-add tiles                     │
   │ ┌ STEP 3: CHOOSE YOUR DRINKS ┐                                       │
   │ ┌ STEP 4: ADD SOME FLAVOUR ┐                                         │
+  │ [COUPON APPLIED!] [YOU SAVED $x]  + one box per coupon (when applied) │
   │ deal code                                                            │
   └──────────────────────────────────────────────────────────────────────┘
   Outer box: cream (--menu-box-bg, #faf2e9). Step bodies: off-white #fefaf6.
@@ -130,8 +131,6 @@ function itemImages(item) {
       return [`/images/special-menu/${slugify(name)}.jpg`, "/images/menu_special.png"];
     case "combo":
       return ["/images/menu_combos.png"];
-    case "deal":
-      return ["/images/promo_coupons.png"];
     default:
       return [];
   }
@@ -178,7 +177,6 @@ function itemTitle(item) {
     item?.name ||
     (item?.type === "pizza-byo" ? describeByoPizzaHeading(item) : null) ||
     (item?.type === "combo" ? comboNameFor(item.comboId) : null) ||
-    (item?.type === "deal" ? dealNameFor(item.dealId) : null) ||
     (item?.type === "wings" ? `${item.count || ""} Wings`.trim() : null) ||
     (item?.type === "drinks-dips" ? item.categoryLabel || "Drinks & Dips" : null) ||
     "Menu Item"
@@ -190,13 +188,6 @@ function ItemOptions({ item }) {
   const rows =
     item?.type === "combo" && item?.meta?.items
       ? Object.entries(item.meta.items).map(([key, child]) => [comboItemLabel(key), child?.summary])
-      : item?.type === "deal" && item?.meta?.items
-      ? Object.entries(item.meta.items).map(([key, child]) => [
-          dealSlotLabel(findDealById(item.dealId), key),
-          child?.summary,
-        ])
-      : item?.type === "deal" && item?.meta?.builds
-      ? item.meta.builds.map((child, idx) => [`Item ${idx + 1}`, child?.summary])
       : null;
 
   if (!rows && item?.type === "pizza-byo") {
@@ -224,7 +215,7 @@ function ItemOptions({ item }) {
   );
 }
 
-function ItemRow({ item, onQty, onRemove, onEdit }) {
+function ItemRow({ item, priceCents, couponName, onQty, onRemove, onEdit }) {
   const qty = Math.max(1, Number(item?.qty) || 1);
   const title = itemTitle(item);
   return (
@@ -236,6 +227,7 @@ function ItemRow({ item, onQty, onRemove, onEdit }) {
             {title}
           </button>
           <ItemOptions item={item} />
+          {couponName && <div className="cart-line__coupon">Coupon: {couponName}</div>}
         </div>
       </div>
 
@@ -267,7 +259,7 @@ function ItemRow({ item, onQty, onRemove, onEdit }) {
         </div>
       </div>
 
-      <div className="cart-line__price">{formatMoney(priceLineItem(item))}</div>
+      <div className="cart-line__price">{formatMoney(priceCents ?? priceLineItem(item))}</div>
     </div>
   );
 }
@@ -411,6 +403,69 @@ function DrinksDipsStep({ title, pool, fallbackImg, addItem }) {
   );
 }
 
+// Shown under the note once a coupon is on the order: "COUPON APPLIED!" and
+// "YOU SAVED $x" side by side, then one box per coupon.
+function AppliedCoupons({ cart }) {
+  const deals = cart?.pricing?.deals || [];
+  if (!deals.length) return null;
+  const saved = cart.pricing.savingsCents || 0;
+  return (
+    <div className="cart-coupons">
+      <div className="cart-coupons__badges">
+        <div className="cart-coupons__badge cart-coupons__badge--applied">Coupon Applied!</div>
+        <div className="cart-coupons__badge cart-coupons__badge--saved">You Saved {formatMoney(saved)}</div>
+      </div>
+      {deals.map((d) => {
+        const deal = d.deal || findDealById(d.dealId);
+        if (!deal) return null;
+        const canAddMore =
+          deal.mode === "bundle" ? d.reason === "incomplete" : deal.maxQty == null || d.units < deal.maxQty;
+        const message =
+          d.reason === "need_more"
+            ? `Add ${d.needed} more item${d.needed === 1 ? "" : "s"} to get the coupon price.`
+            : d.reason === "incomplete"
+            ? `Add the missing item${d.needed === 1 ? "" : "s"} to get the coupon price.`
+            : d.reason === "service"
+            ? `Only valid for ${deal.serviceRestriction} orders.`
+            : null;
+        return (
+          <div key={d.id} className="cart-coupon">
+            <div className="cart-coupon__top">
+              <span>Coupons</span>
+              <span>{dealDiscountLabel(deal)}</span>
+            </div>
+            <div className="cart-coupon__name">
+              {deal.name}
+              {deal.perItem ? " — Price is per item." : ""}
+            </div>
+            {message && <div className="cart-coupon__msg">{message}</div>}
+            <div className="cart-coupon__actions">
+              {canAddMore ? (
+                <button type="button" onClick={() => cart.openDeal(deal.id, d.id)}>
+                  Add Another Item to This Coupon
+                </button>
+              ) : (
+                <span />
+              )}
+              <button type="button" onClick={() => cart.removeDeal(d.id)}>
+                Remove
+              </button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// Name of the coupon a cart line belongs to (if that coupon is on the order).
+function couponNameFor(cart, item) {
+  const ref = item?.deal?.ref;
+  if (!ref) return null;
+  const inst = (cart?.appliedDeals || []).find((d) => d.id === ref);
+  return inst ? findDealById(inst.dealId)?.name || null : null;
+}
+
 export default function CartPage() {
   const router = useRouter();
   const cart = useCart();
@@ -444,6 +499,8 @@ export default function CartPage() {
                 come with an additional charge.
               </p>
 
+              <AppliedCoupons cart={cart} />
+
               <Step title="Step 1: Confirm your selections" columns={["Quantity", "Price"]}>
                 {!cart?.isLoaded ? (
                   <div className="cart-empty">Loading your cart…</div>
@@ -457,6 +514,8 @@ export default function CartPage() {
                     <ItemRow
                       key={it.id}
                       item={it}
+                      priceCents={cart.pricing?.lines?.[it.id]?.finalCents}
+                      couponName={couponNameFor(cart, it)}
                       onQty={handleQty}
                       onRemove={handleRemove}
                       onEdit={handleEdit}
@@ -568,6 +627,108 @@ export default function CartPage() {
         }
         .cart-box__deal {
           padding: 4px 14px 16px;
+        }
+
+        /* ----- Applied coupons (under the note) ----- */
+        .cart-box :global(.cart-coupons) {
+          margin: 0 var(--cart-gutter) 14px;
+        }
+        .cart-box :global(.cart-coupons__badges) {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+          margin-bottom: 10px;
+        }
+        .cart-box :global(.cart-coupons__badge) {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 44px;
+          padding: 0.5rem 0.6rem;
+          border: 2px solid #000;
+          border-radius: 30px;
+          font-family: var(--font-display);
+          font-size: 1.1rem;
+          line-height: 1.05;
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+          text-align: center;
+        }
+        .cart-box :global(.cart-coupons__badge--applied) {
+          background: #000;
+          color: #fff;
+        }
+        .cart-box :global(.cart-coupons__badge--saved) {
+          background: #fff;
+          color: #000;
+        }
+        .cart-box :global(.cart-coupon) {
+          background: #fff;
+          border: 1px solid #000;
+          border-radius: 0.1875rem;
+          padding: 12px 14px;
+          color: #000;
+        }
+        .cart-box :global(.cart-coupon + .cart-coupon) {
+          margin-top: 10px;
+        }
+        .cart-box :global(.cart-coupon__top) {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          gap: 10px;
+          padding-bottom: 10px;
+          border-bottom: 1px solid #000;
+          font-family: var(--font-display);
+          font-size: 1.15rem;
+          line-height: 1;
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+        }
+        .cart-box :global(.cart-coupon__name) {
+          margin-top: 10px;
+          font-family: var(--font-display-text);
+          font-weight: 400;
+          font-size: 0.95rem;
+          line-height: 1.3;
+        }
+        .cart-box :global(.cart-coupon__msg) {
+          margin-top: 6px;
+          font-size: 0.85rem;
+          color: #b00020;
+        }
+        .cart-box :global(.cart-coupon__actions) {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          gap: 12px;
+          margin-top: 14px;
+        }
+        .cart-box :global(.cart-coupon__actions button) {
+          padding: 0;
+          background: none;
+          border: 0;
+          font-family: var(--font-display);
+          font-size: 0.85rem;
+          line-height: 1.15;
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+          text-decoration: underline;
+          text-underline-offset: 3px;
+          text-align: left;
+          color: #000;
+          cursor: pointer;
+        }
+        .cart-box :global(.cart-coupon__actions button:last-child) {
+          flex: 0 0 auto;
+        }
+        .cart-box :global(.cart-line__coupon) {
+          margin-top: 4px;
+          font-family: var(--font-display);
+          font-size: 0.8rem;
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+          color: #e31837;
         }
         .cart-box__checkout {
           padding: 0 14px 18px;

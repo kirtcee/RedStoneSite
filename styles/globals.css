@@ -248,12 +248,12 @@ h3 { font-size: 1.25rem; }
 .cart-toggle__badge {
   --badge-size: 18px;          /* circle diameter */
   --badge-font-size: 11px;     /* number size */
-  --badge-bg: #ff0000;         /* circle color */
+  --badge-bg: #e31837;         /* circle color */
   --badge-color: #fefaf6;      /* number color */
   --badge-top: -4px;           /* position: up/down (more negative = higher) */
   --badge-right: -6px;         /* position: left/right (more negative = further right) */
   --badge-pop-scale: 1.35;     /* how big each pop gets (1 = no pop) */
-  --badge-pop-duration: 700ms; /* total time for both pops */
+  --badge-pop-duration: 800ms; /* total time for both pops */
 
   position: absolute; top: var(--badge-top); right: var(--badge-right);
   width: var(--badge-size); height: var(--badge-size);

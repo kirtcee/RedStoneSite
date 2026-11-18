@@ -190,7 +190,9 @@ export default function OrderConfirmation() {
           <div style={{ padding: "0.75rem" }}>
             {items.map((it, i) => {
               const { name, subtitle } = getNameAndSubtitle(it);
-              const lineCents = priceLineItem(it);
+              // Price the server charged (coupons included); older orders
+              // didn't store it, so fall back to the normal price.
+              const lineCents = Number.isFinite(it.lineCents) ? it.lineCents : priceLineItem(it);
               const isCombo = it.type === "combo" && it.meta?.items;
               return (
                 <div
@@ -253,6 +255,12 @@ export default function OrderConfirmation() {
                 <div>Order Total:</div>
                 <div>{formatMoney(order.totalCents || 0)}</div>
               </div>
+              {order.discountCents > 0 && (
+                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, color: "#e31837", fontWeight: 700 }}>
+                  <div>You Saved:</div>
+                  <div>{formatMoney(order.discountCents)}</div>
+                </div>
+              )}
             </div>
           </div>
         </div>

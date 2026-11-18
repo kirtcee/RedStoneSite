@@ -14,14 +14,19 @@
 // SideBuilder popups with addToCartDirect={false}, the same nested-overlay
 // pattern ComboBuilder already uses — this file only owns the coupon-level
 // wizard shell around them.
+//
+// "Done with This Coupon" adds each item to the cart as its OWN line, tagged
+// with the coupon (see applyDealItems in CartSystem.js); the coupon price is
+// worked out on the cart by priceCart() in Pricing.js. Opened with a coupon
+// that's already in the cart (openDealRef), it adds more items to that one.
 import React, { useState, useMemo, useEffect } from "react";
 import PizzaBuilder from "./PizzaBuilder";
 import WingsBuilder from "./WingsBuilder";
 import SideBuilder from "./SideBuilder";
-import { formatMoney, priceDealUnit, priceDealBundle, describePizzaFull } from "./Pricing";
+import { formatMoney, describePizzaFull } from "./Pricing";
 import { useCart } from "./CartSystem";
 import DebugPizzaOverlay from "./modals/DebugPizzaOverlay";
-import { findDealById } from "../utils/dealCatalog";
+import { findDealById, dealSlotConfig } from "../utils/dealCatalog";
 
 const RED = "#E91E28"; // kept only for the destructive "Discard coupon" button
 const MAROON = "#8b1a1a";
@@ -174,15 +179,22 @@ function ItemThumb({ src, size = 44 }) {
   );
 }
 
-export default function DealBuilder({ editingItem = null, onClose: onCloseProp }) {
-  const { addItem, updateItem, openDealId, closeDealBuilder } = useCart();
+export default function DealBuilder({ onClose: onCloseProp }) {
+  const { applyDealItems, openDealId, openDealRef, closeDealBuilder, items: cartItems, pricing } = useCart();
   const onClose = onCloseProp || closeDealBuilder;
-  const activeDealId = editingItem ? editingItem.dealId : openDealId;
-  const deal = activeDealId ? findDealById(activeDealId) : null;
+  const deal = openDealId ? findDealById(openDealId) : null;
   const isBundle = deal?.mode === "bundle";
 
+  // Adding more items to a coupon already in the cart: what it already has.
+  const existingLines = useMemo(
+    () => (openDealRef ? cartItems.filter((it) => it?.deal?.ref === openDealRef) : []),
+    [openDealRef, cartItems]
+  );
+  const existingStatus = openDealRef ? (pricing?.deals || []).find((d) => d.id === openDealRef) : null;
+  const existingUnits = existingStatus?.units || 0;
+  const existingSlots = useMemo(() => new Set(existingLines.map((it) => it.deal?.slot)), [existingLines]);
+
   const [bundleItems, setBundleItems] = useState({});
-  const [qty, setQty] = useState(1);
   const [builds, setBuilds] = useState([]);
   const [openCategoryKey, setOpenCategoryKey] = useState(null);
   const [customizing, setCustomizing] = useState(null); // { key, itemType, slotKey, unitIndex }
@@ -191,24 +203,16 @@ export default function DealBuilder({ editingItem = null, onClose: onCloseProp }
 
   useEffect(() => {
     if (!deal) return;
-    if (editingItem) {
-      setBundleItems(editingItem.meta?.items ? { ...editingItem.meta.items } : {});
-      setBuilds(Array.isArray(editingItem.meta?.builds) ? [...editingItem.meta.builds] : []);
-      setQty(editingItem.qty || 1);
-    } else {
-      setBundleItems({});
-      setBuilds([]);
-      setQty(1);
-    }
+    setBundleItems({});
+    setBuilds([]);
     setOpenCategoryKey(null);
     setCustomizing(null);
     setIsDirty(false);
-  }, [deal?.id, editingItem]);
+  }, [deal?.id, openDealRef]);
 
   const resetAll = () => {
     setBundleItems({});
     setBuilds([]);
-    setQty(1);
     setOpenCategoryKey(null);
     setCustomizing(null);
     setIsDirty(false);
@@ -229,7 +233,9 @@ export default function DealBuilder({ editingItem = null, onClose: onCloseProp }
   };
 
   // ---- Bundle mode ----
-  const bundleSlotComplete = (key) => !!bundleItems[key];
+  // A slot is done once it's built here, or (adding to a coupon already in
+  // the cart) when the cart already has that item.
+  const bundleSlotComplete = (key) => !!bundleItems[key] || existingSlots.has(key);
   const bundleIsComplete = isBundle && (deal.items || []).every(bundleSlotComplete);
   const currentBundleKey = isBundle ? (deal.items || []).find((k) => !bundleSlotComplete(k)) : null;
 
@@ -244,19 +250,15 @@ export default function DealBuilder({ editingItem = null, onClose: onCloseProp }
     setIsDirty(true);
   };
 
-  const bundleTotalCents = useMemo(
-    () => (isBundle ? priceDealBundle(deal, bundleItems) * Math.max(1, Number(qty) || 1) : 0),
-    [isBundle, deal, bundleItems, qty]
-  );
-
   // ---- List mode ----
   const eligibleItems = deal?.eligibleItems || [];
   const singleEligible = eligibleItems.length === 1 ? eligibleItems[0] : null;
   const minQty = deal?.minQty || 1;
   const maxQty = deal?.maxQty || null;
-  const listIsComplete = !isBundle && builds.length >= minQty;
-  const listAtMax = !isBundle && maxQty != null && builds.length >= maxQty;
-  const nextUnitRequired = !isBundle && builds.length < minQty;
+  const unitCount = existingUnits + builds.length; // items in this coupon so far
+  const listIsComplete = !isBundle && builds.length > 0 && unitCount >= minQty;
+  const listAtMax = !isBundle && maxQty != null && unitCount >= maxQty;
+  const nextUnitRequired = !isBundle && unitCount < minQty;
 
   const startNewUnit = (eligibleItem) => {
     setCustomizing({ key: eligibleItem.key, itemType: eligibleItem.itemType, slotKey: null, unitIndex: null });
@@ -301,22 +303,15 @@ export default function DealBuilder({ editingItem = null, onClose: onCloseProp }
   };
 
   const addToCart = () => {
+    let units;
     if (isBundle) {
       if (!bundleIsComplete) return;
-      const payload = {
-        type: "deal",
-        dealId: deal.id,
-        qty: Math.max(1, Number(qty) || 1),
-        meta: { items: bundleItems },
-      };
-      if (editingItem) updateItem(editingItem.id, payload);
-      else addItem(payload);
+      units = Object.entries(bundleItems).map(([slot, unit]) => ({ slot, unit }));
     } else {
       if (!listIsComplete) return;
-      const payload = { type: "deal", dealId: deal.id, qty: 1, meta: { builds } };
-      if (editingItem) updateItem(editingItem.id, payload);
-      else addItem(payload);
+      units = builds.map((unit) => ({ slot: unit.itemKey, unit }));
     }
+    if (units.length) applyDealItems({ dealId: deal.id, ref: openDealRef, units });
     resetAll();
     onClose();
   };
@@ -361,6 +356,12 @@ export default function DealBuilder({ editingItem = null, onClose: onCloseProp }
               {deal.description || deal.subtitle} - {formatMoney(deal.price)}
             </div>
 
+            {openDealRef && existingUnits > 0 && (
+              <div style={{ marginTop: 8, fontSize: 13, color: BROWN }}>
+                Already in your cart with this coupon: {existingUnits} item{existingUnits === 1 ? "" : "s"}.
+              </div>
+            )}
+
             {!isBundle && builds.length > 0 && (
               <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${BORDER}` }}>
                 <div style={{ fontWeight: 800, marginBottom: 6, color: "#000" }}>Items added to this coupon</div>
@@ -394,7 +395,7 @@ export default function DealBuilder({ editingItem = null, onClose: onCloseProp }
                     <StepCircle state={bundleSlotComplete(key) ? "done" : key === currentBundleKey ? "current" : "pending"} label={idx + 1} />
                   </React.Fragment>
                 ))
-              : builds.map((_, idx) => (
+              : Array.from({ length: unitCount }).map((_, idx) => (
                   <React.Fragment key={idx}>
                     {idx > 0 && <StepConnector done />}
                     <StepCircle state="done" label={idx + 1} />
@@ -402,8 +403,8 @@ export default function DealBuilder({ editingItem = null, onClose: onCloseProp }
                 ))}
             {!isBundle && !listAtMax && (
               <>
-                {builds.length > 0 && <StepConnector done={false} />}
-                <StepCircle state={nextUnitRequired ? "current" : "pending"} label={builds.length + 1} />
+                {unitCount > 0 && <StepConnector done={false} />}
+                <StepCircle state={nextUnitRequired ? "current" : "pending"} label={unitCount + 1} />
               </>
             )}
             {isBundle && (
@@ -418,7 +419,7 @@ export default function DealBuilder({ editingItem = null, onClose: onCloseProp }
           {!isBundle && !listAtMax && (
             <div style={{ textAlign: "center", marginBottom: "1.25rem" }}>
               <div style={{ fontWeight: 900, textTransform: "uppercase", fontSize: "0.85rem", color: "#000" }}>
-                {ordinal(builds.length + 1)} Item
+                {ordinal(unitCount + 1)} Item
               </div>
               <div style={{ fontSize: 16, color: "#000", marginTop: 2 }}>▼</div>
             </div>
@@ -440,6 +441,7 @@ export default function DealBuilder({ editingItem = null, onClose: onCloseProp }
                 {(deal.items || []).map((key, idx) => {
                   const config = deal.build[key];
                   const done = bundleSlotComplete(key);
+                  const inCart = !bundleItems[key] && existingSlots.has(key);
                   const isLast = idx === deal.items.length - 1;
                   return (
                     <div
@@ -455,12 +457,18 @@ export default function DealBuilder({ editingItem = null, onClose: onCloseProp }
                           <ItemThumb src={itemTypeImage(config.itemType)} />
                           <strong>{config.label || key}</strong>
                         </div>
-                        <button type="button" onClick={() => startSlot(key)} style={ctaSmall}>
-                          {done ? "Edit" : "Customize"}
-                        </button>
+                        {!inCart && (
+                          <button type="button" onClick={() => startSlot(key)} style={ctaSmall}>
+                            {done ? "Edit" : "Customize"}
+                          </button>
+                        )}
                       </div>
                       <div style={{ marginTop: 6, marginLeft: 56, fontSize: "0.9rem", color: BROWN }}>
-                        {done ? bundleItems[key].summary || "Customized" : "Not customized yet"}
+                        {inCart
+                          ? "Already in your cart"
+                          : done
+                          ? bundleItems[key].summary || "Customized"
+                          : "Not customized yet"}
                       </div>
                     </div>
                   );
@@ -564,106 +572,24 @@ export default function DealBuilder({ editingItem = null, onClose: onCloseProp }
             </>
           )}
 
-          {/* ===== Footer ===== */}
-          {isBundle && (
-            <div style={{ border: `1px solid ${BORDER}`, borderRadius: ".1875rem", overflow: "hidden", background: BG, marginBottom: "1rem" }}>
-              <div style={sectionBar}>Quantity &amp; Total</div>
-              <div style={{ padding: "1rem", background: BG, display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                <button
-                  type="button"
-                  onClick={() => setQty((q) => Math.max(1, q - 1))}
-                  disabled={qty <= 1}
-                  style={{
-                    width: 44, height: 44, borderRadius: "50%",
-                    backgroundColor: qty > 1 ? MAROON : "#ddd",
-                    color: qty > 1 ? "#fff" : "#999",
-                    border: "none", cursor: qty > 1 ? "pointer" : "default",
-                    fontWeight: 900, fontSize: 20,
-                  }}
-                >
-                  −
-                </button>
-                <span style={{ minWidth: 24, textAlign: "center", fontWeight: 900 }}>{qty}</span>
-                <button
-                  type="button"
-                  onClick={() => setQty((q) => q + 1)}
-                  style={{ width: 44, height: 44, borderRadius: "50%", backgroundColor: MAROON, color: "#fff", border: "none", cursor: "pointer", fontWeight: 900, fontSize: 20 }}
-                >
-                  +
-                </button>
-                <div style={{ marginLeft: "auto", fontWeight: 800 }}>{formatMoney(bundleTotalCents)}</div>
-              </div>
-            </div>
-          )}
-
           <div style={{ textAlign: "center" }}>
             <button onClick={addToCart} disabled={isBundle ? !bundleIsComplete : !listIsComplete} style={ctaPill(isBundle ? bundleIsComplete : listIsComplete)}>
               Done with This Coupon
             </button>
             <button type="button" onClick={handleCloseWizard} style={removeCouponLink}>
-              REMOVE COUPON
+              {openDealRef ? "Cancel" : "Remove Coupon"}
             </button>
           </div>
         </div>
       </DebugPizzaOverlay>
 
-      {/* ===== PIZZA SUB-BUILDER ===== */}
-      <DebugPizzaOverlay open={customizing?.itemType === "pizza-byo"} onClose={() => setCustomizing(null)} mode="portal" blockRogue>
-        {customizing?.itemType === "pizza-byo" && currentConfig && (
-          <PizzaBuilder
-            initialData={currentInitialData}
-            includedToppings={currentConfig.includedToppings}
-            lockedSize={currentConfig.size}
-            allowSizeChoice={false}
-            forceResponsiveStack
-            onSave={(data) => {
-              const size = currentConfig.size;
-              const crust = data.crust;
-              const toppings = Array.isArray(data.toppings)
-                ? data.toppings
-                : Array.isArray(data.selectedToppings)
-                ? data.selectedToppings
-                : [];
-              const summary = describePizzaFull({ ...data, size, crust, toppings });
-              handleSubBuilderResult({ ...data, size, crust, toppings, summary });
-            }}
-          />
-        )}
-      </DebugPizzaOverlay>
-
-      {/* ===== WINGS SUB-BUILDER ===== */}
-      <DebugPizzaOverlay open={customizing?.itemType === "wings"} onClose={() => setCustomizing(null)} mode="portal" blockRogue>
-        {customizing?.itemType === "wings" && currentConfig && (
-          <div style={{ padding: "1rem" }}>
-            <WingsBuilder
-              initialData={currentInitialData}
-              lockedCount={currentConfig.count}
-              allowCountChoice={false}
-              pieceOptions={[currentConfig.count]}
-              allowQtyChange={false}
-              forceResponsiveStack
-              addToCartDirect={false}
-              onClose={() => setCustomizing(null)}
-              onAdd={(data) => handleSubBuilderResult(data)}
-            />
-          </div>
-        )}
-      </DebugPizzaOverlay>
-
-      {/* ===== SIDE SUB-BUILDER ===== */}
-      <DebugPizzaOverlay open={customizing?.itemType === "side"} onClose={() => setCustomizing(null)} mode="portal" blockRogue>
-        {customizing?.itemType === "side" && currentConfig && (
-          <SideBuilder
-            side={currentConfig.sideName}
-            lockedSize={currentConfig.lockedSize || null}
-            allowSizeChoice={!currentConfig.lockedSize}
-            initialData={currentInitialData}
-            addToCartDirect={false}
-            onClose={() => setCustomizing(null)}
-            onAdd={(data) => handleSubBuilderResult(data)}
-          />
-        )}
-      </DebugPizzaOverlay>
+      <DealSubBuilder
+        itemType={customizing?.itemType || null}
+        config={currentConfig}
+        initialData={currentInitialData}
+        onSave={handleSubBuilderResult}
+        onClose={() => setCustomizing(null)}
+      />
 
       {/* ===== Discard confirmation ===== */}
       {pendingClose && (
@@ -671,7 +597,7 @@ export default function DealBuilder({ editingItem = null, onClose: onCloseProp }
           <div className="rs-confirm__panel">
             <div className="rs-confirm__title">Discard coupon?</div>
             <div className="rs-confirm__body">
-              You've added items to this coupon. If you close now, you'll lose them.
+              You've picked items for this coupon. If you close now, they won't be added.
             </div>
             <div className="rs-confirm__actions">
               <button type="button" className="rs-btn rs-btn--ghost" onClick={() => setPendingClose(null)}>
@@ -755,5 +681,124 @@ export default function DealBuilder({ editingItem = null, onClose: onCloseProp }
         }
       `}</style>
     </>
+  );
+}
+
+// The item builder for one deal item (pizza / wings / side), opened over
+// the coupon wizard or straight from the cart when editing a coupon item.
+// Each builder is locked to what the deal allows (size, piece count...).
+function DealSubBuilder({ itemType, config, initialData, onSave, onClose }) {
+  return (
+    <>
+      <DebugPizzaOverlay open={itemType === "pizza-byo"} onClose={onClose} mode="portal" blockRogue>
+        {itemType === "pizza-byo" && config && (
+          <PizzaBuilder
+            initialData={initialData}
+            includedToppings={config.includedToppings}
+            lockedSize={config.size}
+            allowSizeChoice={false}
+            forceResponsiveStack
+            onSave={(data) => {
+              const size = config.size;
+              const crust = data.crust;
+              const toppings = Array.isArray(data.toppings)
+                ? data.toppings
+                : Array.isArray(data.selectedToppings)
+                ? data.selectedToppings
+                : [];
+              const summary = describePizzaFull({ ...data, size, crust, toppings });
+              onSave({ ...data, size, crust, toppings, summary });
+            }}
+          />
+        )}
+      </DebugPizzaOverlay>
+
+      <DebugPizzaOverlay open={itemType === "wings"} onClose={onClose} mode="portal" blockRogue>
+        {itemType === "wings" && config && (
+          <div style={{ padding: "1rem" }}>
+            <WingsBuilder
+              initialData={initialData}
+              lockedCount={config.count}
+              allowCountChoice={false}
+              pieceOptions={[config.count]}
+              allowQtyChange={false}
+              forceResponsiveStack
+              addToCartDirect={false}
+              onClose={onClose}
+              onAdd={onSave}
+            />
+          </div>
+        )}
+      </DebugPizzaOverlay>
+
+      <DebugPizzaOverlay open={itemType === "side"} onClose={onClose} mode="portal" blockRogue>
+        {itemType === "side" && config && (
+          <SideBuilder
+            side={config.sideName}
+            lockedSize={config.lockedSize || null}
+            allowSizeChoice={!config.lockedSize}
+            initialData={initialData}
+            addToCartDirect={false}
+            onClose={onClose}
+            onAdd={onSave}
+          />
+        )}
+      </DebugPizzaOverlay>
+    </>
+  );
+}
+
+// "Edit" on a cart item that belongs to a coupon: reopens that item's
+// builder locked to the deal's rules, and keeps it on the coupon.
+export function DealItemEditor({ item, onClose }) {
+  const { updateItem, appliedDeals } = useCart();
+  const ref = item?.deal?.ref;
+  const slot = item?.deal?.slot;
+  const inst = (appliedDeals || []).find((d) => d.id === ref);
+  const deal = inst ? findDealById(inst.dealId) : null;
+  const config = dealSlotConfig(deal, slot);
+  if (!item || !config) return null;
+
+  const save = (payload) => {
+    const { itemKey, itemType, lineSubtotalCents, ...rest } = payload || {};
+    updateItem(item.id, { ...rest, qty: item.qty, deal: item.deal });
+    onClose();
+  };
+
+  // 2 Cheesy Garlic Breads: just pick with or without cheese.
+  if (config.itemType === "garlic-bread-choice") {
+    return (
+      <DebugPizzaOverlay open onClose={onClose} mode="portal" blockRogue title={config.label}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "1rem 0 1.5rem" }}>
+          {(config.variants || []).map((v) => (
+            <button
+              key={v.sideName}
+              type="button"
+              className={`rs-pill-btn${item.name === v.sideName ? "" : " rs-pill-btn--outline"}`}
+              onClick={() =>
+                save({
+                  ...item,
+                  name: v.sideName,
+                  side: v.sideName,
+                  summary: `${config.qtyFixed || 1} × ${v.sideName}`,
+                })
+              }
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
+      </DebugPizzaOverlay>
+    );
+  }
+
+  return (
+    <DealSubBuilder
+      itemType={config.itemType}
+      config={config}
+      initialData={item}
+      onSave={save}
+      onClose={onClose}
+    />
   );
 }

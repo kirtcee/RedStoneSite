@@ -1,5 +1,5 @@
 // pricing.js — single source of truth for menu prices + helpers
-import { findDealById } from "../utils/dealCatalog";
+import { findDealById, dealAllowsService, dealSlotConfig, itemMatchesDealSlot } from "../utils/dealCatalog";
 import { findPizzaRecipe } from "../utils/pizzaRecipes";
 
 // 🔢 currency formatter (no tax logic here on purpose)
@@ -358,32 +358,6 @@ function priceDealPizzaOverage(config, build) {
   return (w - included) * extraRate;
 }
 
-// Full price (in cents) of one unit within a "list" mode deal (see
-// utils/dealCatalog.js) — the deal's flat per-unit price plus any topping
-// overage if that unit is a pizza built past its included-topping count.
-export function priceDealUnit(deal, unit) {
-  if (!deal || !unit) return 0;
-  const config = (deal.eligibleItems || []).find((e) => e.key === unit.itemKey);
-  const base = Number(deal.price) || 0;
-  if (config?.itemType === "pizza-byo") {
-    return base + priceDealPizzaOverage(config, unit);
-  }
-  return base;
-}
-
-// Full price (in cents) of a "bundle" mode deal — the deal's flat total plus
-// topping overage across every pizza slot, mirroring priceComboToppingBonus.
-export function priceDealBundle(deal, items) {
-  if (!deal) return 0;
-  const base = Number(deal.price) || 0;
-  let bonus = 0;
-  Object.entries(deal.build || {}).forEach(([slotKey, config]) => {
-    if (config?.itemType !== "pizza-byo") return;
-    bonus += priceDealPizzaOverage(config, items?.[slotKey]);
-  });
-  return base + bonus;
-}
-
 // Extra-dip cost (in cents) across every sub-item of a combo, beyond the combo's
 // bundled free-dip count.
 export function priceComboDipOverage(comboItem) {
@@ -501,7 +475,10 @@ export function priceLineItem(item) {
     }
 
     case "side": {
-      const base = priceSide(item.name);
+      // `pack` = how many of this side one line unit holds (e.g. a deal's
+      // "2 Cheesy Garlic Breads" is one unit of pack 2).
+      const pack = Math.max(1, Number(item.pack) || 1);
+      const base = priceSide(item.name) * pack;
       const gravyUnits = Number(item.gravy) || 0;
       const dipUnits = sumDipUnits(item.dips);
       return (base + (gravyUnits + dipUnits) * PRICES.dips.each) * qty;
@@ -526,15 +503,6 @@ export function priceLineItem(item) {
     case "drinks-dips":
       return priceDrinksDips(item.categoryId, item.items) * qty;
 
-    case "deal": {
-      const deal = findDealById(item.dealId);
-      if (!deal) return 0;
-      if (deal.mode === "bundle") {
-        return priceDealBundle(deal, item.meta?.items) * qty;
-      }
-      const units = Array.isArray(item.meta?.builds) ? item.meta.builds : [];
-      return units.reduce((sum, u) => sum + priceDealUnit(deal, u), 0) * qty;
-    }
 
     default:
       return 0;
@@ -752,4 +720,180 @@ export function describeByoPizzaSections(data = {}) {
   if (instructions.length) sections.push({ label: "Instructions", text: instructions.join(", ") });
 
   return sections;
+}
+
+
+// ===== Deals / coupons applied to the cart =====
+//
+// A coupon isn't a cart item. The customer's items are ordinary cart lines;
+// the ones they added through a coupon carry `deal: { ref, slot }`, where
+// `ref` points at an entry in the cart's `appliedDeals` list
+// ({ id, dealId }) and `slot` is which of the deal's eligible items it fills.
+//
+// priceCart() works out what every line really costs:
+//   - regularCents: the item's normal menu price (priceLineItem)
+//   - finalCents:   what the customer pays once any coupon is applied
+// and how much each coupon saves. The same function runs in the browser
+// (cart, checkout) and on the server (pages/api/placeOrder.js), so the
+// numbers always agree and can't be faked from the browser.
+//
+// Rules:
+//   - Only lines that genuinely match the deal's item (right type, size,
+//     piece count...) get the deal price. Anything else stays regular.
+//   - "list" deals (e.g. Pick 2 or More, $8.99 each): every unit (a line with
+//     qty 2 is 2 units) costs the deal price plus its own paid extras, once
+//     the coupon has at least `minQty` units (and at most `maxQty` count).
+//   - "bundle" deals (e.g. 2 Medium Pizzas + 8 Wings, $29.99): once every slot
+//     is filled, the bundle costs the deal price plus each slot's extras,
+//     spread across its lines. Extra quantity on a slot is regular price.
+//   - A coupon never makes anything MORE expensive than ordering it normally.
+
+// Paid extras on one line (all units) that a deal still charges for: extra
+// toppings beyond what the deal includes, dips, gravy, dairy-free cheese.
+function dealLineExtras(config, item) {
+  const qty = Math.max(1, Number(item?.qty) || 1);
+  switch (item?.type) {
+    case "pizza-byo": {
+      const dips = sumDipUnits(item.dips) * PRICES.dips.each;
+      const dairyFree = item.dairyFreeCheese ? PRICES.dairyFreeCheese : 0;
+      return (priceDealPizzaOverage(config, item) + dips + dairyFree) * qty;
+    }
+    case "wings":
+    case "side": {
+      const plain = { ...item, dips: {}, gravy: 0 };
+      return Math.max(0, priceLineItem(item) - priceLineItem(plain));
+    }
+    default:
+      return 0;
+  }
+}
+
+function unitsOf(item) {
+  return Math.max(1, Number(item?.qty) || 1);
+}
+
+export function priceCart(items = [], appliedDeals = [], service = null) {
+  const list = Array.isArray(items) ? items : [];
+  const instances = Array.isArray(appliedDeals) ? appliedDeals : [];
+
+  const lines = {};
+  list.forEach((it) => {
+    const regular = priceLineItem(it);
+    lines[it.id] = { regularCents: regular, finalCents: regular, dealRef: null };
+  });
+
+  const deals = instances.map((inst) => {
+    const deal = findDealById(inst?.dealId);
+    const status = {
+      id: inst?.id,
+      dealId: inst?.dealId,
+      deal,
+      lineIds: [],
+      units: 0,
+      active: false,
+      reason: null, // why it isn't active yet: "service" | "need_more" | "incomplete" | "unknown"
+      needed: 0,
+      savingsCents: 0,
+    };
+    if (!deal || !deal.active) {
+      status.reason = "unknown";
+      return status;
+    }
+
+    // Lines tagged with this coupon that really match one of its items.
+    const linked = list.filter((it) => {
+      if (it?.deal?.ref !== inst.id) return false;
+      return itemMatchesDealSlot(dealSlotConfig(deal, it.deal.slot), it);
+    });
+    status.lineIds = linked.map((it) => it.id);
+    status.units = linked.reduce((n, it) => n + unitsOf(it), 0);
+
+    if (!dealAllowsService(deal, service)) {
+      status.reason = "service";
+      return status;
+    }
+
+    if (deal.mode === "bundle") {
+      const slots = deal.items || [];
+      const bySlot = {};
+      linked.forEach((it) => {
+        if (!bySlot[it.deal.slot]) bySlot[it.deal.slot] = it;
+      });
+      const missing = slots.filter((k) => !bySlot[k]);
+      if (missing.length) {
+        status.reason = "incomplete";
+        status.needed = missing.length;
+        return status;
+      }
+      // One unit of each slot belongs to the bundle; any extra quantity on a
+      // slot's line is charged at its normal per-unit price.
+      const parts = slots.map((k) => {
+        const it = bySlot[k];
+        const qty = unitsOf(it);
+        const regularLine = lines[it.id].regularCents;
+        const regularUnit = Math.round(regularLine / qty);
+        const extrasUnit = Math.round(dealLineExtras(deal.build[k], { ...it, qty: 1 }));
+        return { it, qty, regularLine, regularUnit, extrasUnit };
+      });
+      const regularBundle = parts.reduce((s, p) => s + p.regularUnit, 0);
+      const dealBundle = (Number(deal.price) || 0) + parts.reduce((s, p) => s + p.extrasUnit, 0);
+      if (dealBundle >= regularBundle) {
+        status.active = true; // valid, it just doesn't save anything
+        return status;
+      }
+      // Spread the deal's base price evenly over the slots, rounded up, with
+      // the last slot taking whatever's left ($29.99 -> 10.00/10.00/9.99),
+      // then add each slot's own extras.
+      const base = Number(deal.price) || 0;
+      const share = Math.ceil(base / parts.length);
+      parts.forEach((p, i) => {
+        const isLast = i === parts.length - 1;
+        const unitDeal = (isLast ? base - share * (parts.length - 1) : share) + p.extrasUnit;
+        const final = unitDeal + (p.regularLine - p.regularUnit);
+        lines[p.it.id].finalCents = final;
+        lines[p.it.id].dealRef = inst.id;
+        status.savingsCents += p.regularLine - final;
+      });
+      status.active = true;
+      return status;
+    }
+
+    // "list" deals: priced per unit.
+    const minQty = deal.minQty || 1;
+    if (status.units < minQty) {
+      status.reason = "need_more";
+      status.needed = minQty - status.units;
+      return status;
+    }
+    let budget = deal.maxQty != null ? deal.maxQty : Infinity; // units still allowed the deal price
+    linked.forEach((it) => {
+      if (budget <= 0) return;
+      const qty = unitsOf(it);
+      const dealUnits = Math.min(qty, budget);
+      budget -= dealUnits;
+      const regularLine = lines[it.id].regularCents;
+      const regularUnit = regularLine / qty;
+      const extrasPerUnit = dealLineExtras(dealSlotConfig(deal, it.deal.slot), it) / qty;
+      const dealLine = Math.round(
+        dealUnits * Math.min(regularUnit, (Number(deal.price) || 0) + extrasPerUnit) +
+          (qty - dealUnits) * regularUnit
+      );
+      const final = Math.min(regularLine, dealLine);
+      lines[it.id].finalCents = final;
+      lines[it.id].dealRef = inst.id;
+      status.savingsCents += regularLine - final;
+    });
+    status.active = true;
+    return status;
+  });
+
+  const regularSubtotalCents = list.reduce((s, it) => s + lines[it.id].regularCents, 0);
+  const subtotalCents = list.reduce((s, it) => s + lines[it.id].finalCents, 0);
+  return {
+    lines,
+    deals,
+    regularSubtotalCents,
+    subtotalCents,
+    savingsCents: regularSubtotalCents - subtotalCents,
+  };
 }
