@@ -21,8 +21,9 @@ export default async function handler(req, res) {
   if (isRateLimited(req, "payment")) return reject(res, 429, "too_many_requests");
 
   const body = req.body || {};
-  const uid = await verifyUser(body.idToken);
-  if (!uid) return reject(res, 401, "invalid_auth");
+  const auth = await verifyUser(body.idToken);
+  if (auth.error) return reject(res, 401, auth.error);
+  const uid = auth.uid;
 
   let built;
   try {

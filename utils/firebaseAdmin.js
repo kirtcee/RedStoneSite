@@ -28,9 +28,12 @@ import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 
 function loadCredential() {
-  const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
-  const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
-  const rawKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
+  // Forgiving about how they were pasted: surrounding spaces and quote
+  // marks (copied from the JSON file or .env.local) are dropped.
+  const clean = (v) => (v == null ? v : String(v).trim().replace(/^["']|["'],?$/g, "").trim());
+  const projectId = clean(process.env.FIREBASE_ADMIN_PROJECT_ID);
+  const clientEmail = clean(process.env.FIREBASE_ADMIN_CLIENT_EMAIL);
+  const rawKey = clean(process.env.FIREBASE_ADMIN_PRIVATE_KEY);
 
   if (!projectId || !clientEmail || !rawKey) {
     throw new Error(
@@ -43,9 +46,7 @@ function loadCredential() {
   // Service-account JSON stores the key with literal "\n" escape sequences;
   // env vars can't hold real multi-line newlines cleanly, so it's kept
   // escaped in the environment and unescaped here.
-  // Forgiving about how it was pasted: surrounding quote marks (copied from
-  // the JSON file or .env.local) are dropped.
-  const privateKey = rawKey.trim().replace(/^["']|["'],?$/g, "").replace(/\\n/g, "\n");
+  const privateKey = rawKey.replace(/\\n/g, "\n");
   return cert({ projectId, clientEmail, privateKey });
 }
 

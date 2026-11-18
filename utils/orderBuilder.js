@@ -60,14 +60,22 @@ function clientIp(req) {
 }
 
 // Requires a real Firebase session (anonymous auth included).
-// Returns the uid, or null if the token is missing/invalid.
+// Returns { uid } or { error: "invalid_auth: <why>" }.
 export async function verifyUser(idToken) {
-  if (!idToken || typeof idToken !== "string" || !adminAuth) return null;
+  if (!idToken || typeof idToken !== "string") return { error: "invalid_auth: no_token" };
+  if (!adminAuth) return { error: "invalid_auth: server_not_ready" };
   try {
     const { uid } = await adminAuth.verifyIdToken(idToken);
-    return uid;
-  } catch {
-    return null;
+    return { uid };
+  } catch (e) {
+    // e.g. the token is for a different Firebase project than the server's
+    // FIREBASE_ADMIN_PROJECT_ID ("incorrect aud claim") — safe to show.
+    const why = String(e?.message || e?.code || "unknown")
+      .replace(/\s+/g, " ")
+      .replace(/See https:\S+/g, "")
+      .slice(0, 160);
+    console.error("verifyUser failed:", e?.code, e?.message);
+    return { error: `invalid_auth: ${why}` };
   }
 }
 
