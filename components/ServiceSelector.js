@@ -652,22 +652,10 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
                   <div className="k">Postal Code:</div>
                   <div className="v">{postal || "Not provided"}</div>
                 </div>
-                <div className="row row--fee">
-                  <div className="k">Delivery Fee:</div>
-                  <div className="v">
-                    {!confirmQuote
-                      ? "Calculating…"
-                      : confirmQuote.ok && !confirmQuote.tooFar
-                      ? `${formatMoney(confirmQuote.feeCents)} (about a ${confirmQuote.minutes} min drive)`
-                      : confirmQuote.ok
-                      ? "Call the store"
-                      : "Shown at checkout"}
-                  </div>
-                </div>
                 {confirmQuote?.tooFar && (
                   <div className="farNote">
-                    This address is about {confirmQuote.minutes} minutes from our store. Please double-check the
-                    address, or call us at <a href={`tel:+1${STORE_PHONE.replace(/\D/g, "")}`}>{STORE_PHONE}</a> and
+                    This address is outside our regular delivery area. Please double-check the address, or
+                    call us at <a href={`tel:+1${STORE_PHONE.replace(/\D/g, "")}`}>{STORE_PHONE}</a> and
                     we'll arrange your delivery.
                     <button type="button" className="linkBtn farNote__carryout" onClick={goCarryout}>
                       Order for carryout instead
@@ -698,7 +686,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
                     onClick={handleConfirmDelivery}
                     disabled={!confirmQuote || !!confirmQuote.tooFar}
                   >
-                    Confirm &amp; Continue
+                    {confirmQuote ? "Confirm & Continue" : "Checking Address…"}
                   </button>
                 </div>
               </div>

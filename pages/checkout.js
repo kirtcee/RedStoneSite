@@ -493,8 +493,8 @@ export default function CheckoutPage() {
 
             {cart?.deliveryTooFar && (
               <div className="co-minNote">
-                This address is about {cart.deliveryQuote?.minutes} minutes from our store. Please double-check the
-                address, or call us at <a href="tel:+19053859888">905-385-9888</a> and we'll arrange your delivery.{" "}
+                This address is outside our regular delivery area. Please double-check the address, or call
+                us at <a href="tel:+19053859888">905-385-9888</a> and we'll arrange your delivery.{" "}
                 <button type="button" className="co-minNote__btn" onClick={() => openServiceGate?.()}>
                   Change address
                 </button>

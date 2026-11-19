@@ -395,8 +395,6 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
     setScheduleTime,
     isLoaded,
     goToCheckout,
-    deliveryFeeCents: cartDeliveryFeeCents,
-    deliveryTooFar: cartDeliveryTooFar,
   } = useCart();
   const subtotalCents = cartSubtotalCents ?? 0;
 
@@ -414,10 +412,10 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Drive-time fee for the confirmed address (null while it's worked out).
-  const deliveryFee = service === "delivery" ? cartDeliveryFeeCents ?? null : 0;
-  const deliveryCents = deliveryFee || 0;
-  const taxCents = taxOn(subtotalCents); // delivery fee isn't taxed
+  // The delivery fee is only shown in the cart and at checkout, so these
+  // running totals are food and drinks (plus their tax) only.
+  const deliveryCents = 0;
+  const taxCents = taxOn(subtotalCents);
   const totalCents = subtotalCents + deliveryCents + taxCents;
 
   // Selecting Carryout applies instantly (no extra info needed). Selecting
@@ -615,14 +613,6 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
               <div>Food &amp; Beverage:</div>
               <div className="os-totalNum">{isLoaded ? formatMoney(subtotalCents) : "···"}</div>
             </div>
-            {service === "delivery" && (
-              <div className="os-totalRow">
-                <div>Delivery:</div>
-                <div className="os-totalNum">
-                  {cartDeliveryTooFar ? "Call store" : isLoaded && deliveryFee != null ? formatMoney(deliveryFee) : "···"}
-                </div>
-              </div>
-            )}
             <div className="os-totalRow">
               <div>Taxes:</div>
               <div className="os-totalNum">{isLoaded ? formatMoney(taxCents) : "···"}</div>
@@ -631,6 +621,7 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
               <div>Order Total:</div>
               <div>{isLoaded ? formatMoney(totalCents) : "···"}</div>
             </div>
+            {service === "delivery" && <div className="os-small">Delivery fee is added in your cart.</div>}
           </div>
           )}
         </div>

@@ -3,11 +3,11 @@
 // Order money rules shared by the browser (cart, checkout, Order Settings)
 // and the server (utils/orderBuilder.js), so both always agree.
 
-export const TAX_RATE = 0.13; // on food and drinks only: delivery isn't taxed
+export const TAX_RATE = 0.13; // on the whole order: food, drinks AND delivery
 
-// Tax (in cents) on an order's food and drinks. The delivery fee is not taxed.
-export function taxOn(subtotalCents) {
-  return Math.round(TAX_RATE * (Number(subtotalCents) || 0));
+// Tax (in cents) on an amount. Pass food + drinks + delivery fee.
+export function taxOn(amountCents) {
+  return Math.round(TAX_RATE * (Number(amountCents) || 0));
 }
 // Old flat fee. Only used as a placeholder before an address's real fee
 // (deliveryFeeForMinutes below) has been worked out.

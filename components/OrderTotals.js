@@ -16,7 +16,7 @@ export function useOrderTotals() {
   // Fee from the drive-time quote; null while it's still being worked out.
   const deliveryFee = isDelivery ? cart?.deliveryFeeCents ?? null : 0;
   const delivery = deliveryFee || 0;
-  const tax = taxOn(subtotal); // delivery fee isn't taxed
+  const tax = taxOn(subtotal + delivery); // tax on food, drinks and delivery
   // What the coupons knock off the items' normal prices (before tax).
   const saved = cart?.pricing?.savingsCents ?? 0;
   return {

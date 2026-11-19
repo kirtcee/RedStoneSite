@@ -38,7 +38,10 @@
   to check the address or call. Table: `deliveryFeeForMinutes()` in
   `utils/orderRules.js`. The server always works the fee out itself
   (`utils/deliveryQuote.js`, needs `GOOGLE_MAPS_SERVER_KEY`).
-- **Tax is on food and drinks only**, never on the delivery fee (`taxOn()`).
+- **Tax (13%) is on the whole order, delivery fee included** (`taxOn()`).
+- **Customers never see drive minutes** (only staff, on the kitchen screen).
+  The delivery fee is shown **only in the cart and at checkout**: not in the
+  address popup or Order Settings.
 - Tax rate, delivery fee and the **$20 delivery minimum** live in
   `utils/orderRules.js`, shared by the browser and the server
   (`utils/orderBuilder.js` refuses delivery orders under the minimum).

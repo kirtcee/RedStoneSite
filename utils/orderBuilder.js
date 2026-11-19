@@ -182,7 +182,7 @@ export function buildOrder(body, { uid, paymentMethod, deliveryQuote = null }) {
     deliveryCents = deliveryQuote.feeCents;
     deliveryInfo = { minutes: deliveryQuote.minutes, km: deliveryQuote.km };
   }
-  const taxCents = taxOn(subtotalCents); // delivery fee isn't taxed
+  const taxCents = taxOn(subtotalCents + deliveryCents); // tax on food, drinks and delivery
   const totalCents = subtotalCents + deliveryCents + taxCents;
 
   const isLater = orderTiming === "later";
