@@ -628,7 +628,8 @@ export function describePizzaFull(data = {}) {
   if (data.ginger === "with") instructionBits.push("With ginger");
   if (instructionBits.length) bits.push(instructionBits.join(", "));
 
-  return bits.filter(Boolean).join(" • ");
+  // One line per group (size/crust, cheese, sauce, toppings, dips, ...).
+  return bits.filter(Boolean).join("\n");
 }
 
 // ===== BYO pizza: cart / checkout display format =====

@@ -148,7 +148,7 @@ export default function ComboBuilder({
     const bits = [`${combo.name} (${sizeLabel})`];
     if (upg === "toMedium") bits.push("Upgraded to Medium");
     if (upg === "toXL") bits.push("Upgraded to XL");
-    return bits.join(" • ");
+    return bits.join(", ");
   };
 
   const resetAll = () => {
@@ -592,6 +592,7 @@ export default function ComboBuilder({
       {/* styles for status + confirm */}
       <style jsx>{`
         .combo-item-status {
+          white-space: pre-line; /* summaries can run over several lines */
           display: inline-flex;
           align-items: center;
           gap: 6px;

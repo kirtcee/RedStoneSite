@@ -145,7 +145,7 @@ export default function SideBuilder({
     if (hasHotSauceToggle) bits.push(`Hot Sauce Drizzle: ${hotSauce}`);
     if (hasGravy && gravyQty > 0) bits.push(`Gravy × ${gravyQty}`);
     if (selectedDipsList.length) bits.push(`Dips: ${selectedDipsList.map((d) => `${d.label} × ${d.qty}`).join(", ")}`);
-    return bits.join(" • ");
+    return bits.join("\n"); // one detail per line
   };
 
   /* —— Render —— */

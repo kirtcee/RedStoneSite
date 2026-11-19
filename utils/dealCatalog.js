@@ -26,7 +26,7 @@ export const dealSections = [
         code: "RSP-1299",
         name: "Large 2-Topping Pizza",
         subtitle: "Carryout Special",
-        description: "Carry Out Special — 1 Large 2-Topping Pizza",
+        description: "Carry Out Special: 1 Large 2-Topping Pizza",
         price: 1299,
         serviceRestriction: "carryout",
         mode: "list",
@@ -48,7 +48,7 @@ export const dealSections = [
         id: "pick2mix",
         code: "RSP-899",
         name: "Pick 2 or More",
-        subtitle: "$8.99 each item — 2 minimum, no maximum",
+        subtitle: "$8.99 each item, 2 minimum, no maximum",
         description:
           "Get Any 2 or More: Medium 1-Topping Pizza, 6 Wings, Cheesy Garlic Bread, Large Fries, Large Poutine, Medium Shawarma Poutine, Medium Onion Rings. Price is per item.",
         price: 899,

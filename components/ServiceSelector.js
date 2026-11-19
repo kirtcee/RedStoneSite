@@ -98,7 +98,7 @@ function StoreMap({ onCarryoutClick, mapsReady, storeLatLng }) {
     infoDiv.innerHTML = `
       <div style="margin-bottom:4px;">576 Concession St<br />Hamilton, ON</div>
       <div style="margin-bottom:4px;">Phone: <a href="tel:+1-905-385-9888">905-385-9888</a></div>
-      <div style="margin-bottom:10px;">Hours: 11:00–22:00</div>
+      <div style="margin-bottom:10px;">Hours: 11:00 to 22:00</div>
       <button id="map-carryout-btn" style="display:block;box-sizing:border-box;width:100%;background:#8b1a1a;color:#fff;border:0;border-radius:4px;padding:.5rem .75rem;font-weight:800;cursor:pointer;text-transform:uppercase">Carryout</button>
     `;
     const iw = new g.maps.InfoWindow({
@@ -599,11 +599,11 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
               <div className="confirmBody">
                 <div className="row">
                   <div className="k">Address Type:</div>
-                  <div className="v">{addrType || "—"}</div>
+                  <div className="v">{addrType || "Not provided"}</div>
                 </div>
                 <div className="row">
                   <div className="k">Street Address:</div>
-                  <div className="v">{street || "—"}</div>
+                  <div className="v">{street || "Not provided"}</div>
                 </div>
                 <div className="row">
                   <div className="k">Suite/Apt #:</div>
@@ -611,15 +611,15 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
                 </div>
                 <div className="row">
                   <div className="k">City:</div>
-                  <div className="v">{city || "—"}</div>
+                  <div className="v">{city || "Not provided"}</div>
                 </div>
                 <div className="row">
                   <div className="k">Province:</div>
-                  <div className="v">{province || "—"}</div>
+                  <div className="v">{province || "Not provided"}</div>
                 </div>
                 <div className="row">
                   <div className="k">Postal Code:</div>
-                  <div className="v">{postal || "—"}</div>
+                  <div className="v">{postal || "Not provided"}</div>
                 </div>
 
                 <div

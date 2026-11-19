@@ -19,16 +19,19 @@ function getNameAndSubtitle(item) {
       ({ "10": "Small", "12": "Medium", "14": "Large", "16": "X-Large" }[String(item.size)] ||
         `${item.size}"`);
     const name = item.name || "Specialty Pizza";
-    const subtitle = `${sizeLabel}${item.crust ? ` • ${item.crust}` : ""}`;
+    const subtitle = `${sizeLabel}${item.crust ? `, ${item.crust}` : ""}`;
     return { name, subtitle };
   }
   if (item.type === "wings") {
     const dipBits = Object.entries(item.dips || {})
       .filter(([, q]) => Number(q) > 0)
       .map(([k, v]) => `${k} × ${v}`);
-    const subtitle = [item.sauce, item.serveStyle, dipBits.length ? `Dips: ${dipBits.join(", ")}` : ""]
+    const subtitle = [
+      [item.sauce, item.serveStyle].filter(Boolean).join(", "),
+      dipBits.length ? `Dips: ${dipBits.join(", ")}` : "",
+    ]
       .filter(Boolean)
-      .join(" • ");
+      .join("\n");
     return { name: `${item.count} Wings`, subtitle };
   }
   if (item.type === "side") {
@@ -214,19 +217,19 @@ export default function OrderConfirmation() {
           <div style={{ padding: 12 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
               <div style={{ color: "#666" }}>Name:</div>
-              <div style={{ fontWeight: 700 }}>{order.contact?.name || "—"}</div>
+              <div style={{ fontWeight: 700 }}>{order.contact?.name || "Not provided"}</div>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
               <div style={{ color: "#666" }}>Phone:</div>
-              <div style={{ fontWeight: 700 }}>{order.contact?.phone || "—"}</div>
+              <div style={{ fontWeight: 700 }}>{order.contact?.phone || "Not provided"}</div>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
               <div style={{ color: "#666" }}>Service Method:</div>
-              <div style={{ fontWeight: 700 }}>{order.serviceMethod || "—"}</div>
+              <div style={{ fontWeight: 700 }}>{order.serviceMethod || "Not provided"}</div>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
               <div style={{ color: "#666" }}>Location:</div>
-              <div style={{ fontWeight: 700, textAlign: "right" }}>{order.location || "—"}</div>
+              <div style={{ fontWeight: 700, textAlign: "right" }}>{order.location || "Not provided"}</div>
             </div>
             {order.orderTiming === "later" && order.schedule?.date && (
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
@@ -276,12 +279,12 @@ export default function OrderConfirmation() {
                             <span style={{ fontWeight: 700, color: "#333", flex: "0 0 auto" }}>
                               {comboItemLabel(key)}:
                             </span>
-                            <span>{child?.summary || "Not customized yet"}</span>
+                            <span style={{ whiteSpace: "pre-line" }}>{child?.summary || "Not customized yet"}</span>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div style={{ fontSize: 12, color: "#555" }}>{subtitle}</div>
+                      <div style={{ fontSize: 12, color: "#555", whiteSpace: "pre-line" }}>{subtitle}</div>
                     )}
                   </div>
                   <div style={{ fontWeight: 700, whiteSpace: "nowrap" }}>{formatMoney(lineCents)}</div>

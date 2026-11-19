@@ -33,7 +33,7 @@ export default function SpecialtyPizzasPage() {
       name: pizza.name,
       size,
       qty: 1,
-      summary: `${sizeLabel(size)} • ${pizza.name}`,
+      summary: `${sizeLabel(size)} ${pizza.name}`,
     };
     payload.lineSubtotalCents = priceLineItem({
       type: "pizza-specialty",

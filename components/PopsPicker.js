@@ -165,7 +165,7 @@ export default function PopsPicker({
               ? "Assortment selected."
               : remaining === 0
               ? `All ${count} pops selected.`
-              : `Tap a flavour to add it — ${remaining} more pop${remaining === 1 ? "" : "s"} to pick.`}
+              : `Tap a flavour to add it. ${remaining} more pop${remaining === 1 ? "" : "s"} to pick.`}
           </div>
         </div>
       </div>

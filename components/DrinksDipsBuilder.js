@@ -274,7 +274,7 @@ export function DrinksCategoryPanel({
               }}
               title="Add this item"
             >
-              Add Item — {currentPickPrice}
+              Add Item ({currentPickPrice})
             </button>
           </div>
         </div>

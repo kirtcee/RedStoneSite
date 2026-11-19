@@ -583,7 +583,7 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
                 <TimeDropdown value={scheduleTime} onChange={setScheduleTime} options={timeOptions} />
 
                 <div className="os-small">
-                  Available hours for selected day: {STORE_HOURS.open}–{STORE_HOURS.close}
+                  Available hours for selected day: {STORE_HOURS.open} to {STORE_HOURS.close}
                 </div>
               </div>
             )}
@@ -593,9 +593,9 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
             </button>
             {showHours && (
               <div className="os-hours">
-                Mon–Sat: 11:00–22:00
+                Mon to Sat: 11:00 to 22:00
                 <br />
-                Sun: 12:00–21:00
+                Sun: 12:00 to 21:00
               </div>
             )}
           </div>

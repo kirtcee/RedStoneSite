@@ -26,7 +26,7 @@ function RootApp({ Component, pageProps }) {
 
   const siteHead = (
     <Head>
-      <title>Red Stone Pizza — Order Online</title>
+      <title>Red Stone Pizza | Order Online</title>
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <meta
         name="description"

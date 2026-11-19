@@ -35,9 +35,13 @@ function describeItem(item) {
     const dipBits = Object.entries(item.dips || {})
       .filter(([, q]) => Number(q) > 0)
       .map(([k, v]) => `${k} × ${v}`);
-    return [`${item.count}-piece`, item.sauce, item.serveStyle, dipBits.length ? `Dips: ${dipBits.join(", ")}` : ""]
+    // "6-piece, Hot, Sauced & Tossed" then dips on their own line
+    return [
+      [`${item.count}-piece`, item.sauce, item.serveStyle].filter(Boolean).join(", "),
+      dipBits.length ? `Dips: ${dipBits.join(", ")}` : "",
+    ]
       .filter(Boolean)
-      .join(" • ");
+      .join("\n");
   }
   if (item.type === "side") return item.summary || item.name || "Side";
   if (item.type === "special") return item.summary || item.name || "Special";
@@ -652,6 +656,7 @@ export default function CheckoutPage() {
           margin-bottom: 2px;
         }
         .co-items__opt {
+          white-space: pre-line; /* item details can run over several lines */
           font-family: var(--font-display-text); /* Red Stone Display Medium */
           font-weight: 400;
           font-size: 0.88rem;

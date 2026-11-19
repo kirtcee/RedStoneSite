@@ -1470,7 +1470,10 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                       const amount = toppingAmount[t] || "Normal";
                       const isDefault = placement === "full" && amount === "Normal";
                       return (
-                        <li key={t}>{t}{isDefault ? "" : ` — ${placement} / ${amount}`}</li>
+                        <li key={t}>
+                          {t}
+                          {isDefault ? "" : ` (${placement.charAt(0).toUpperCase() + placement.slice(1)}, ${amount})`}
+                        </li>
                       );
                     })}
                   </ul>

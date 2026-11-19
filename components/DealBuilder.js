@@ -366,7 +366,7 @@ export default function DealBuilder({ onClose: onCloseProp }) {
               <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${BORDER}` }}>
                 <div style={{ fontWeight: 800, marginBottom: 6, color: "#000" }}>Items added to this coupon</div>
                 {builds.map((u, i) => (
-                  <div key={i} style={{ padding: "4px 0", fontSize: 13 }}>
+                  <div key={i} style={{ padding: "4px 0", fontSize: 13, whiteSpace: "pre-line" }}>
                     (1) {u.summary || "Item"} (
                     {u.itemType !== "garlic-bread-choice" && (
                       <>
@@ -463,7 +463,7 @@ export default function DealBuilder({ onClose: onCloseProp }) {
                           </button>
                         )}
                       </div>
-                      <div style={{ marginTop: 6, marginLeft: 56, fontSize: "0.9rem", color: BROWN }}>
+                      <div style={{ marginTop: 6, marginLeft: 56, fontSize: "0.9rem", color: BROWN, whiteSpace: "pre-line" }}>
                         {inCart
                           ? "Already in your cart"
                           : done

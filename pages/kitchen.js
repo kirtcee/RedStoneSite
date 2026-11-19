@@ -19,7 +19,7 @@ function describeItem(item) {
   if (!item) return "Item";
   if (item.type === "pizza-byo") return describePizzaFull(item);
   if (item.type === "pizza-specialty") return item.name || "Specialty Pizza";
-  if (item.type === "wings") return `${item.count} Wings • ${item.sauce || ""}`;
+  if (item.type === "wings") return [`${item.count} Wings`, item.sauce].filter(Boolean).join(", ");
   if (item.type === "side") return item.summary || item.name || "Side";
   if (item.type === "special") return item.summary || item.name || "Special";
   if (item.type === "combo") return comboNameFor(item.comboId);
@@ -271,7 +271,7 @@ export default function KitchenDashboard() {
 
               <div className="order-card__meta">
                 <span>
-                  Placed {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleTimeString() : "—"}
+                  Placed {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleTimeString() : "N/A"}
                 </span>
                 {!scheduledLabel && order.pickupTime?.toDate && (
                   <span>Pickup {order.pickupTime.toDate().toLocaleTimeString()}</span>
@@ -319,7 +319,7 @@ export default function KitchenDashboard() {
             Placed:{" "}
             {printingOrder.createdAt?.toDate
               ? printingOrder.createdAt.toDate().toLocaleString()
-              : "—"}
+              : "N/A"}
             <br />
             Service: {printingOrder.serviceMethod || "N/A"}
             {formatScheduled(printingOrder) ? (
@@ -544,6 +544,11 @@ export default function KitchenDashboard() {
           padding: 3px 8px;
           border-radius: 4px;
           white-space: nowrap;
+        }
+        /* item details can run over several lines */
+        .order-items li,
+        .print-receipt li {
+          white-space: pre-line;
         }
         .order-items {
           list-style: none;

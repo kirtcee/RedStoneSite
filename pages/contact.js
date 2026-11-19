@@ -19,9 +19,9 @@ export default function ContactPage() {
         <div>
           <div style={{ fontWeight: 700, marginBottom: 4 }}>Hours</div>
           <div style={{ color: "#555" }}>
-            Mon–Sat: 11:00 AM – 10:00 PM
+            Mon to Sat: 11:00 AM to 10:00 PM
             <br />
-            Sun: 12:00 PM – 9:00 PM
+            Sun: 12:00 PM to 9:00 PM
           </div>
         </div>
       </div>

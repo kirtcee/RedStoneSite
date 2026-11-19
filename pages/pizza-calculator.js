@@ -10,7 +10,7 @@ export default function PizzaCalculatorPage() {
       <div className="card" style={{ padding: 24 }}>
         <p style={{ margin: "0 0 12px", fontWeight: 700 }}>Under Construction</p>
         <p style={{ margin: "0 0 16px", color: "#555" }}>
-          Tell us your group size and we'll tell you how many pizzas to order — coming soon.
+          Tell us your group size and we'll tell you how many pizzas to order. Coming soon.
         </p>
         <Link href="/menu" style={{ color: "#0b61d6", textDecoration: "none", fontWeight: 700 }}>
           Back to Menu

@@ -164,9 +164,9 @@ export default function WingsBuilder({
 
   const buildSummary = () => {
     const dipsSummary = selectedDipsList.length
-      ? ` • Dips: ${selectedDipsList.map((d) => `${d.label} × ${d.qty}`).join(", ")}`
+      ? `\nDips: ${selectedDipsList.map((d) => `${d.label} × ${d.qty}`).join(", ")}`
       : "";
-    return `${wingsQty} × ${selectedCount}-piece Wings • ${selectedSauce} (${serveStyle})${dipsSummary}`;
+    return `${wingsQty} × ${selectedCount}-piece Wings, ${selectedSauce} (${serveStyle})${dipsSummary}`;
   };
 
   const currentItem = useMemo(
@@ -444,7 +444,7 @@ export default function WingsBuilder({
       <Section index={2} title="Dips">
         <p style={{ fontSize: ".95rem", margin: "0 0 .8rem 0", color: "#555" }}>
           {autoIncludeDips
-            ? `Each ${selectedCount}-piece order includes ${includedPerOrder} dip(s) per order — mix and match any flavor. Additional dips are charged.`
+            ? `Each ${selectedCount}-piece order includes ${includedPerOrder} dip(s) per order. Mix and match any flavor. Additional dips are charged.`
             : "Choose any dip quantities you like."}
         </p>
 
@@ -507,7 +507,7 @@ export default function WingsBuilder({
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" }}>
             <ItemCheck />
             <span style={{ fontWeight: 900 }}>({wingsQty})</span>
-            <span>{selectedCount} piece wings — {selectedSauce}</span>
+            <span>{selectedCount} Piece Wings, {selectedSauce}</span>
           </div>
           {selectedDipsList.map((item, idx) => (
             <div key={idx} style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" }}>

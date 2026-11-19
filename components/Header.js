@@ -35,7 +35,7 @@ const formatAddressFull = (addr) => {
     city && province ? `${city}, ${province}` : city || province,
     postal,
   ];
-  return parts.filter(Boolean).join(" • ");
+  return parts.filter(Boolean).join(", ");
 };
 
 export default function Header() {

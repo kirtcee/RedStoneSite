@@ -517,7 +517,7 @@ const REDEEM_ERROR_MESSAGES = {
   not_found: "That code isn't valid.",
   inactive: "That coupon isn't available right now.",
   service_mismatch: "That coupon isn't valid for your current order type.",
-  network: "Couldn't check that code — please try again.",
+  network: "Couldn't check that code. Please try again.",
 };
 
 // Reusable "Have a coupon code?" entry — used in the cart dropdown, the full

@@ -152,14 +152,13 @@ function describeItem(item) {
     const dipBits = Object.entries(item.dips || {})
       .filter(([, q]) => Number(q) > 0)
       .map(([k, v]) => `${k} × ${v}`);
+    // "6-piece, Hot, Sauced & Tossed" then dips on their own line
     return [
-      `${item.count}-piece`,
-      item.sauce,
-      item.serveStyle,
+      [`${item.count}-piece`, item.sauce, item.serveStyle].filter(Boolean).join(", "),
       dipBits.length ? `Dips: ${dipBits.join(", ")}` : "",
     ]
       .filter(Boolean)
-      .join(" • ");
+      .join("\n");
   }
   if (item.type === "side") return item.summary || item.name || "Side";
   if (item.type === "special") return item.summary || item.name || "Special";

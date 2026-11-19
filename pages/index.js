@@ -29,15 +29,15 @@ export default function Home() {
           {/* Row 1: 577x519 + (341x254 stacked) */}
           <div className="deals-grid-1">
             <Link href="/menu" className="tile tile-577x519">
-              <img src="/images/home/deal-577x519.jpg" alt="Deal — large feature" />
+              <img src="/images/home/deal-577x519.jpg" alt="Deal: large feature" />
             </Link>
 
             <div className="deals-right">
               <Link href="/menu" className="tile tile-341x254">
-                <img src="/images/home/deal-341x254-a.jpg" alt="Deal — top right" />
+                <img src="/images/home/deal-341x254-a.jpg" alt="Deal: top right" />
               </Link>
               <Link href="/menu" className="tile tile-341x254">
-                <img src="/images/home/deal-341x254-b.jpg" alt="Deal — bottom right" />
+                <img src="/images/home/deal-341x254-b.jpg" alt="Deal: bottom right" />
               </Link>
             </div>
           </div>

@@ -138,10 +138,10 @@ export default function SpecialMenuBuilder({
     if (selMeat.length) parts.push(`Meats: ${selMeat.join(", ")}`);
     if (selVeg.length) parts.push(`Veggies: ${selVeg.join(", ")}`);
     if (selCheese.length) parts.push(`Cheeses: ${selCheese.join(", ")}`);
-    const toppingStr = parts.length ? ` • ${parts.join(" • ")}` : "";
+    const toppingStr = parts.length ? `\n${parts.join("\n")}` : "";
     if (showsDips) {
       const dipsStr = selectedDipsList.length
-        ? ` • Dips: ${selectedDipsList.map(d => `${d.label} × ${d.qty}`).join(", ")}`
+        ? `\nDips: ${selectedDipsList.map(d => `${d.label} × ${d.qty}`).join(", ")}`
         : "";
       return `${qty} × Panzerotti${toppingStr}${dipsStr}`;
     }
@@ -249,7 +249,7 @@ export default function SpecialMenuBuilder({
                 >
                   3 toppings included.
                   {isOverIncluded
-                    ? ` You've added extra — +${formatMoney(extraToppingRate)} each beyond 3.`
+                    ? ` You've added extra toppings: +${formatMoney(extraToppingRate)} each beyond 3.`
                     : ` Additional toppings cost ${formatMoney(extraToppingRate)} each.`}
                 </p>
                 <h4 style={subHeader}>Choose Meats</h4>
