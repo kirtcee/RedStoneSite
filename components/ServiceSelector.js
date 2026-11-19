@@ -241,6 +241,9 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
   // Set once the customer edits any address field by hand, so the
   // location lookup never overwrites what they typed.
   const addrTouchedRef = useRef(false);
+  // "Use my current location": set up inside the Places effect below.
+  const locateRef = useRef(null);
+  const [locStatus, setLocStatus] = useState(null); // null | finding | filled | failed | denied | unsupported
 
   // Init Places Autocomplete with strong local bias
   useEffect(() => {
@@ -312,43 +315,53 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
 
     // If the customer allows location access: bias suggestions to where
     // they are, and look up their street address to pre-fill the form.
-    // Skipped if they've already started typing an address themselves.
-    try {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const here = {
-              lat: pos.coords.latitude,
-              lng: pos.coords.longitude,
-            };
-            const near = new g.maps.Circle({
-              center: here,
-              radius: 15000,
-            }).getBounds();
-            ac.setBounds(near);
-
-            new g.maps.Geocoder().geocode(
-              { location: here },
-              (results, status) => {
-                if (status !== "OK" || !results?.length) return;
-                if (inputEl.value.trim() || addrTouchedRef.current) return;
-                // Results are most-specific first; prefer one with a
-                // house number so the street line is complete.
-                const best =
-                  results.find((r) =>
-                    r.address_components?.some((c) =>
-                      c.types.includes("street_number")
-                    )
-                  ) || results[0];
-                inputEl.value = best.formatted_address || "";
-                fillFromPlace(best);
-              }
-            );
-          },
-          () => {},
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-        );
+    // Runs once when the form opens (skipped if they've already started
+    // typing), and again whenever they tap "Use my current location".
+    const locate = (manual = false) => {
+      if (!navigator.geolocation) {
+        if (manual) setLocStatus("unsupported");
+        return;
       }
+      setLocStatus("finding");
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const here = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          try {
+            ac.setBounds(new g.maps.Circle({ center: here, radius: 15000 }).getBounds());
+          } catch {}
+          new g.maps.Geocoder().geocode({ location: here }, (results, status) => {
+            if (status !== "OK" || !results?.length) {
+              // REQUEST_DENIED here almost always means the Geocoding API
+              // isn't enabled for the Maps key (Google Cloud Console).
+              console.warn("Location autofill: Google geocoder said", status);
+              setLocStatus("failed");
+              return;
+            }
+            if (!manual && (inputEl.value.trim() || addrTouchedRef.current)) {
+              setLocStatus(null);
+              return;
+            }
+            // Results are most-specific first; prefer one with a house
+            // number so the street line is complete.
+            const best =
+              results.find((r) => r.address_components?.some((c) => c.types.includes("street_number"))) ||
+              results[0];
+            inputEl.value = best.formatted_address || "";
+            fillFromPlace(best);
+            setLocStatus("filled");
+          });
+        },
+        (err) => {
+          console.warn("Location autofill: browser location error", err?.code, err?.message);
+          // Only explain a refusal if they asked for it with the button.
+          setLocStatus(manual ? (err?.code === 1 ? "denied" : "failed") : null);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      );
+    };
+    locateRef.current = locate;
+    try {
+      locate(false);
     } catch {}
 
     // Keep PAC aligned with the input
@@ -489,6 +502,28 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
                   placeholder="Enter Location"
                 />
               </label>
+              <div className="locRow">
+                <button
+                  type="button"
+                  className="locBtn"
+                  onClick={() => locateRef.current?.(true)}
+                  disabled={locStatus === "finding"}
+                >
+                  {locStatus === "finding" ? "Finding your address…" : "Use my current location"}
+                </button>
+                {locStatus === "failed" && (
+                  <div className="locMsg">Couldn't find your address automatically. Please type it in.</div>
+                )}
+                {locStatus === "denied" && (
+                  <div className="locMsg">
+                    Location access is turned off for this site. Please type your address, or allow location
+                    in your browser settings.
+                  </div>
+                )}
+                {locStatus === "unsupported" && (
+                  <div className="locMsg">This browser can't share your location. Please type your address.</div>
+                )}
+              </div>
 
               <div className="softDivider" />
 
@@ -748,6 +783,33 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           gap: 12px;
         }
 
+        .locRow {
+          max-width: 100%;
+          margin: -2px 0 8px;
+        }
+        .locBtn {
+          padding: 0;
+          border: 0;
+          background: none;
+          font-family: var(--font-display);
+          font-size: var(--fs-sm);
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+          text-decoration: underline;
+          text-underline-offset: 3px;
+          color: var(--text-brown);
+          cursor: pointer;
+        }
+        .locBtn:disabled {
+          cursor: default;
+          text-decoration: none;
+          opacity: 0.8;
+        }
+        .locMsg {
+          margin-top: 6px;
+          font-size: var(--fs-sm);
+          color: #b00020;
+        }
         .bigRedNarrow {
           background: #8b1a1a;
           color: #fff;
