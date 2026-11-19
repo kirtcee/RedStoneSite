@@ -9,6 +9,7 @@ import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { findDealById } from "../utils/dealCatalog";
 import { saveOrder, startCardPayment, finalizeCardPayment, friendlyOrderError } from "../utils/saveOrder";
 import StripeCardPayment from "../components/StripeCardPayment";
+import { DELIVERY_MINIMUM_CENTS } from "../utils/orderRules";
 
 // Shown under the page title (same numbers as the menu page estimate)
 const CARRYOUT_ADDRESS = "576 Concession Street";
@@ -194,6 +195,11 @@ export default function CheckoutPage() {
     setSubmitError(null);
     if (!isServiceConfirmed) {
       openServiceGate?.();
+      return;
+    }
+    // Delivery minimum (utils/orderRules.js): show what's missing instead.
+    if (cart?.deliveryShortCents > 0) {
+      cart.openMinGate?.();
       return;
     }
     const found = validate(form);
@@ -483,6 +489,15 @@ export default function CheckoutPage() {
               </div>
             </section>
 
+            {cart?.deliveryShortCents > 0 && (
+              <div className="co-minNote">
+                Delivery orders need at least {formatMoney(DELIVERY_MINIMUM_CENTS)} of food and drinks. Add{" "}
+                <strong>{formatMoney(cart.deliveryShortCents)}</strong> more, or switch to carryout.{" "}
+                <button type="button" className="co-minNote__btn" onClick={() => cart.openMinGate?.()}>
+                  See options
+                </button>
+              </div>
+            )}
             {submitError && <div className="co-submitError">{submitError}</div>}
             <button type="button" className="rs-pill-btn co-place" onClick={handlePlaceOrder} disabled={placing}>
               {placing
@@ -901,6 +916,32 @@ export default function CheckoutPage() {
         }
         .co-items__coupon {
           font-size: 0.95rem;
+        }
+        .co-minNote {
+          margin-bottom: 12px;
+          padding: 12px 14px;
+          border: 1px solid var(--menu-box-border);
+          border-left: 5px solid #e31837;
+          border-radius: 0.1875rem;
+          background: var(--menu-box-bg);
+          font-size: var(--fs-base);
+          color: var(--text-brown);
+        }
+        .co-minNote strong {
+          font-weight: var(--w-bold);
+          color: #000;
+        }
+        .co-minNote__btn {
+          padding: 0;
+          border: 0;
+          background: none;
+          font-family: var(--font-display);
+          font-size: var(--fs-sm);
+          text-transform: uppercase;
+          text-decoration: underline;
+          text-underline-offset: 3px;
+          color: #000;
+          cursor: pointer;
         }
         .co-submitError {
           font-size: 1rem;

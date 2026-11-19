@@ -9,8 +9,8 @@ import { useRouter } from "next/router";
 import { useCart } from "./CartSystem";
 import { formatMoney } from "./Pricing";
 
-export const DELIVERY_FEE_CENTS = 499;
-export const TAX_RATE = 0.13;
+import { DELIVERY_FEE_CENTS, TAX_RATE } from "../utils/orderRules";
+export { DELIVERY_FEE_CENTS, TAX_RATE }; // older imports still point here
 const STORE_HOURS = { open: "11:00", close: "22:00" };
 const BORDER = "var(--menu-box-border)";
 const LIGHT = "#faf2e9";
@@ -394,6 +394,7 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
     scheduleTime,
     setScheduleTime,
     isLoaded,
+    goToCheckout,
   } = useCart();
   const subtotalCents = cartSubtotalCents ?? 0;
 
@@ -479,7 +480,7 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
         <button
           type="button"
           className="mobile-checkout-bar__btn"
-          onClick={() => router.push("/checkout")}
+          onClick={() => goToCheckout()}
         >
           Checkout
         </button>
@@ -496,7 +497,7 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
           className="os-checkout"
           onClick={(e) => {
             e.stopPropagation();
-            router.push("/checkout");
+            goToCheckout();
           }}
         >
           CHECKOUT

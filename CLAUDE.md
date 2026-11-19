@@ -30,3 +30,10 @@
   (`var(--font-plain)`), not the brand font. Keep them plain and legible.
 - When replacing a font file, bump its `?v=` in BOTH `styles/globals.css`
   and the preload links in `pages/_app.js` (and `components/StripeCardPayment.js`).
+
+## Order rules
+- Tax rate, delivery fee and the **$20 delivery minimum** live in
+  `utils/orderRules.js`, shared by the browser and the server
+  (`utils/orderBuilder.js` refuses delivery orders under the minimum).
+- Every Checkout button calls `goToCheckout()` from the cart (CartSystem.js),
+  which shows the delivery-minimum popup instead when needed.

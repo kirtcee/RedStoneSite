@@ -13,6 +13,7 @@ import { formatMoney, priceCart } from "./Pricing";
 import { loadCart, saveCart, subscribeCart } from "../utils/cartPersistence";
 import { auth } from "../utils/firebaseConfig";
 import { findDealById, dealUnitToCartItem } from "../utils/dealCatalog";
+import { deliveryShortfallCents } from "../utils/orderRules";
 
 const CartContext = createContext(null);
 
@@ -314,6 +315,22 @@ export function CartProvider({ children, onEditItem }) {
   const pricing = useMemo(() => priceCart(items, appliedDeals, service), [items, appliedDeals, service]);
   const subtotalCents = pricing.subtotalCents;
 
+  // ---- Delivery minimum: every "Checkout" button goes through
+  // goToCheckout(), which opens DeliveryMinimumOverlay instead when a
+  // delivery order is under the minimum (utils/orderRules.js). ----
+  const router = useRouter();
+  const [minGateOpen, setMinGateOpen] = useState(false);
+  const closeMinGate = useCallback(() => setMinGateOpen(false), []);
+  const deliveryShortCents = service === "delivery" ? deliveryShortfallCents(subtotalCents) : 0;
+  const goToCheckout = useCallback(() => {
+    if (deliveryShortCents > 0) {
+      setMinGateOpen(true);
+      return;
+    }
+    router.push("/checkout");
+  }, [deliveryShortCents, router]);
+  const openMinGate = useCallback(() => setMinGateOpen(true), []);
+
   // ---- Persistence: Firestore load + realtime subscribe ----
   const suppressSaveRef = useRef(false);
   // Guards against saving an empty initial cart before the real one has
@@ -409,6 +426,11 @@ export function CartProvider({ children, onEditItem }) {
       openServiceGate,
       closeServiceGate,
       serviceGateOpen,
+      minGateOpen,
+      openMinGate,
+      closeMinGate,
+      goToCheckout,
+      deliveryShortCents,
       handleGateConfirmed,
       orderTiming,
       setOrderTiming: updateOrderTiming,
@@ -444,6 +466,11 @@ export function CartProvider({ children, onEditItem }) {
       openServiceGate,
       closeServiceGate,
       serviceGateOpen,
+      minGateOpen,
+      openMinGate,
+      closeMinGate,
+      goToCheckout,
+      deliveryShortCents,
       handleGateConfirmed,
       orderTiming,
       updateOrderTiming,

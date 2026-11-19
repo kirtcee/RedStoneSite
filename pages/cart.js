@@ -7,6 +7,7 @@ import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { findDealById, dealDiscountLabel } from "../utils/dealCatalog";
 import OrderSettingsAside from "../components/OrderSettingsAside";
 import OrderTotals from "../components/OrderTotals";
+import { DELIVERY_MINIMUM_CENTS } from "../utils/orderRules";
 import { useRouter } from "next/router";
 
 /*
@@ -540,11 +541,17 @@ export default function CartPage() {
                   <div className="cart-box__deal">
                     <DealCodeEntry variant="reveal" />
                   </div>
+                  {cart.deliveryShortCents > 0 && (
+                    <p className="cart-box__minNote">
+                      Delivery minimum is {formatMoney(DELIVERY_MINIMUM_CENTS)}. Add{" "}
+                      <strong>{formatMoney(cart.deliveryShortCents)}</strong> more for delivery.
+                    </p>
+                  )}
                   <div className="cart-box__checkout">
                     <button
                       type="button"
                       className="rs-pill-btn cart-box__checkoutBtn"
-                      onClick={() => router.push("/checkout")}
+                      onClick={() => cart.goToCheckout()}
                     >
                       Continue Checkout
                     </button>
@@ -720,6 +727,15 @@ export default function CartPage() {
           font-size: 0.8rem;
           letter-spacing: 0.03em;
           text-transform: uppercase;
+          color: #e31837;
+        }
+        .cart-box__minNote {
+          margin: 0 14px 10px;
+          font-size: var(--fs-base);
+          color: var(--text-brown);
+        }
+        .cart-box__minNote strong {
+          font-weight: var(--w-bold);
           color: #e31837;
         }
         .cart-box__checkout {

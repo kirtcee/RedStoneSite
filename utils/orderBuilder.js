@@ -14,8 +14,8 @@ import { findDealById } from "./dealCatalog";
 import { adminAuth } from "./firebaseAdmin";
 import { Timestamp } from "firebase-admin/firestore";
 
-export const TAX_RATE = 0.13;
-export const DELIVERY_FEE_CENTS = 499;
+import { TAX_RATE, DELIVERY_FEE_CENTS, DELIVERY_MINIMUM_CENTS } from "./orderRules";
+export { TAX_RATE, DELIVERY_FEE_CENTS };
 const MAX_ITEMS = 100;
 const MAX_QTY_PER_ITEM = 50;
 const MAX_DEALS = 20;
@@ -166,6 +166,11 @@ export function buildOrder(body, { uid, paymentMethod }) {
     active: d.active,
     savingsCents: d.savingsCents,
   }));
+
+  // Delivery needs a minimum amount of food and drink (after coupons).
+  if (serviceMethod === "Delivery" && subtotalCents < DELIVERY_MINIMUM_CENTS) {
+    return fail(400, "delivery_minimum");
+  }
 
   const deliveryCents = serviceMethod === "Delivery" ? DELIVERY_FEE_CENTS : 0;
   const taxCents = Math.round((subtotalCents + deliveryCents) * TAX_RATE);

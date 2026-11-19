@@ -73,6 +73,7 @@ export function friendlyOrderError(code, { card = false } = {}) {
   else if (["empty_cart", "bad_item", "bad_qty", "unpriceable_item", "too_many_items", "bad_deals"].includes(c))
     msg = "Something in your cart couldn't be processed. Please review your cart and try again.";
   else if (c === "missing_contact" || c === "bad_email") msg = "Please check your name, phone number and email, then try again.";
+  else if (c === "delivery_minimum") msg = "Delivery orders need at least $20.00 of food and drinks. Please add more items or switch to carryout.";
   else if (card) msg = "We couldn't connect to the payment system. Your card has not been charged. Please try again.";
   else msg = "We couldn't place your order. Please try again.";
   return c ? `${msg} (Code: ${c.split(":")[0]})` : msg;

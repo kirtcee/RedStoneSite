@@ -9,6 +9,7 @@ import Header from "../components/Header";
 import { CartProvider } from "../components/CartSystem";
 import CartEditOverlay from "../components/CartEditOverlay";
 import ServiceGateOverlay from "../components/ServiceGateOverlay";
+import DeliveryMinimumOverlay from "../components/DeliveryMinimumOverlay";
 import DealBuilder from "../components/DealBuilder";
 
 function RootApp({ Component, pageProps }) {
@@ -85,6 +86,7 @@ function RootApp({ Component, pageProps }) {
         </main>
         <CartEditOverlay editingItem={editingItem} onClose={() => setEditingItem(null)} />
         <ServiceGateOverlay />
+        <DeliveryMinimumOverlay />
         {/* The coupon builder — driven by CartProvider's openDealId, so a code
             redeemed anywhere (/cart, checkout), a card clicked on /coupons, or
             "Add another item to this coupon" all open this same builder. */}
