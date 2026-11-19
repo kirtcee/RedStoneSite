@@ -55,115 +55,98 @@ function RunnerIcon() {
   );
 }
 
-function StoreMap({ onCarryoutClick, mapsReady, storeLatLng }) {
-  const mapRef = useRef(null);
-  const mapObjRef = useRef(null);
-  const markerRef = useRef(null);
-  const infowinRef = useRef(null);
-  const domReadyListenerRef = useRef(null);
+// The store map is created ONCE and reused. When the picker closes (e.g.
+// after tapping Carryout), its element is parked in a hidden holder on the
+// page instead of being destroyed: tearing it out of the page while Google
+// Maps still had async work pending crashed Safari ("Argument 1 ('target')
+// to IntersectionObserver.observe must be an instance of Element"). It also
+// makes the map show instantly the next time.
+let sharedMap = null; // { el, map, marker, iw, onCarryout }
 
-  // Initialize map once
-  useEffect(() => {
-    if (!mapsReady || !window.google || !mapRef.current || mapObjRef.current)
-      return;
+function parkingSpot() {
+  let spot = document.getElementById("rs-map-parking");
+  if (!spot) {
+    spot = document.createElement("div");
+    spot.id = "rs-map-parking";
+    spot.setAttribute("aria-hidden", "true");
+    spot.style.cssText = "position:fixed;left:-10000px;top:0;width:360px;height:420px;visibility:hidden;pointer-events:none;";
+    document.body.appendChild(spot);
+  }
+  return spot;
+}
 
-    const g = window.google;
-    const center = new g.maps.LatLng(storeLatLng.lat, storeLatLng.lng);
+function createSharedMap(g, storeLatLng) {
+  const el = document.createElement("div");
+  el.className = "mapBox";
+  el.style.cssText = "width:100%;height:420px;background:#f1f1f1;border:1px solid var(--border, #e3e3e3);border-radius:4px;";
+  parkingSpot().appendChild(el);
 
-    const map = new g.maps.Map(mapRef.current, {
-      center,
-      zoom: 14,
-      disableDefaultUI: true,
-      zoomControl: true,
-    });
-    mapObjRef.current = map;
+  const center = new g.maps.LatLng(storeLatLng.lat, storeLatLng.lng);
+  const map = new g.maps.Map(el, { center, zoom: 14, disableDefaultUI: true, zoomControl: true });
+  const marker = new g.maps.Marker({ position: center, map, title: "Our Store" });
 
-    const marker = new g.maps.Marker({
-      position: center,
-      map,
-      title: "Our Store",
-    });
-    markerRef.current = marker;
+  // Title goes in the InfoWindow's header row, beside the close (X)
+  // button, instead of below it (which left an empty gap at the top).
+  const infoHeader = document.createElement("div");
+  infoHeader.style.cssText =
+    "font-family:'Red Stone Face',system-ui,sans-serif;font-weight:800;font-size:17px;line-height:1.2;padding-top:2px;";
+  infoHeader.textContent = "Red Stone Pizza";
 
-    // Title goes in the InfoWindow's header row, beside the close (X)
-    // button, instead of below it (which left an empty gap at the top).
-    const infoHeader = document.createElement("div");
-    infoHeader.style.cssText =
-      "font-family:'Red Stone Face',system-ui,sans-serif;font-weight:800;font-size:17px;line-height:1.2;padding-top:2px;";
-    infoHeader.textContent = "Red Stone Pizza";
-
-    // No fixed min-width, and the button uses border-box sizing so its
-    // padding can't push it wider than the popup (that was what caused the
-    // sideways scrolling on phones). The address is split over two lines.
-    const infoDiv = document.createElement("div");
-    infoDiv.style.cssText =
-      "font-family:'Red Stone Face',system-ui,sans-serif;font-size:16px;line-height:1.35;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;";
-    infoDiv.innerHTML = `
+  // No fixed min-width, and the button uses border-box sizing so its
+  // padding can't push it wider than the popup (that was what caused the
+  // sideways scrolling on phones). The address is split over two lines.
+  const infoDiv = document.createElement("div");
+  infoDiv.style.cssText =
+    "font-family:'Red Stone Face',system-ui,sans-serif;font-size:16px;line-height:1.35;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;";
+  infoDiv.innerHTML = `
       <div style="margin-bottom:4px;">576 Concession St<br />Hamilton, ON</div>
       <div style="margin-bottom:4px;">Phone: <a href="tel:+1-905-385-9888">905-385-9888</a></div>
       <div style="margin-bottom:10px;">Hours: 11:00 to 22:00</div>
-      <button id="map-carryout-btn" style="display:block;box-sizing:border-box;width:100%;background:#8b1a1a;color:#fff;border:0;border-radius:4px;padding:.45rem .75rem;font-family:'Red Stone Face Max','Red Stone Face',system-ui,sans-serif;font-size:20px;line-height:1.1;letter-spacing:.4px;cursor:pointer;text-transform:uppercase">Carryout</button>
+      <button type="button" style="display:block;box-sizing:border-box;width:100%;background:#8b1a1a;color:#fff;border:0;border-radius:4px;padding:.45rem .75rem;font-family:'Red Stone Face Max','Red Stone Face',system-ui,sans-serif;font-size:20px;line-height:1.1;letter-spacing:.4px;cursor:pointer;text-transform:uppercase">Carryout</button>
     `;
-    const iw = new g.maps.InfoWindow({
-      headerContent: infoHeader,
-      content: infoDiv,
-      maxWidth: 230,
-    });
-    infowinRef.current = iw;
+  const shared = { el, map, marker, iw: null, onCarryout: null };
+  // The popup's button calls whichever picker is showing the map right now.
+  infoDiv.querySelector("button").addEventListener("click", () => shared.onCarryout?.());
 
-    marker.addListener("click", () => iw.open({ anchor: marker, map }));
+  const iw = new g.maps.InfoWindow({ headerContent: infoHeader, content: infoDiv, maxWidth: 230 });
+  marker.addListener("click", () => iw.open({ anchor: marker, map }));
+  iw.open({ anchor: marker, map });
+  shared.iw = iw;
+  return shared;
+}
 
-    domReadyListenerRef.current = g.maps.event.addListenerOnce(
-      iw,
-      "domready",
-      () => {
-        const btn = document.getElementById("map-carryout-btn");
-        if (btn) btn.addEventListener("click", () => onCarryoutClick?.());
-      }
-    );
+function StoreMap({ onCarryoutClick, mapsReady, storeLatLng }) {
+  const hostRef = useRef(null);
 
-    iw.open({ anchor: marker, map });
+  // Keep the popup's Carryout button pointed at this picker.
+  useEffect(() => {
+    if (sharedMap) sharedMap.onCarryout = onCarryoutClick;
+  });
 
+  // Show the shared map here; park it (don't destroy it) when this closes.
+  useEffect(() => {
+    if (!mapsReady || !window.google || !hostRef.current) return;
+    if (!sharedMap) sharedMap = createSharedMap(window.google, storeLatLng);
+    sharedMap.onCarryout = onCarryoutClick;
+    hostRef.current.appendChild(sharedMap.el);
+    const host = hostRef.current;
     return () => {
-      if (domReadyListenerRef.current) {
-        g.maps.event.removeListener(domReadyListenerRef.current);
-      }
-      // Tear the map down explicitly so Google Maps stops tracking the
-      // container once React removes it.
-      iw.close();
-      g.maps.event.clearInstanceListeners(iw);
-      marker.setMap(null);
-      g.maps.event.clearInstanceListeners(marker);
-      g.maps.event.clearInstanceListeners(map);
-      mapObjRef.current = null;
-      markerRef.current = null;
-      infowinRef.current = null;
+      if (sharedMap && sharedMap.el.parentNode === host) parkingSpot().appendChild(sharedMap.el);
+      if (sharedMap) sharedMap.onCarryout = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapsReady]);
 
   // Recenter if store location changes (after geocoding)
   useEffect(() => {
-    if (!mapObjRef.current || !markerRef.current) return;
+    if (!sharedMap) return;
     const pos = new window.google.maps.LatLng(storeLatLng.lat, storeLatLng.lng);
-    markerRef.current.setPosition(pos);
-    mapObjRef.current.setCenter(pos);
-    mapObjRef.current.setZoom(14);
+    sharedMap.marker.setPosition(pos);
+    sharedMap.map.setCenter(pos);
+    sharedMap.map.setZoom(14);
   }, [mapsReady, storeLatLng]);
 
-  return (
-    <div
-      ref={mapRef}
-      className="mapBox"
-      style={{
-        width: "100%",
-        height: 420,
-        background: "#f1f1f1",
-        border: "1px solid var(--border, #e3e3e3)",
-        borderRadius: 4,
-      }}
-    />
-  );
+  return <div ref={hostRef} />;
 }
 
 /**
