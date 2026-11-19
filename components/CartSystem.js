@@ -14,6 +14,7 @@ import { loadCart, saveCart, subscribeCart } from "../utils/cartPersistence";
 import { auth } from "../utils/firebaseConfig";
 import { findDealById, dealUnitToCartItem } from "../utils/dealCatalog";
 import { deliveryShortfallCents } from "../utils/orderRules";
+import { fetchDeliveryQuote } from "../utils/saveOrder";
 
 const CartContext = createContext(null);
 
@@ -98,14 +99,65 @@ export function CartProvider({ children, onEditItem }) {
     } catch {}
   }, []);
 
-  const confirmDelivery = useCallback((address) => {
+  // ---- Delivery fee quote for the confirmed address (drive time based,
+  // see utils/orderRules.js). Kept with the address it belongs to; the
+  // server works it out again when the order is placed. ----
+  const [deliveryQuote, setDeliveryQuote] = useState(null); // { forAddress, ok, minutes, km, feeCents, tooFar }
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const saveQuote = (q) => {
+    setDeliveryQuote(q);
+    try {
+      if (q) localStorage.setItem("rs_delivery_quote", JSON.stringify(q));
+      else localStorage.removeItem("rs_delivery_quote");
+    } catch {}
+  };
+  const refreshDeliveryQuote = useCallback(async (address) => {
+    if (!address) return null;
+    setQuoteLoading(true);
+    const q = await fetchDeliveryQuote(address);
+    setQuoteLoading(false);
+    const stamped = { ...q, forAddress: JSON.stringify(address) };
+    saveQuote(stamped);
+    return stamped;
+  }, []);
+
+  const confirmDelivery = useCallback((address, quote = null) => {
     setService("delivery");
     setDeliveryAddress(address);
     try {
       localStorage.setItem("rs_service", "delivery");
       localStorage.setItem("rs_delivery_address", JSON.stringify(address));
     } catch {}
-  }, []);
+    if (quote?.ok) saveQuote({ ...quote, forAddress: JSON.stringify(address) });
+    else refreshDeliveryQuote(address);
+  }, [refreshDeliveryQuote]);
+
+  // Returning visitor: use the saved quote if it's for the saved address,
+  // otherwise work it out again.
+  useEffect(() => {
+    if (service !== "delivery" || !deliveryAddress) return;
+    const want = JSON.stringify(deliveryAddress);
+    if (deliveryQuote?.forAddress === want) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem("rs_delivery_quote") || "null");
+      if (saved?.forAddress === want && saved.ok) {
+        setDeliveryQuote(saved);
+        return;
+      }
+    } catch {}
+    if (!quoteLoading) refreshDeliveryQuote(deliveryAddress);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [service, deliveryAddress]);
+
+  // What the cart/checkout show and add: null = not known yet.
+  const quoteMatches = deliveryQuote?.forAddress === JSON.stringify(deliveryAddress || null);
+  const deliveryFeeCents =
+    service !== "delivery"
+      ? 0
+      : quoteMatches && deliveryQuote?.ok && !deliveryQuote.tooFar
+      ? deliveryQuote.feeCents
+      : null;
+  const deliveryTooFar = service === "delivery" && quoteMatches && !!deliveryQuote?.tooFar;
 
   const isServiceConfirmed =
     service === "carryout" || (service === "delivery" && !!deliveryAddress);
@@ -431,6 +483,11 @@ export function CartProvider({ children, onEditItem }) {
       closeMinGate,
       goToCheckout,
       deliveryShortCents,
+      deliveryQuote,
+      deliveryFeeCents,
+      deliveryTooFar,
+      quoteLoading,
+      refreshDeliveryQuote,
       handleGateConfirmed,
       orderTiming,
       setOrderTiming: updateOrderTiming,
@@ -471,6 +528,11 @@ export function CartProvider({ children, onEditItem }) {
       closeMinGate,
       goToCheckout,
       deliveryShortCents,
+      deliveryQuote,
+      deliveryFeeCents,
+      deliveryTooFar,
+      quoteLoading,
+      refreshDeliveryQuote,
       handleGateConfirmed,
       orderTiming,
       updateOrderTiming,

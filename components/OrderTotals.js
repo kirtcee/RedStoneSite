@@ -7,20 +7,33 @@
 import React from "react";
 import { useCart } from "./CartSystem";
 import { formatMoney } from "./Pricing";
-import { DELIVERY_FEE_CENTS, taxOn } from "../utils/orderRules";
+import { taxOn } from "../utils/orderRules";
 
 export function useOrderTotals() {
   const cart = useCart();
   const subtotal = cart?.subtotalCents ?? 0;
-  const delivery = cart?.service === "delivery" ? DELIVERY_FEE_CENTS : 0;
+  const isDelivery = cart?.service === "delivery";
+  // Fee from the drive-time quote; null while it's still being worked out.
+  const deliveryFee = isDelivery ? cart?.deliveryFeeCents ?? null : 0;
+  const delivery = deliveryFee || 0;
   const tax = taxOn(subtotal); // delivery fee isn't taxed
   // What the coupons knock off the items' normal prices (before tax).
   const saved = cart?.pricing?.savingsCents ?? 0;
-  return { subtotal, delivery, tax, total: subtotal + delivery + tax, saved, isLoaded: !!cart?.isLoaded };
+  return {
+    subtotal,
+    delivery,
+    isDelivery,
+    deliveryKnown: !isDelivery || deliveryFee != null,
+    deliveryTooFar: !!cart?.deliveryTooFar,
+    tax,
+    total: subtotal + delivery + tax,
+    saved,
+    isLoaded: !!cart?.isLoaded,
+  };
 }
 
 export default function OrderTotals({ className = "" }) {
-  const { subtotal, delivery, tax, total, isLoaded } = useOrderTotals();
+  const { subtotal, delivery, isDelivery, deliveryKnown, deliveryTooFar, tax, total, isLoaded } = useOrderTotals();
   const show = (c) => (isLoaded ? formatMoney(c) : "···");
   return (
     <div className={`order-totals ${className}`}>
@@ -28,10 +41,10 @@ export default function OrderTotals({ className = "" }) {
         <span>Food &amp; Beverage:</span>
         <span>{show(subtotal)}</span>
       </div>
-      {delivery > 0 && (
+      {isDelivery && (
         <div className="order-totals__row">
           <span>Delivery:</span>
-          <span>{show(delivery)}</span>
+          <span>{deliveryTooFar ? "Call store" : deliveryKnown ? show(delivery) : "···"}</span>
         </div>
       )}
       <div className="order-totals__row order-totals__row--beforeTotal">

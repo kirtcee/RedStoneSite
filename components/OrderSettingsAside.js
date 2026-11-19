@@ -395,6 +395,8 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
     setScheduleTime,
     isLoaded,
     goToCheckout,
+    deliveryFeeCents: cartDeliveryFeeCents,
+    deliveryTooFar: cartDeliveryTooFar,
   } = useCart();
   const subtotalCents = cartSubtotalCents ?? 0;
 
@@ -412,7 +414,9 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const deliveryCents = service === "delivery" ? DELIVERY_FEE_CENTS : 0;
+  // Drive-time fee for the confirmed address (null while it's worked out).
+  const deliveryFee = service === "delivery" ? cartDeliveryFeeCents ?? null : 0;
+  const deliveryCents = deliveryFee || 0;
   const taxCents = taxOn(subtotalCents); // delivery fee isn't taxed
   const totalCents = subtotalCents + deliveryCents + taxCents;
 
@@ -614,7 +618,9 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
             {service === "delivery" && (
               <div className="os-totalRow">
                 <div>Delivery:</div>
-                <div className="os-totalNum">{isLoaded ? formatMoney(DELIVERY_FEE_CENTS) : "···"}</div>
+                <div className="os-totalNum">
+                  {cartDeliveryTooFar ? "Call store" : isLoaded && deliveryFee != null ? formatMoney(deliveryFee) : "···"}
+                </div>
               </div>
             )}
             <div className="os-totalRow">

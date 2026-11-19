@@ -197,6 +197,8 @@ export default function CheckoutPage() {
       openServiceGate?.();
       return;
     }
+    // Address too far to price online: the notice above the button explains.
+    if (cart?.deliveryTooFar) return;
     // Delivery minimum (utils/orderRules.js): show what's missing instead.
     if (cart?.deliveryShortCents > 0) {
       cart.openMinGate?.();
@@ -489,6 +491,15 @@ export default function CheckoutPage() {
               </div>
             </section>
 
+            {cart?.deliveryTooFar && (
+              <div className="co-minNote">
+                This address is about {cart.deliveryQuote?.minutes} minutes from our store. Please double-check the
+                address, or call us at <a href="tel:+19053859888">905-385-9888</a> and we'll arrange your delivery.{" "}
+                <button type="button" className="co-minNote__btn" onClick={() => openServiceGate?.()}>
+                  Change address
+                </button>
+              </div>
+            )}
             {cart?.deliveryShortCents > 0 && (
               <div className="co-minNote">
                 Delivery orders need at least {formatMoney(DELIVERY_MINIMUM_CENTS)} of food and drinks. Add{" "}
@@ -926,6 +937,11 @@ export default function CheckoutPage() {
           background: var(--menu-box-bg);
           font-size: var(--fs-base);
           color: var(--text-brown);
+        }
+        .co-minNote a {
+          color: #000;
+          font-weight: var(--w-bold);
+          text-decoration: underline;
         }
         .co-minNote strong {
           font-weight: var(--w-bold);

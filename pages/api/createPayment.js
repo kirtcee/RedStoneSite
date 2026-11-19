@@ -8,6 +8,7 @@
 import { adminDb, adminSetupProblem } from "../../utils/firebaseAdmin";
 import { FieldValue } from "firebase-admin/firestore";
 import { buildOrder, isRateLimited, verifyUser } from "../../utils/orderBuilder";
+import { quoteDelivery } from "../../utils/deliveryQuote";
 import { getStripe } from "../../utils/stripeServer";
 
 function reject(res, status, reason) {
@@ -25,9 +26,12 @@ async function handle(req, res) {
   if (auth.error) return reject(res, 401, auth.error);
   const uid = auth.uid;
 
+  // Delivery fee: worked out here from the address, never taken from the browser.
+  const deliveryQuote = body.serviceMethod === "Delivery" ? await quoteDelivery(body.deliveryAddress) : null;
+
   let built;
   try {
-    built = buildOrder(body, { uid, paymentMethod: "card" });
+    built = buildOrder(body, { uid, paymentMethod: "card", deliveryQuote });
   } catch (e) {
     console.error("createPayment: checking the order failed", e);
     return reject(res, 500, `order_check_failed: ${String(e?.message || e).slice(0, 100)}`);

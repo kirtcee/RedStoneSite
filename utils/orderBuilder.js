@@ -39,7 +39,7 @@ const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const RATE_LIMIT_MAX = 5;
 const rateLimitHits = new Map(); // key -> timestamps[]
 
-export function isRateLimited(req, bucket = "order") {
+export function isRateLimited(req, bucket = "order", max = RATE_LIMIT_MAX) {
   const key = `${bucket}:${clientIp(req)}`;
   const now = Date.now();
   const hits = (rateLimitHits.get(key) || []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
@@ -50,7 +50,7 @@ export function isRateLimited(req, bucket = "order") {
       if (timestamps.every((t) => now - t >= RATE_LIMIT_WINDOW_MS)) rateLimitHits.delete(k);
     }
   }
-  return hits.length > RATE_LIMIT_MAX;
+  return hits.length > max;
 }
 
 function clientIp(req) {
@@ -92,7 +92,9 @@ export function pickupTimeFor(orderTiming, schedule) {
 
 // Validates + prices an order body. Returns { ok: true, order } with the
 // Firestore fields (minus createdAt), or { ok: false, status, reason }.
-export function buildOrder(body, { uid, paymentMethod }) {
+// For delivery, `deliveryQuote` is the server's own quote for the address
+// (utils/deliveryQuote.js); the fee comes from it, never from the browser.
+export function buildOrder(body, { uid, paymentMethod, deliveryQuote = null }) {
   const fail = (status, reason) => ({ ok: false, status, reason });
   const {
     items: rawItems,
@@ -172,7 +174,14 @@ export function buildOrder(body, { uid, paymentMethod }) {
     return fail(400, "delivery_minimum");
   }
 
-  const deliveryCents = serviceMethod === "Delivery" ? DELIVERY_FEE_CENTS : 0;
+  let deliveryCents = 0;
+  let deliveryInfo = null;
+  if (serviceMethod === "Delivery") {
+    if (!deliveryQuote?.ok) return fail(400, "delivery_quote_failed");
+    if (deliveryQuote.tooFar) return fail(400, "delivery_too_far");
+    deliveryCents = deliveryQuote.feeCents;
+    deliveryInfo = { minutes: deliveryQuote.minutes, km: deliveryQuote.km };
+  }
   const taxCents = taxOn(subtotalCents); // delivery fee isn't taxed
   const totalCents = subtotalCents + deliveryCents + taxCents;
 
@@ -189,6 +198,7 @@ export function buildOrder(body, { uid, paymentMethod }) {
       schedule: isLater ? { date: date || null, time: time || null } : { date: null, time: null },
       location: String(location || "").slice(0, 200),
       deliveryAddress: serviceMethod === "Delivery" ? deliveryAddress || null : null,
+      delivery: deliveryInfo, // drive time / distance the fee was based on
       contact: { name, firstName, lastName, phone, email },
       paymentMethod,
       paid: false,

@@ -236,6 +236,11 @@ export default function KitchenDashboard() {
                   <span className={`order-pay${order.paid ? " order-pay--paid" : ""}`}>
                     {order.paid ? "Paid Online" : order.serviceMethod === "Delivery" ? "Pay at Door" : "Pay at Store"}
                   </span>
+                  {order.delivery?.minutes != null && (
+                    <span className="order-drive">
+                      {order.delivery.minutes} min drive{order.delivery.km ? `, ${order.delivery.km} km` : ""}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -537,6 +542,11 @@ export default function KitchenDashboard() {
           letter-spacing: 0.3px;
           padding: 3px 8px;
           border-radius: 4px;
+        }
+        .order-drive {
+          font-size: 0.8rem;
+          font-weight: 700;
+          color: #333;
         }
         .order-pay--paid {
           background: #2e7d32;

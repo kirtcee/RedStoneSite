@@ -73,6 +73,10 @@ export function friendlyOrderError(code, { card = false } = {}) {
   else if (["empty_cart", "bad_item", "bad_qty", "unpriceable_item", "too_many_items", "bad_deals"].includes(c))
     msg = "Something in your cart couldn't be processed. Please review your cart and try again.";
   else if (c === "missing_contact" || c === "bad_email") msg = "Please check your name, phone number and email, then try again.";
+  else if (c === "delivery_too_far")
+    msg = "This address is too far to price online. Please call us at 905-385-9888 and we'll arrange your delivery.";
+  else if (c === "delivery_quote_failed")
+    msg = "We couldn't work out the delivery fee for this address. Please check the address, or call us at 905-385-9888.";
   else if (c === "delivery_minimum") msg = "Delivery orders need at least $20.00 of food and drinks. Please add more items or switch to carryout.";
   else if (card) msg = "We couldn't connect to the payment system. Your card has not been charged. Please try again.";
   else msg = "We couldn't place your order. Please try again.";
@@ -120,5 +124,21 @@ export async function finalizeCardPayment(orderId) {
     return body?.status || "error";
   } catch {
     return "error";
+  }
+}
+
+// Delivery fee for an address (see pages/api/deliveryQuote.js).
+// Resolves { ok: true, minutes, km, feeCents, tooFar } or { ok: false, reason }.
+export async function fetchDeliveryQuote(address) {
+  try {
+    const res = await fetch("/api/deliveryQuote", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ address }),
+    });
+    const body = await res.json().catch(() => ({}));
+    return body && typeof body === "object" ? body : { ok: false, reason: "error" };
+  } catch {
+    return { ok: false, reason: "network" };
   }
 }

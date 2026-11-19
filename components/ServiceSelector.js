@@ -1,6 +1,9 @@
 // components/ServiceSelector.js
 import React, { useEffect, useRef, useState } from "react";
 import { useCart } from "./CartSystem";
+import { formatMoney } from "./Pricing";
+import { fetchDeliveryQuote } from "../utils/saveOrder";
+import { STORE_PHONE } from "../utils/orderRules";
 
 // Fallback center (Hamilton-ish) if geocoding fails. Strip stray quotes /
 // whitespace and fall back if the env value still isn't a finite number, so
@@ -411,16 +414,26 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
 
   const canSubmitDelivery = street.trim() && city.trim() && postal.trim();
 
-  const handleConfirmDelivery = () => {
-    const payload = {
-      addressType: addrType,
-      street,
-      suite,
-      city,
-      province,
-      postal,
+  const addressPayload = () => ({ addressType: addrType, street, suite, city, province, postal });
+
+  // Delivery fee for this address (drive time, utils/orderRules.js), worked
+  // out as soon as the ADDRESS DETAILS popup opens.
+  const [confirmQuote, setConfirmQuote] = useState(null); // null = loading
+  useEffect(() => {
+    if (!showConfirm) return;
+    let cancelled = false;
+    setConfirmQuote(null);
+    fetchDeliveryQuote(addressPayload()).then((q) => {
+      if (!cancelled) setConfirmQuote(q);
+    });
+    return () => {
+      cancelled = true;
     };
-    confirmDelivery(payload);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showConfirm]);
+
+  const handleConfirmDelivery = () => {
+    confirmDelivery(addressPayload(), confirmQuote?.ok ? confirmQuote : null);
     onConfirmed?.();
   };
 
@@ -656,6 +669,28 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
                   <div className="k">Postal Code:</div>
                   <div className="v">{postal || "Not provided"}</div>
                 </div>
+                <div className="row row--fee">
+                  <div className="k">Delivery Fee:</div>
+                  <div className="v">
+                    {!confirmQuote
+                      ? "Calculating…"
+                      : confirmQuote.ok && !confirmQuote.tooFar
+                      ? `${formatMoney(confirmQuote.feeCents)} (about a ${confirmQuote.minutes} min drive)`
+                      : confirmQuote.ok
+                      ? "Call the store"
+                      : "Shown at checkout"}
+                  </div>
+                </div>
+                {confirmQuote?.tooFar && (
+                  <div className="farNote">
+                    This address is about {confirmQuote.minutes} minutes from our store. Please double-check the
+                    address, or call us at <a href={`tel:+1${STORE_PHONE.replace(/\D/g, "")}`}>{STORE_PHONE}</a> and
+                    we'll arrange your delivery.
+                    <button type="button" className="linkBtn farNote__carryout" onClick={goCarryout}>
+                      Order for carryout instead
+                    </button>
+                  </div>
+                )}
 
                 <div
                   style={{
@@ -678,6 +713,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
                     className="bigRedNarrow"
                     style={{ margin: 0, width: "auto" }}
                     onClick={handleConfirmDelivery}
+                    disabled={!confirmQuote || !!confirmQuote.tooFar}
                   >
                     Confirm &amp; Continue
                   </button>
@@ -809,6 +845,27 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           margin-top: 6px;
           font-size: var(--fs-sm);
           color: #b00020;
+        }
+        .row--fee .v {
+          font-weight: var(--w-bold);
+          color: #000;
+        }
+        .farNote {
+          margin-top: 10px;
+          padding: 10px 12px;
+          border-left: 5px solid #e31837;
+          background: var(--menu-box-bg);
+          font-size: var(--fs-sm);
+          line-height: 1.35;
+          color: var(--text-brown);
+        }
+        .farNote a {
+          color: #000;
+          font-weight: var(--w-bold);
+        }
+        .farNote__carryout {
+          display: block;
+          margin-top: 8px;
         }
         .bigRedNarrow {
           background: #8b1a1a;

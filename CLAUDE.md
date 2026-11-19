@@ -32,6 +32,13 @@
   and the preload links in `pages/_app.js` (and `components/StripeCardPayment.js`).
 
 ## Order rules
+- **Delivery fee = drive time** from the store (Google Routes API, no live
+  traffic, rounded up): 4 min or less $2.99, 5 min $3.99, 6-7 min $4.99,
+  8 min $5.99, then +$1 per minute; over 25 min = no online price, ask them
+  to check the address or call. Table: `deliveryFeeForMinutes()` in
+  `utils/orderRules.js`. The server always works the fee out itself
+  (`utils/deliveryQuote.js`, needs `GOOGLE_MAPS_SERVER_KEY`).
+- **Tax is on food and drinks only**, never on the delivery fee (`taxOn()`).
 - Tax rate, delivery fee and the **$20 delivery minimum** live in
   `utils/orderRules.js`, shared by the browser and the server
   (`utils/orderBuilder.js` refuses delivery orders under the minimum).

@@ -18,6 +18,9 @@ Running list of things to finish before `mac-handoff` is merged into `main`
         and put its signing secret in Vercel as `STRIPE_WEBHOOK_SECRET`
       - at launch: swap the test keys for live ones (and a live webhook)
       - Apple Pay: add the live domain in Stripe → Payment method domains
+- [ ] **Google server key for delivery fees**: create a key with the
+      **Routes API**, save it in Vercel (Production + Preview) and `.env.local`
+      as `GOOGLE_MAPS_SERVER_KEY`. Without it delivery orders can't be priced.
 - [ ] **Merge `mac-handoff` → `main`** to go live.
 
 ## Should do
