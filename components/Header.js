@@ -232,7 +232,14 @@ export default function Header() {
 
   const carryoutAddressFull = "576 Concession Street";
   const carryoutAddress = carryoutAddressFull;
-  const deliveryAddressDisplay = formatAddressFull(deliveryAddress) || "Enter Address";
+  // Long addresses: first 16 characters (spaces count), then "...".
+  // The full address is still in the chip's aria-label.
+  const ADDRESS_CHARS = 16;
+  const fullDeliveryAddress = formatAddressFull(deliveryAddress) || "Enter Address";
+  const deliveryAddressDisplay =
+    fullDeliveryAddress.length > ADDRESS_CHARS
+      ? `${fullDeliveryAddress.slice(0, ADDRESS_CHARS).trimEnd()}...`
+      : fullDeliveryAddress;
 
   // Carryout / Delivery chip (icon | separator | two lines of text). Used in
   // the desktop header and the mobile sub-bar below the header.
