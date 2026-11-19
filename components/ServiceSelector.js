@@ -99,7 +99,7 @@ function StoreMap({ onCarryoutClick, mapsReady, storeLatLng }) {
       <div style="margin-bottom:4px;">576 Concession St<br />Hamilton, ON</div>
       <div style="margin-bottom:4px;">Phone: <a href="tel:+1-905-385-9888">905-385-9888</a></div>
       <div style="margin-bottom:10px;">Hours: 11:00 to 22:00</div>
-      <button id="map-carryout-btn" style="display:block;box-sizing:border-box;width:100%;background:#8b1a1a;color:#fff;border:0;border-radius:4px;padding:.45rem .75rem;font-family:'Red Stone Face Max','Red Stone Face',system-ui,sans-serif;font-size:22px;line-height:1.1;letter-spacing:.4px;cursor:pointer;text-transform:uppercase">Carryout</button>
+      <button id="map-carryout-btn" style="display:block;box-sizing:border-box;width:100%;background:#8b1a1a;color:#fff;border:0;border-radius:4px;padding:.45rem .75rem;font-family:'Red Stone Face Max','Red Stone Face',system-ui,sans-serif;font-size:20px;line-height:1.1;letter-spacing:.4px;cursor:pointer;text-transform:uppercase">Carryout</button>
     `;
     const iw = new g.maps.InfoWindow({
       headerContent: infoHeader,
@@ -758,7 +758,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           font-weight: 900;
           text-transform: uppercase;
           letter-spacing: 0.4px;
-          font-size: var(--fs-lg); /* big text that fills the button */
+          font-size: var(--fs-md); /* big text that fills the button */
           line-height: 1.1;
           width: 360px;
           max-width: 90%;
@@ -973,7 +973,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           }
           .bigRedNarrow {
             width: 100%;
-            font-size: var(--fs-lg);
+            font-size: var(--fs-md);
           }
           .row {
             flex-direction: column;
