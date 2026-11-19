@@ -561,7 +561,7 @@ export default function CartPage() {
             </div>
           </section>
 
-          <OrderSettingsAside />
+          <OrderSettingsAside hideMobileBar />
         </div>
       </div>
 

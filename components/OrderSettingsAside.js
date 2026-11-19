@@ -375,7 +375,9 @@ function DateDropdown({ value, onChange }) {
 // variant="drawer": just the ORDER SETTINGS card, for the mobile hamburger
 //   menu (components/Header.js) — no checkout button, sticky follower or
 //   bottom bar.
-export default function OrderSettingsAside({ variant = "aside" }) {
+// hideMobileBar: skip the phones' fixed Total/Checkout bar (the cart page
+// has its own Continue Checkout button and totals).
+export default function OrderSettingsAside({ variant = "aside", hideMobileBar = false }) {
   const isDrawer = variant === "drawer";
   const router = useRouter();
   const {
@@ -468,7 +470,7 @@ export default function OrderSettingsAside({ variant = "aside" }) {
       {/* Mobile-only stand-in for the Checkout button inside .menu-aside,
           which is display:none below 860px (see globals.css) — without
           this there is no way to reach /checkout from a phone at all. */}
-      {!isDrawer && (
+      {!isDrawer && !hideMobileBar && (
       <div className="mobile-checkout-bar">
         <div className="mobile-checkout-bar__total">
           <span>Total</span>

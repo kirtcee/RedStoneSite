@@ -1594,8 +1594,9 @@ body::before {
     display: flex !important;
   }
 
-  /* Keep page content from ending up underneath the fixed bar. */
-  body {
+  /* Keep page content from ending up underneath the fixed bar — only on
+     pages that show it (not the cart). */
+  body:has(.mobile-checkout-bar) {
     padding-bottom: 64px;
   }
 }
