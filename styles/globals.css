@@ -1824,3 +1824,25 @@ button {
   font-size: var(--fs-base);
   font-weight: var(--w-semibold);
 }
+
+/* Delivery car icon: its own size (the car file is cropped tight, so the
+   box shrinks with it and the gap to the "|" stays the same as carryout).
+   Change --car-size to make the car bigger or smaller. */
+.carryout-iconbox--car {
+  --car-size: 28px;
+}
+.header-seg--mode .carryout-iconbox--car,
+.header-seg--mode .carryout-iconbox--car .carryout-icon {
+  width: var(--car-size);
+  height: var(--car-size);
+}
+@media (max-width: 860px) {
+  .carryout-iconbox--car {
+    --car-size: 24px;
+  }
+  .mobile-subbar .carryout-iconbox--car,
+  .mobile-subbar .carryout-iconbox--car .carryout-icon {
+    width: var(--car-size);
+    height: var(--car-size);
+  }
+}

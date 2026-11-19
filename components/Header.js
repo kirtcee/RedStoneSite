@@ -273,7 +273,7 @@ export default function Header() {
         formatAddressFull(deliveryAddress) || "Enter Address"
       }`}
     >
-      <span className="carryout-iconbox" aria-hidden="true">
+      <span className="carryout-iconbox carryout-iconbox--car" aria-hidden="true">
         <DeliveryIcon className="carryout-icon" focusable="false" />
       </span>
       <span className="carryout-sep" aria-hidden="true" />

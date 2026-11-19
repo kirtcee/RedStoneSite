@@ -1012,7 +1012,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
              --addr-top:  gap above the popup (bigger = lower on screen)
              --addr-side: gap on the left and right (phones) */
         .addrModal-root {
-          --addr-top: 80px;
+          --addr-top: 74px;
           --addr-side: 0px;
           position: fixed;
           inset: 0;
@@ -1095,7 +1095,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
             font-size: 0.8rem;
           }
           .addrModal-root {
-            --addr-top: 40px;
+            --addr-top: 74px;
             --addr-side: 12px;
           }
         }
