@@ -10,6 +10,11 @@ import { findDealById } from "../utils/dealCatalog";
 import { saveOrder, startCardPayment, finalizeCardPayment, friendlyOrderError } from "../utils/saveOrder";
 import StripeCardPayment from "../components/StripeCardPayment";
 
+// FONT TEST: true = the whole checkout page (card form included) uses Red
+// Stone Face (see "FONT TEST" at the bottom of styles/globals.css).
+// Set to false to go back to the normal fonts.
+const FONT_TEST_RED_STONE_FACE = true;
+
 // Shown under the page title (same numbers as the menu page estimate)
 const CARRYOUT_ADDRESS = "576 Concession Street";
 const READY_MINUTES = { carryout: 20, delivery: 45 };
@@ -274,7 +279,7 @@ export default function CheckoutPage() {
   };
 
   return (
-    <main className="page page--checkout">
+    <main className={`page page--checkout${FONT_TEST_RED_STONE_FACE ? " font-test-face" : ""}`}>
       <div className="container co-wrap">
         <h1 className="menu-title co-title">Checkout</h1>
 
@@ -466,7 +471,7 @@ export default function CheckoutPage() {
                         : "At the store you can pay with cash, credit card, debit card or gift card."}
                     </p>
                   )}
-                  {form.payment === "card" && <StripeCardPayment ref={cardRef} amountCents={totals.total} />}
+                  {form.payment === "card" && <StripeCardPayment ref={cardRef} amountCents={totals.total} fontTest={FONT_TEST_RED_STONE_FACE} />}
                   {errors.payment && (
                     <div id="co-pay-err" className="co-error">
                       {errors.payment}
@@ -508,7 +513,7 @@ export default function CheckoutPage() {
           color: var(--text-brown);
           /* Red Stone Face (variable font) — tweak the two weights below
              in Inspect: any number from 100 (Thin) to 950 (ExtraBlack). */
-          --sub-weight: 300;      /* the sentence */
+          --sub-weight: 400;      /* the sentence */
           --sub-bold-weight: 600; /* the bold words */
           font-family: var(--font-face);
           font-weight: var(--sub-weight);

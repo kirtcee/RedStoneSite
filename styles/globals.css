@@ -77,6 +77,16 @@
   font-style: normal;
   font-display: swap;
 }
+/* "Red Stone Face Max": always ExtraBlack (950), whatever weight is asked
+   for — a stand-in for the single-weight Red Stone Display in the
+   checkout font test below. */
+@font-face {
+  font-family: 'Red Stone Face Max';
+  src: url('/fonts/RedStoneFace-ExtraBlack.woff2?v=1') format('woff2');
+  font-weight: 100 950;
+  font-style: normal;
+  font-display: swap;
+}
 /* The fixed-weight versions, kept for comparison. */
 @font-face {
   font-family: 'Red Stone Face Static';
@@ -1853,4 +1863,25 @@ body::before {
   .header-spacer--subbar.header-spacer--tabs {
     height: calc(var(--header-h) + 48px + var(--subheader-h));
   }
+}
+
+
+/* ===== FONT TEST: Red Stone Face on the checkout page =====
+   Switched on by FONT_TEST_RED_STONE_FACE in pages/checkout.js (which adds
+   .font-test-face to the page). To undo the whole test, set it to false.
+   - big lettering that used Red Stone Display / the heading font (title,
+     section headers, labels, buttons, item names, totals) -> ExtraBlack (950)
+   - everything else -> Red Stone Face at the same weight number as before */
+.font-test-face {
+  --font-display: 'Red Stone Face Max', 'Red Stone Display', sans-serif;
+  --font-heading: 'Red Stone Face Max', 'Red Stone Display', sans-serif;
+  --font-display-text: 'Red Stone Face', var(--font-text);
+  --font-body: 'Red Stone Face', 'Inter', sans-serif;
+  --font-face: 'Red Stone Face', 'Inter', sans-serif;
+  font-family: var(--font-body);
+}
+.font-test-face input,
+.font-test-face select,
+.font-test-face textarea {
+  font-family: var(--font-body);
 }

@@ -133,7 +133,17 @@ const CardForm = forwardRef(function CardForm({ onReadyChange }, ref) {
   );
 });
 
-const StripeCardPayment = forwardRef(function StripeCardPayment({ amountCents }, ref) {
+// FONT TEST (fontTest prop, from pages/checkout.js): the card form in Red
+// Stone Face too — labels/tabs at ExtraBlack, typing at the normal weight.
+const FACE_FONT_OVERRIDES = {
+  variables: { fontFamily: "'Red Stone Face', Inter, system-ui, sans-serif" },
+  rules: {
+    ".Label": { fontFamily: "'Red Stone Face Max', sans-serif" },
+    ".Tab": { fontFamily: "'Red Stone Face Max', sans-serif" },
+  },
+};
+
+const StripeCardPayment = forwardRef(function StripeCardPayment({ amountCents, fontTest = false }, ref) {
   const promise = getStripePromise();
   const [ready, setReady] = useState(false);
 
@@ -141,11 +151,35 @@ const StripeCardPayment = forwardRef(function StripeCardPayment({ amountCents },
   // full URL. Built once, on the client.
   const fonts = useMemo(() => {
     if (typeof window === "undefined") return [];
+    const o = window.location.origin;
     return [
-      { family: "Red Stone Display", src: `url(${window.location.origin}/fonts/RedStoneDisplay-Regular.woff2?v=2)`, weight: "400" },
+      { family: "Red Stone Display", src: `url(${o}/fonts/RedStoneDisplay-Regular.woff2?v=2)`, weight: "400" },
       { cssSrc: "https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" },
+      ...(fontTest
+        ? [
+            { family: "Red Stone Face", src: `url(${o}/fonts/RedStoneFace-Variable.woff2?v=2)`, weight: "400" },
+            { family: "Red Stone Face", src: `url(${o}/fonts/RedStoneFace-Variable.woff2?v=2)`, weight: "600" },
+            { family: "Red Stone Face Max", src: `url(${o}/fonts/RedStoneFace-ExtraBlack.woff2?v=1)`, weight: "400" },
+          ]
+        : []),
     ];
-  }, []);
+  }, [fontTest]);
+
+  const appearance = useMemo(
+    () =>
+      fontTest
+        ? {
+            ...APPEARANCE,
+            variables: { ...APPEARANCE.variables, ...FACE_FONT_OVERRIDES.variables },
+            rules: {
+              ...APPEARANCE.rules,
+              ".Label": { ...APPEARANCE.rules[".Label"], ...FACE_FONT_OVERRIDES.rules[".Label"] },
+              ".Tab": { ...APPEARANCE.rules[".Tab"], ...FACE_FONT_OVERRIDES.rules[".Tab"] },
+            },
+          }
+        : APPEARANCE,
+    [fontTest]
+  );
 
   if (!promise) {
     return (
@@ -164,7 +198,7 @@ const StripeCardPayment = forwardRef(function StripeCardPayment({ amountCents },
           mode: "payment",
           amount: Math.max(50, Math.round(amountCents || 0)),
           currency: "cad",
-          appearance: APPEARANCE,
+          appearance,
           fonts,
         }}
       >
