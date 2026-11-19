@@ -67,6 +67,32 @@
   font-display: swap;
 }
 
+/* Red Stone Face — variable font: one file, any weight from 300 (Light) to
+   800 (ExtraBold); use font-weight to pick (e.g. 300, 450, 600, 800). */
+@font-face {
+  font-family: 'Red Stone Face';
+  src: url('/fonts/RedStoneFace-Variable.woff2?v=1') format('woff2-variations'),
+       url('/fonts/RedStoneFace-Variable.woff2?v=1') format('woff2');
+  font-weight: 300 800;
+  font-style: normal;
+  font-display: swap;
+}
+/* The two fixed-weight versions, kept for comparison. */
+@font-face {
+  font-family: 'Red Stone Face Static';
+  src: url('/fonts/RedStoneFace-Light.woff2?v=1') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Red Stone Face Static';
+  src: url('/fonts/RedStoneFace-ExtraBold.woff2?v=1') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Red Stone Display Condensed: narrower cut of the custom font with real
    lowercase letters. Used via var(--font-display-condensed). */
 @font-face {
@@ -114,6 +140,7 @@
   --font-text: 'TT Commons', 'Inter', sans-serif;
   --font-display-condensed: 'Red Stone Display Condensed', var(--font-display);
   --font-display-text: 'Red Stone Display Text', var(--font-text);
+  --font-face: 'Red Stone Face', var(--font-text); /* variable, 300–800 */
 
   /* effects */
   --radius: 6px;

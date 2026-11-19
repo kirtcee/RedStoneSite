@@ -506,8 +506,12 @@ export default function CheckoutPage() {
         .co-sub {
           margin: 0 0 16px;
           color: var(--text-brown);
-          font-family: var(--font-display-text);
-          font-weight: 300; /* Light */
+          /* Red Stone Face (variable font) — tweak the two weights below
+             in Inspect: any number from 300 (Light) to 800 (ExtraBold). */
+          --sub-weight: 300;      /* the sentence */
+          --sub-bold-weight: 600; /* the bold words */
+          font-family: var(--font-face);
+          font-weight: var(--sub-weight);
           font-size: 1.1rem;
           line-height: 1.35;
           /* spacing — tweak these two */
@@ -517,7 +521,7 @@ export default function CheckoutPage() {
           word-spacing: var(--sub-word-spacing);
         }
         .co-sub strong {
-          font-weight: 400; /* Medium */
+          font-weight: var(--sub-bold-weight);
         }
         .co-sub__link {
           padding: 0;
