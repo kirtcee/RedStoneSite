@@ -70,6 +70,14 @@ function RootApp({ Component, pageProps }) {
   return (
     <>
       {siteHead}
+      {/* Google calls gm_authFailure when it rejects the Maps key (wrong
+          website restriction, or a needed API not allowed on the key). Say so
+          plainly in the console instead of leaving only a cryptic error. */}
+      <Script id="google-maps-auth" strategy="beforeInteractive">
+        {`window.gm_authFailure = function () {
+  console.error("Google Maps rejected the API key. In Google Cloud > Credentials, this key's API restrictions must allow: Maps JavaScript API, Places API and Geocoding API, and its website restrictions must include this site's address.");
+};`}
+      </Script>
       {/* Load Google Maps JS + Places library once for the whole app */}
       <Script
         id="google-maps"
