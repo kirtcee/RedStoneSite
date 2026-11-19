@@ -366,7 +366,7 @@ const closeBtnStyle = {
 const titleStyle = {
   paddingRight: 44,
   paddingLeft: 5,
-  fontFamily: "var(--font-heading, Oswald, sans-serif)",
+  fontFamily: "var(--font-heading, Oswald, sans-serif)", textTransform: "uppercase",
   fontWeight: 500,
   fontSize: "2.3rem",
 };

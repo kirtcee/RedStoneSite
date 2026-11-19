@@ -3,126 +3,29 @@
    Domino’s-inspired, customized
    =========================== */
 
-/* 1) Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+/* 1) Fonts: Red Stone Face is the site's one font.
+   Red Stone Display, TT Commons and the Google fonts (Inter, Oswald, Anton,
+   Montserrat) were retired when the site switched over.
 
-/* TT Commons (Light 300, Regular 400, Medium 500, Bold 700, Black 900): body-text font being trialled (currently only the checkout
-   "Carryout from…" line, via var(--font-text)). Browsers only download a
-   weight once something on the page uses it. */
-@font-face {
-  font-family: 'TT Commons';
-  src: url('/fonts/TTCommons-Light.woff2') format('woff2');
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'TT Commons';
-  src: url('/fonts/TTCommons-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'TT Commons';
-  src: url('/fonts/TTCommons-Medium.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'TT Commons';
-  src: url('/fonts/TTCommons-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'TT Commons';
-  src: url('/fonts/TTCommons-Black.woff2') format('woff2');
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* Red Stone Display text family: the custom font's style with real
-   lowercase, for sentences. One family name, one file per weight:
-     300 = Red Stone Display Light, 400 = Red Stone Display Medium.
-   Add more weights as extra @font-face blocks with this family name.
-   ?v= is bumped whenever a file is replaced so browsers refetch it. */
-@font-face {
-  font-family: 'Red Stone Display Text';
-  src: url('/fonts/RedStoneDisplayLight-Regular.woff2?v=4') format('woff2');
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Red Stone Display Text';
-  src: url('/fonts/RedStoneDisplayMedium-Regular.woff2?v=2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* Red Stone Face — variable font: one file, any weight from 300 (Light) to
-   950 (ExtraBlack); use font-weight to pick (e.g. 300, 450, 600, 900).
-   RULE: nothing thinner than 300 — it's too thin to read. The file goes
-   down to 100, but this range makes browsers treat anything lighter as 300. */
+   - 'Red Stone Face': variable font, any weight 300 (Light) to 950
+     (ExtraBlack). RULE: never thinner than 300 (too thin to read). The file
+     goes down to 100, but this range makes browsers treat lighter as 300.
+   - 'Red Stone Face Max': always ExtraBlack (950) whatever weight is asked
+     for. Used by --font-display / --font-heading, so every heading, button
+     and label is max weight, like the old single-weight Red Stone Display.
+   Bump ?v= whenever a file is replaced so browsers refetch it. */
 @font-face {
   font-family: 'Red Stone Face';
-  src: url('/fonts/RedStoneFace-Variable.woff2?v=2') format('woff2-variations'),
-       url('/fonts/RedStoneFace-Variable.woff2?v=2') format('woff2');
+  src: url('/fonts/RedStoneFace-Variable.woff2?v=3') format('woff2-variations'),
+       url('/fonts/RedStoneFace-Variable.woff2?v=3') format('woff2');
   font-weight: 300 950;
   font-style: normal;
   font-display: swap;
 }
-/* "Red Stone Face Max": always ExtraBlack (950), whatever weight is asked
-   for — a stand-in for the single-weight Red Stone Display in the
-   checkout font test below. */
 @font-face {
   font-family: 'Red Stone Face Max';
-  src: url('/fonts/RedStoneFace-ExtraBlack.woff2?v=1') format('woff2');
+  src: url('/fonts/RedStoneFace-ExtraBlack.woff2?v=2') format('woff2');
   font-weight: 100 950;
-  font-style: normal;
-  font-display: swap;
-}
-/* The fixed-weight versions, kept for comparison. */
-@font-face {
-  font-family: 'Red Stone Face Static';
-  src: url('/fonts/RedStoneFace-Medium.woff2?v=1') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Red Stone Face Static';
-  src: url('/fonts/RedStoneFace-ExtraBlack.woff2?v=1') format('woff2');
-  font-weight: 950;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* Red Stone Display Condensed: narrower cut of the custom font with real
-   lowercase letters. Used via var(--font-display-condensed). */
-@font-face {
-  font-family: 'Red Stone Display Condensed';
-  src: url('/fonts/RedStoneDisplayCondensed-Regular.woff2') format('woff2');
-  font-weight: 100 900; /* one weight; don't fake-bold it */
-  font-style: normal;
-  font-display: swap;
-}
-
-/* Red Stone Display: the site's own custom display font (caps-only).
-   Source files live in design/fonts/. Must stay outside :root {}. */
-@font-face {
-  font-family: 'Red Stone Display';
-  src: url('/fonts/RedStoneDisplay-Regular.woff2?v=2') format('woff2');
-  /* One heavy weight serves every weight the CSS asks for (headings use
-     600-900), so browsers don't fake-bold it on top. */
-  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
@@ -145,14 +48,36 @@
   --menu-box-border-hover: #6b3f22;
   --text-brown: #8f6c49;          /* brown body text inside the cream boxes */
 
-  /* type */
-  --font-heading: var(--font-display); /* was Oswald */
-  --font-body: 'Inter', sans-serif;
-  --font-display: 'Red Stone Display', 'Anton', 'Oswald', sans-serif;
-  --font-text: 'TT Commons', 'Inter', sans-serif;
-  --font-display-condensed: 'Red Stone Display Condensed', var(--font-display);
-  --font-display-text: 'Red Stone Display Text', var(--font-text);
-  --font-face: 'Red Stone Face', var(--font-text); /* variable, 300–950 (never thinner) */
+  /* ---- Type: fonts ----
+     Everything is Red Stone Face. The older names are kept so existing
+     styles keep working; they all point at the two Red Stone Face fonts. */
+  --font-plain: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-face: 'Red Stone Face', var(--font-plain);        /* text, 300 to 950 */
+  --font-display: 'Red Stone Face Max', var(--font-face);  /* headings: always 950, ALL CAPS */
+  --font-heading: var(--font-display);
+  --font-display-condensed: var(--font-display);
+  --font-body: var(--font-face);
+  --font-text: var(--font-face);
+  --font-display-text: var(--font-face);
+
+  /* ---- Type: weight scale (Red Stone Face). Use these, not raw numbers. ---- */
+  --w-light: 300;    /* rarely: big friendly sentences. Never go below this. */
+  --w-regular: 400;  /* body text, options, notes */
+  --w-medium: 500;   /* labels, emphasized text */
+  --w-semibold: 600; /* bold words, errors, prices */
+  --w-bold: 800;     /* subheadings, item names */
+  --w-black: 950;    /* page titles, section headers, buttons (= --font-display) */
+
+  /* ---- Type: size scale. Red Stone Face is narrow, so body text sits a
+     step bigger than it did in Inter. ---- */
+  --fs-xs: 0.9375rem;  /* 15px  smallest allowed: fine print */
+  --fs-sm: 1rem;       /* 16px  notes, secondary text */
+  --fs-base: 1.125rem; /* 18px  body text, options */
+  --fs-md: 1.25rem;    /* 20px  emphasized text, small headings */
+  --fs-lg: 1.5rem;     /* 24px  section headers */
+  --fs-xl: 1.75rem;    /* 28px  big numbers, card titles */
+  --fs-2xl: 2.125rem;  /* 34px  page titles (phone) */
+  --fs-3xl: 2.625rem;  /* 42px  page titles (computer) */
 
   /* effects */
   --radius: 6px;
@@ -196,7 +121,7 @@ html { scroll-padding-top: calc(var(--header-offset) + 8px); }
 
 body {
   font-family: var(--font-body);
-  font-size: 0.9rem;
+  font-size: var(--fs-sm); /* 16px (was 0.9rem in Inter) */
   line-height: 1.5;
   background: var(--color-bg);
   color: var(--color-dark);
@@ -328,7 +253,8 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
 .site-header.site-header--red {
   position: sticky; top: 0; z-index: 2000;
   background: var(--color-primary); color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  font-family: var(--font-heading); /* Oswald for all header text */
+  font-family: var(--font-heading);
+  text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */ /* Oswald for all header text */
 }
 .site-header__inner { height: var(--header-h); display: flex; align-items: stretch; }
 .header-row { display: flex; align-items: stretch; justify-content: space-between; gap: 0; width: 100%; }
@@ -355,7 +281,8 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
   text-align: center; color: #fff; background: var(--color-primary);
   border: 0; margin: 0; padding: 0 10px; cursor: pointer;
   border-left: 1px solid rgba(255,255,255,0.15);
-  font-family: var(--font-heading); /* ensure Oswald inside segments */
+  font-family: var(--font-heading);
+  text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */ /* ensure Oswald inside segments */
 }
 .header-seg:first-child { border-left: none; }
 .header-seg__label {
@@ -387,6 +314,7 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
 .site-header .header-seg--cart .cart-toggle svg circle { fill: #fff; }
 .header-cart__label {
   font-family: var(--font-heading);
+  text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
   font-size: 12px; font-weight: 700;
 }
 
@@ -402,7 +330,8 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
   border-bottom: 0;
   box-shadow: 0 10px 18px -10px rgba(0,0,0,0.40);
   overflow: visible;
-  font-family: var(--font-heading); /* Oswald for subheader text */
+  font-family: var(--font-heading);
+  text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */ /* Oswald for subheader text */
 }
 .subheader__inner {
   height: var(--subheader-h);
@@ -680,6 +609,7 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
 /* Text block */
 .cta-byo__title {
   font-family: var(--font-heading);
+  text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
   color: var(--brand-blue);
   font-weight: 900;
   font-size: 1.9rem;
@@ -755,6 +685,7 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
 
 .cat-card__label {
   font-family: var(--font-heading);
+  text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
   color: var(--brand-blue);    /* match big blue heading */
   font-weight: 900;
   font-size: 1.15rem;
@@ -1155,6 +1086,7 @@ body.modal-open {
   background: #000;
   color: #fff;
   font-family: var(--font-heading, Oswald, sans-serif);
+  text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
   font-weight: 900;
   /* same height on both sides derives from padding + line-height */
 }
@@ -1307,6 +1239,7 @@ body::before {
 .mobile-checkout-bar__total strong {
   font-size: 1.15rem;
   font-family: var(--font-heading, Oswald, sans-serif);
+  text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
 }
 .mobile-checkout-bar__btn {
   flex: 0 0 auto;
@@ -1515,6 +1448,7 @@ body::before {
     border: 0;
     color: #000;
     font-family: var(--font-heading);
+    text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
     cursor: pointer;
   }
   /* Same chip as the desktop header, minus the white border box */
@@ -1860,23 +1794,12 @@ body::before {
   }
 }
 
-
-/* ===== FONT TEST: Red Stone Face on the checkout page =====
-   Switched on by FONT_TEST_RED_STONE_FACE in pages/checkout.js (which adds
-   .font-test-face to the page). To undo the whole test, set it to false.
-   - big lettering that used Red Stone Display / the heading font (title,
-     section headers, labels, buttons, item names, totals) -> ExtraBlack (950)
-   - everything else -> Red Stone Face at the same weight number as before */
-.font-test-face {
-  --font-display: 'Red Stone Face Max', 'Red Stone Display', sans-serif;
-  --font-heading: 'Red Stone Face Max', 'Red Stone Display', sans-serif;
-  --font-display-text: 'Red Stone Face', var(--font-text);
-  --font-body: 'Red Stone Face', 'Inter', sans-serif;
-  --font-face: 'Red Stone Face', 'Inter', sans-serif;
+/* Form fields and buttons don't inherit the page font by default. */
+input,
+select,
+textarea {
   font-family: var(--font-body);
 }
-.font-test-face input,
-.font-test-face select,
-.font-test-face textarea {
-  font-family: var(--font-body);
+button {
+  font-family: inherit;
 }

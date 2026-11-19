@@ -194,7 +194,7 @@ export function DrinksCategoryPanel({
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
-                    fontFamily: "var(--font-heading, Oswald, sans-serif)",
+                    fontFamily: "var(--font-heading, Oswald, sans-serif)", textTransform: "uppercase",
                     fontWeight: 800,
                   }}
                   title={opt}
@@ -224,7 +224,7 @@ export function DrinksCategoryPanel({
               <span
                 style={{
                   fontWeight: 900,
-                  fontFamily: "var(--font-heading, Oswald, sans-serif)",
+                  fontFamily: "var(--font-heading, Oswald, sans-serif)", textTransform: "uppercase",
                 }}
               >
                 Quantity

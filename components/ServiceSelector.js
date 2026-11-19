@@ -86,7 +86,7 @@ function StoreMap({ onCarryoutClick, mapsReady, storeLatLng }) {
     // button, instead of below it (which left an empty gap at the top).
     const infoHeader = document.createElement("div");
     infoHeader.style.cssText =
-      "font-family:system-ui,sans-serif;font-weight:700;font-size:16px;line-height:1.2;padding-top:2px;";
+      "font-family:'Red Stone Face',system-ui,sans-serif;font-weight:800;font-size:17px;line-height:1.2;padding-top:2px;";
     infoHeader.textContent = "Red Stone Pizza";
 
     // No fixed min-width, and the button uses border-box sizing so its
@@ -94,7 +94,7 @@ function StoreMap({ onCarryoutClick, mapsReady, storeLatLng }) {
     // sideways scrolling on phones). The address is split over two lines.
     const infoDiv = document.createElement("div");
     infoDiv.style.cssText =
-      "font-family:system-ui,sans-serif;font-size:14px;line-height:1.35;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;";
+      "font-family:'Red Stone Face',system-ui,sans-serif;font-size:16px;line-height:1.35;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;";
     infoDiv.innerHTML = `
       <div style="margin-bottom:4px;">576 Concession St<br />Hamilton, ON</div>
       <div style="margin-bottom:4px;">Phone: <a href="tel:+1-905-385-9888">905-385-9888</a></div>

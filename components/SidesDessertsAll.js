@@ -217,6 +217,7 @@ export default function SidesDessertsAll({
           border: 0;
           color: var(--brand-blue);
           font-family: var(--font-heading, Oswald, sans-serif);
+          text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
           font-weight: 900;
           font-size: 1.1rem;
           text-align: left;
@@ -258,6 +259,7 @@ export default function SidesDessertsAll({
           border-radius: 30px;
           padding: 0.6rem 0.2rem;
           font-family: var(--font-heading, Oswald, sans-serif);
+          text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
           font-weight: 900;
           font-size: 1.15rem;
           line-height: 1.1;

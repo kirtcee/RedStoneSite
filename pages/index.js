@@ -98,6 +98,7 @@ export default function Home() {
         .home-title {
           margin: 0 10px 0 0;
           font-family: var(--font-heading);
+          text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
           font-weight: 900;
           letter-spacing: 0.5px;
           font-size: 1.9rem;
@@ -125,6 +126,7 @@ export default function Home() {
           color: #fefaf6;
           border-radius: 999px;
           font-family: var(--font-display);
+          text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
           font-weight: 400;
           font-size: 1.55rem;
           line-height: 1.15;
@@ -143,7 +145,7 @@ export default function Home() {
           outline-offset: 2px;
         }
         .order-or {
-          font-family: "Hoefler Text", "Times New Roman", serif;
+          font-family: var(--font-face);
           color: #a9a9a9;
           font-size: 0.95rem;
           line-height: 1;

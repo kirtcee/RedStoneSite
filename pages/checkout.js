@@ -10,11 +10,6 @@ import { findDealById } from "../utils/dealCatalog";
 import { saveOrder, startCardPayment, finalizeCardPayment, friendlyOrderError } from "../utils/saveOrder";
 import StripeCardPayment from "../components/StripeCardPayment";
 
-// FONT TEST: true = the whole checkout page (card form included) uses Red
-// Stone Face (see "FONT TEST" at the bottom of styles/globals.css).
-// Set to false to go back to the normal fonts.
-const FONT_TEST_RED_STONE_FACE = true;
-
 // Shown under the page title (same numbers as the menu page estimate)
 const CARRYOUT_ADDRESS = "576 Concession Street";
 const READY_MINUTES = { carryout: 20, delivery: 45 };
@@ -283,7 +278,7 @@ export default function CheckoutPage() {
   };
 
   return (
-    <main className={`page page--checkout${FONT_TEST_RED_STONE_FACE ? " font-test-face" : ""}`}>
+    <main className="page page--checkout">
       <div className="container co-wrap">
         <h1 className="menu-title co-title">Checkout</h1>
 
@@ -475,7 +470,7 @@ export default function CheckoutPage() {
                         : "At the store you can pay with cash, credit card, debit card or gift card."}
                     </p>
                   )}
-                  {form.payment === "card" && <StripeCardPayment ref={cardRef} amountCents={totals.total} fontTest={FONT_TEST_RED_STONE_FACE} />}
+                  {form.payment === "card" && <StripeCardPayment ref={cardRef} amountCents={totals.total} />}
                   {errors.payment && (
                     <div id="co-pay-err" className="co-error">
                       {errors.payment}
@@ -869,40 +864,38 @@ export default function CheckoutPage() {
           outline-offset: 2px;
         }
 
-        /* ----- FONT TEST sizes -----
-           Red Stone Face is narrower than Inter, so the same size reads
-           smaller. While the test is on, small text gets bigger (nothing
-           under ~15px). Goes away with FONT_TEST_RED_STONE_FACE = false. */
-        .font-test-face .co-radio {
+        /* ----- Readable sizes for Red Stone Face (narrower than the old
+           Inter, so small text needs to be a step bigger; nothing under 15px) */
+        .co-radio {
           font-size: 1.1rem;
         }
-        .font-test-face .co-wrap :global(.co-error) {
+        .co-wrap :global(.co-error) {
           font-size: 1rem;
         }
-        .font-test-face .co-wrap :global(.co-hint) {
+        .co-wrap :global(.co-hint) {
           font-size: 0.95rem;
         }
-        .font-test-face .co-wrap :global(.co-hint--note) {
+        .co-wrap :global(.co-hint--note) {
           font-size: 1rem;
         }
-        .font-test-face .co-wrap :global(.co-reqnote) {
+        .co-wrap :global(.co-reqnote) {
           font-size: 0.95rem;
         }
-        .font-test-face .co-wrap :global(.co-req) {
+        .co-wrap :global(.co-req) {
           font-weight: 700;
           font-size: 1.15em;
         }
-        .font-test-face .co-wrap :global(.co-card__secure),
-        .font-test-face .co-wrap :global(.co-card__loading) {
+        .co-wrap :global(.co-card__secure),
+        .co-wrap :global(.co-card__loading) {
           font-size: 0.95rem;
         }
-        .font-test-face .co-items__opt {
+        .co-items__opt {
           font-size: 1rem;
         }
-        .font-test-face .co-items__coupon {
+        .co-items__coupon {
           font-size: 0.95rem;
         }
-        .font-test-face .co-submitError {
+        .co-submitError {
           font-size: 1rem;
         }
 

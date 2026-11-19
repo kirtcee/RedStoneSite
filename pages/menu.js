@@ -148,7 +148,8 @@ function EntreesView({
           .feastCard__img{ width:100%; height:100%; object-fit:fill; }
           .feastCard__name{
             margin:8px 0 10px; padding:0; background:none; border:0; color:var(--brand-blue);
-            font-family:var(--font-heading, Oswald, sans-serif); font-weight:900; font-size:1.1rem; text-align:left; cursor:pointer;
+            font-family:var(--font-heading, Oswald, sans-serif);
+            text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */ font-weight:900; font-size:1.1rem; text-align:left; cursor:pointer;
           }
           .feastCard__name:hover{ text-decoration:underline; }
           /* card buttons: same pill style as the Sides cards */
@@ -284,7 +285,8 @@ function EntreesView({
           .feastCard__img{ display:block; width:100%; height:100%; object-fit:fill; }
           .feastCard__name{
             margin:8px 0 10px; padding:0; background:none; border:0; color:var(--brand-blue);
-            font-family:var(--font-heading, Oswald, sans-serif); font-weight:900; font-size:1.1rem; text-align:left; cursor:pointer;
+            font-family:var(--font-heading, Oswald, sans-serif);
+            text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */ font-weight:900; font-size:1.1rem; text-align:left; cursor:pointer;
           }
           .feastCard__name:hover{ text-decoration:underline; }
           /* card buttons: same pill style as the Sides cards */
@@ -447,7 +449,8 @@ function SidesView({ selectedSide, setSelectedSide }) {
 
         .feastCard__name{
           margin:8px 0 10px; padding:0; background:none; border:0; color:var(--brand-blue);
-          font-family:var(--font-heading, Oswald, sans-serif); font-weight:900; font-size:1.1rem; text-align:left; cursor:pointer;
+          font-family:var(--font-heading, Oswald, sans-serif);
+          text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */ font-weight:900; font-size:1.1rem; text-align:left; cursor:pointer;
         }
         .feastCard__name:hover{ text-decoration:underline; }
 
@@ -467,7 +470,8 @@ function SidesView({ selectedSide, setSelectedSide }) {
         .btn-add__seg{
           flex:1; color:#fff; border:3px solid transparent; border-radius:30px; padding:0.6rem 0.2rem;
           font-size:1.15rem; line-height:1.1;
-          font-family:var(--font-heading, Oswald, sans-serif); font-weight:900; letter-spacing:.45px; cursor:pointer;
+          font-family:var(--font-heading, Oswald, sans-serif);
+          text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */ font-weight:900; letter-spacing:.45px; cursor:pointer;
           transition: transform 0.08s ease, filter 0.12s ease;
         }
         .btn-add__seg:hover{ filter:brightness(1.1); transform: translateY(-1px); }
@@ -553,7 +557,8 @@ function DrinksView() {
 
         .feastCard__name{
           margin:8px 0 10px; padding:0; background:none; border:0; color:#000000;
-          font-family:var(--font-heading, Oswald, sans-serif); font-weight:900; font-size:1.1rem; text-align:left; cursor:pointer;
+          font-family:var(--font-heading, Oswald, sans-serif);
+          text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */ font-weight:900; font-size:1.1rem; text-align:left; cursor:pointer;
         }
         .feastCard__name:hover{ text-decoration:underline; }
         /* card buttons: same pill style as the Sides cards */

@@ -204,6 +204,7 @@ export default function SpecialtyPizzasPage() {
           border: 0;
           color: var(--brand-blue);
           font-family: var(--font-heading, Oswald, sans-serif);
+          text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
           font-weight: 900;
           font-size: 1.02rem;
           text-align: left;
@@ -253,6 +254,7 @@ export default function SpecialtyPizzasPage() {
           font-size: 1.15rem;
           line-height: 1.1;
           font-family: var(--font-heading, Oswald, sans-serif);
+          text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
           font-weight: 900;
           letter-spacing: .45px;
           cursor: pointer;

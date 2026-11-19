@@ -17,7 +17,7 @@ function ServiceGatePrompt() {
           color: "#fff",
           padding: "1.1rem",
           textAlign: "center",
-          fontFamily: "var(--heading, Oswald, sans-serif)",
+          fontFamily: "var(--heading, Oswald, sans-serif)", textTransform: "uppercase",
         }}
       >
         <div style={{ fontWeight: 900, fontSize: "1.15rem", textTransform: "uppercase" }}>
@@ -110,6 +110,7 @@ function FeaturedDealBanner({ deal, onOrder }) {
         }
         .featured-banner__price {
           font-family: var(--heading, Oswald, sans-serif);
+          text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
           font-weight: 900;
           font-size: 3rem;
           line-height: 1;
@@ -228,6 +229,7 @@ function DealCard({ deal, onAdd }) {
         }
         .deal-card__price {
           font-family: var(--heading, Oswald, sans-serif);
+          text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
           font-weight: 900;
           font-size: 1.4rem;
           color: #111;

@@ -823,7 +823,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                     backgroundColor: selectedCrust === crust ? MAROON : "#eee",
                     color: selectedCrust === crust ? "white" : "#333",
                     fontWeight: 800,
-                    fontFamily: "var(--font-heading), Oswald, sans-serif",
+                    fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
                     border: "none",
                     borderRadius: "6px",
                     cursor: "pointer",
@@ -905,7 +905,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                         backgroundColor: cheeseAmount === option ? MAROON : "#eee",
                         color: cheeseAmount === option ? "white" : "#333",
                         fontWeight: 800,
-                        fontFamily: "var(--font-heading), Oswald, sans-serif",
+                        fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
                         border: "none",
                         borderRadius: "6px",
                         cursor: "pointer",
@@ -943,7 +943,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                           backgroundColor: secondAmount === option ? MAROON : "#eee",
                           color: secondAmount === option ? "white" : "#333",
                           fontWeight: 800,
-                          fontFamily: "var(--font-heading), Oswald, sans-serif",
+                          fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
                           border: "none",
                           borderRadius: "6px",
                           cursor: "pointer",
@@ -1026,7 +1026,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                 fontWeight: 900,
                 marginBottom: "0.35rem",
                 color: TEXT_BROWN,
-                fontFamily: "var(--font-heading), Oswald, sans-serif",
+                fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
                 fontSize: "1rem" // smaller subheader
               }}
             >
@@ -1086,7 +1086,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                 marginBottom: "0.35rem",
                 marginTop: "0.35rem",
                 color: TEXT_BROWN,
-                fontFamily: "var(--font-heading), Oswald, sans-serif",
+                fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
                 fontSize: "1rem"
               }}
             >
@@ -1144,7 +1144,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                     marginBottom: "0.35rem",
                     marginTop: "0.5rem",
                     color: TEXT_BROWN,
-                    fontFamily: "var(--font-heading), Oswald, sans-serif",
+                    fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
                     fontSize: "1rem"
                   }}
                 >

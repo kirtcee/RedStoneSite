@@ -33,7 +33,8 @@ html.is-modal-open {
 
 .feastCard__name{
   margin:8px 0 10px; padding:0; background:none; border:0; color:var(--brand-blue);
-  font-family:var(--heading); font-weight:900; font-size:1.02rem; text-align:left; cursor:pointer;
+  font-family:var(--heading);
+  text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */ font-weight:900; font-size:1.02rem; text-align:left; cursor:pointer;
 }
 .feastCard__name:hover{ text-decoration:underline; }
 

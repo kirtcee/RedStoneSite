@@ -790,6 +790,7 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
           font-size: 1.05rem;
           color: #000;
           font-family: var(--font-heading, Oswald, sans-serif);
+          text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
         }
       `}</style>
     </aside>

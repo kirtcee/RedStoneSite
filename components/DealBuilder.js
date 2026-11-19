@@ -641,6 +641,7 @@ export default function DealBuilder({ onClose: onCloseProp }) {
         }
         .rs-confirm__title {
           font-family: var(--font-heading, Oswald, sans-serif);
+          text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
           font-size: 1.15rem;
           font-weight: 800;
           margin-bottom: 0.35rem;

@@ -618,6 +618,7 @@ export default function CartPage() {
         }
         .cart-box__note strong {
           font-family: var(--font-display);
+          text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
           font-weight: 400;
           color: #000;
           letter-spacing: 0.03em;

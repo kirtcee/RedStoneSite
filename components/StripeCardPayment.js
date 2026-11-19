@@ -21,7 +21,7 @@ function getStripePromise() {
 }
 
 // Matches the checkout's own fields: white inputs with the tan border,
-// 3px corners, Red Stone Display labels in brown, red error bar on the left.
+// 3px corners, Red Stone Face ExtraBlack labels in brown, red error bar on the left.
 const BROWN = "#8f6c49";
 const BORDER = "#c0a58b";
 const ERROR_RED = "#d0021b";
@@ -34,14 +34,14 @@ const APPEARANCE = {
     colorTextSecondary: BROWN,
     colorTextPlaceholder: "#9b8a78",
     colorDanger: ERROR_RED,
-    fontFamily: "Inter, system-ui, sans-serif",
+    fontFamily: "'Red Stone Face', system-ui, sans-serif",
     fontSizeBase: "16px", // 16px+ stops iPhones zooming into the field
     borderRadius: "3px",
     spacingUnit: "4px",
   },
   rules: {
     ".Label": {
-      fontFamily: "'Red Stone Display', sans-serif",
+      fontFamily: "'Red Stone Face Max', sans-serif",
       fontWeight: "400",
       fontSize: "16px",
       textTransform: "uppercase",
@@ -72,7 +72,7 @@ const APPEARANCE = {
     ".Tab": {
       border: `1px solid ${BORDER}`,
       boxShadow: "none",
-      fontFamily: "'Red Stone Display', sans-serif",
+      fontFamily: "'Red Stone Face Max', sans-serif",
       textTransform: "uppercase",
     },
     ".Tab--selected": {
@@ -133,17 +133,7 @@ const CardForm = forwardRef(function CardForm({ onReadyChange }, ref) {
   );
 });
 
-// FONT TEST (fontTest prop, from pages/checkout.js): the card form in Red
-// Stone Face too — labels/tabs at ExtraBlack, typing at the normal weight.
-const FACE_FONT_OVERRIDES = {
-  variables: { fontFamily: "'Red Stone Face', Inter, system-ui, sans-serif" },
-  rules: {
-    ".Label": { fontFamily: "'Red Stone Face Max', sans-serif" },
-    ".Tab": { fontFamily: "'Red Stone Face Max', sans-serif" },
-  },
-};
-
-const StripeCardPayment = forwardRef(function StripeCardPayment({ amountCents, fontTest = false }, ref) {
+const StripeCardPayment = forwardRef(function StripeCardPayment({ amountCents }, ref) {
   const promise = getStripePromise();
   const [ready, setReady] = useState(false);
 
@@ -153,33 +143,11 @@ const StripeCardPayment = forwardRef(function StripeCardPayment({ amountCents, f
     if (typeof window === "undefined") return [];
     const o = window.location.origin;
     return [
-      { family: "Red Stone Display", src: `url(${o}/fonts/RedStoneDisplay-Regular.woff2?v=2)`, weight: "400" },
-      { cssSrc: "https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" },
-      ...(fontTest
-        ? [
-            { family: "Red Stone Face", src: `url(${o}/fonts/RedStoneFace-Variable.woff2?v=2)`, weight: "400" },
-            { family: "Red Stone Face", src: `url(${o}/fonts/RedStoneFace-Variable.woff2?v=2)`, weight: "600" },
-            { family: "Red Stone Face Max", src: `url(${o}/fonts/RedStoneFace-ExtraBlack.woff2?v=1)`, weight: "400" },
-          ]
-        : []),
+      { family: "Red Stone Face", src: `url(${o}/fonts/RedStoneFace-Variable.woff2?v=3)`, weight: "400" },
+      { family: "Red Stone Face", src: `url(${o}/fonts/RedStoneFace-Variable.woff2?v=3)`, weight: "600" },
+      { family: "Red Stone Face Max", src: `url(${o}/fonts/RedStoneFace-ExtraBlack.woff2?v=2)`, weight: "400" },
     ];
-  }, [fontTest]);
-
-  const appearance = useMemo(
-    () =>
-      fontTest
-        ? {
-            ...APPEARANCE,
-            variables: { ...APPEARANCE.variables, ...FACE_FONT_OVERRIDES.variables },
-            rules: {
-              ...APPEARANCE.rules,
-              ".Label": { ...APPEARANCE.rules[".Label"], ...FACE_FONT_OVERRIDES.rules[".Label"] },
-              ".Tab": { ...APPEARANCE.rules[".Tab"], ...FACE_FONT_OVERRIDES.rules[".Tab"] },
-            },
-          }
-        : APPEARANCE,
-    [fontTest]
-  );
+  }, []);
 
   if (!promise) {
     return (
@@ -198,7 +166,7 @@ const StripeCardPayment = forwardRef(function StripeCardPayment({ amountCents, f
           mode: "payment",
           amount: Math.max(50, Math.round(amountCents || 0)),
           currency: "cad",
-          appearance,
+          appearance: APPEARANCE,
           fonts,
         }}
       >

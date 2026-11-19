@@ -54,7 +54,15 @@ export default function KitchenLogin() {
           display: flex;
           align-items: center;
           justify-content: center;
-          font-family: var(--font-body, "Inter", sans-serif);
+          /* Kitchen screens stay in the device's plain, very legible font
+             (not the brand font): every font name points at it in here. */
+          --font-body: var(--font-plain);
+          --font-face: var(--font-plain);
+          --font-text: var(--font-plain);
+          --font-display-text: var(--font-plain);
+          --font-heading: var(--font-plain);
+          --font-display: var(--font-plain);
+          font-family: var(--font-plain);
         }
         .kitchen-login__card {
           background: #fff;

@@ -33,11 +33,19 @@ function RootApp({ Component, pageProps }) {
         content="Order pizza, wings, sides, and drinks online from Red Stone Pizza for carryout or delivery."
       />
       <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-      {/* Start downloading the custom display font right away so text
-          doesn't visibly swap from the fallback font. */}
+      {/* Start downloading the two Red Stone Face files right away so text
+          doesn't visibly swap from the fallback font. The ?v= must match
+          styles/globals.css exactly or the browser downloads them twice. */}
       <link
         rel="preload"
-        href="/fonts/RedStoneDisplay-Regular.woff2?v=2"
+        href="/fonts/RedStoneFace-Variable.woff2?v=3"
+        as="font"
+        type="font/woff2"
+        crossOrigin="anonymous"
+      />
+      <link
+        rel="preload"
+        href="/fonts/RedStoneFace-ExtraBlack.woff2?v=2"
         as="font"
         type="font/woff2"
         crossOrigin="anonymous"

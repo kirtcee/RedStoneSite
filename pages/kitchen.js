@@ -370,7 +370,15 @@ export default function KitchenDashboard() {
         .kitchen {
           min-height: 100vh;
           background: #f1f2f4;
-          font-family: var(--font-body, "Inter", sans-serif);
+          /* Kitchen screens stay in the device's plain, very legible font
+             (not the brand font): every font name points at it in here. */
+          --font-body: var(--font-plain);
+          --font-face: var(--font-plain);
+          --font-text: var(--font-plain);
+          --font-display-text: var(--font-plain);
+          --font-heading: var(--font-plain);
+          --font-display: var(--font-plain);
+          font-family: var(--font-plain);
         }
         .kitchen-header {
           background: #000000;

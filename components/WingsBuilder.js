@@ -257,7 +257,7 @@ export default function WingsBuilder({
             fontWeight: 900,
             marginBottom: "0.35rem",
             color: TEXT_BROWN,
-            fontFamily: "var(--font-heading), Oswald, sans-serif",
+            fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
             fontSize: "1rem"
           }}
         >
@@ -288,7 +288,7 @@ export default function WingsBuilder({
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 fontWeight: 800,
-                fontFamily: "var(--font-heading), Oswald, sans-serif",
+                fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
                 fontSize: ".9rem"
               }}
               title={sauce}
@@ -306,7 +306,7 @@ export default function WingsBuilder({
             fontWeight: 900,
             marginBottom: "0.35rem",
             color: TEXT_BROWN,
-            fontFamily: "var(--font-heading), Oswald, sans-serif",
+            fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
             fontSize: "1rem"
           }}
         >
@@ -334,7 +334,7 @@ export default function WingsBuilder({
                 borderRadius: "6px",
                 cursor: "pointer",
                 fontWeight: 800,
-                fontFamily: "var(--font-heading), Oswald, sans-serif",
+                fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
                 fontSize: ".9rem"
               }}
             >
@@ -351,7 +351,7 @@ export default function WingsBuilder({
             fontWeight: 900,
             marginBottom: "0.35rem",
             color: TEXT_BROWN,
-            fontFamily: "var(--font-heading), Oswald, sans-serif",
+            fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
             fontSize: "1rem"
           }}
         >
@@ -399,7 +399,7 @@ export default function WingsBuilder({
                   alignItems: "center",
                   justifyContent: "space-between",
                   fontWeight: 800,
-                  fontFamily: "var(--font-heading), Oswald, sans-serif",
+                  fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
                 }}
                 disabled={disabled}
               >
