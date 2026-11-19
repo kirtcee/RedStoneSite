@@ -1007,14 +1007,22 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           background: rgba(0, 0, 0, 0.45);
           z-index: 9990;
         }
+        /* ADDRESS DETAILS popup position. Try values in Inspect: select the
+           element with class "addrModal-root" and edit these in Styles.
+             --addr-top:  gap above the popup (bigger = lower on screen)
+             --addr-side: gap on the left and right (phones) */
         .addrModal-root {
+          --addr-top: 80px;
+          --addr-side: 0px;
           position: fixed;
           inset: 0;
           display: flex;
           align-items: flex-start;
           justify-content: center;
-          padding-top: 80px;
+          padding-top: var(--addr-top);
           padding-bottom: 40px;
+          padding-left: var(--addr-side);
+          padding-right: var(--addr-side);
           z-index: 9991;
         }
 
@@ -1087,9 +1095,8 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
             font-size: 0.8rem;
           }
           .addrModal-root {
-            padding-top: 40px;
-            padding-left: 12px;
-            padding-right: 12px;
+            --addr-top: 40px;
+            --addr-side: 12px;
           }
         }
       `}</style>
