@@ -244,7 +244,8 @@ export default function SpecialMenuBuilder({
                     background: isOverIncluded ? "#fff4e5" : "#fff",
                     border: `1px solid ${isOverIncluded ? "#e0a951" : LIGHT_BORDER}`,
                     borderRadius: 4,
-                    fontSize: ".85rem",
+                    fontSize: "var(--fs-sm)",
+                    fontWeight: "var(--w-medium)",
                   }}
                 >
                   3 toppings included.
@@ -400,7 +401,7 @@ export default function SpecialMenuBuilder({
 
         <SectionBox>
           <h3 style={sectionBar}>Item</h3>
-          <div className="rs-bsec" style={{ padding: "1rem", background: LIGHTER_BG }}>
+          <div className="rs-bsec rs-itembox" style={{ padding: "1rem", background: LIGHTER_BG }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
               <ItemCheck />
               <span>{buildSummary()}</span>

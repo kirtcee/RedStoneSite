@@ -885,6 +885,13 @@ export default function CheckoutPage() {
           font-weight: 700;
           font-size: 1.15em;
         }
+        /* the asterisk in "*Indicates required field." */
+        .co-wrap :global(.co-reqnote .co-req) {
+          font-size: 1.7em;
+          line-height: 0;
+          vertical-align: -0.2em;
+          margin-right: 1px;
+        }
         .co-wrap :global(.co-card__secure),
         .co-wrap :global(.co-card__loading) {
           font-size: 0.95rem;

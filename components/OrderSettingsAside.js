@@ -674,11 +674,12 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
         .os-label {
           display: flex;
           align-items: baseline;
+          white-space: nowrap; /* "MY LOCATION" stays on one line beside (CHANGE) */
           font-weight: 800;
           color: #000;
           font-family: var(--font-heading, Oswald, sans-serif);
           text-transform: uppercase;
-          font-size: 0.85rem;
+          font-size: var(--fs-sm);
           letter-spacing: 0.2px;
         }
         .os-change {
@@ -689,7 +690,7 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
           color: #000;
           font-weight: 800;
           text-transform: uppercase;
-          font-size: 0.85rem;
+          font-size: var(--fs-xs);
           cursor: pointer;
           text-decoration: none;
           font-family: var(--font-heading, Oswald, sans-serif);
@@ -697,7 +698,7 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
         .os-value {
           margin-top: 4px;
           color: ${BROWN};
-          font-size: 0.88rem;
+          font-size: var(--fs-sm);
         }
         .os-editRow {
           margin-top: 8px;
@@ -736,11 +737,12 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
           margin-top: 8px;
         }
         .os-radio {
+          font-weight: var(--w-black); /* as heavy as the SERVICE METHOD label */
           display: flex;
           align-items: center;
           gap: 8px;
           color: ${BROWN};
-          font-size: 0.88rem;
+          font-size: var(--fs-sm);
           cursor: pointer;
         }
         .os-schedule {
@@ -748,7 +750,7 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
         }
         .os-small {
           margin-top: 6px;
-          font-size: 12px;
+          font-size: var(--fs-xs);
           color: ${BROWN};
         }
         .os-link {
@@ -759,7 +761,7 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
           color: #000;
           font-weight: 800;
           text-transform: uppercase;
-          font-size: 0.78rem;
+          font-size: var(--fs-xs);
           cursor: pointer;
           text-decoration: underline;
           font-family: var(--font-heading, Oswald, sans-serif);
@@ -767,7 +769,7 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
         }
         .os-hours {
           margin-top: 6px;
-          font-size: 13px;
+          font-size: var(--fs-xs);
           color: ${BROWN};
           line-height: 1.4;
         }
@@ -776,7 +778,7 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
           justify-content: space-between;
           margin-bottom: 6px;
           color: ${BROWN};
-          font-size: 0.88rem;
+          font-size: var(--fs-sm);
         }
         .os-totalNum {
           font-weight: 700;

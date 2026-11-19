@@ -275,7 +275,7 @@ export default function OrderConfirmation() {
                     {isCombo ? (
                       <div style={{ marginTop: 3, display: "flex", flexDirection: "column", gap: 3 }}>
                         {Object.entries(it.meta.items).map(([key, child]) => (
-                          <div key={key} style={{ display: "flex", gap: 6, fontSize: 12, color: "#555" }}>
+                          <div key={key} style={{ display: "flex", gap: 6, fontSize: "var(--fs-sm)", color: "#555" }}>
                             <span style={{ fontWeight: 700, color: "#333", flex: "0 0 auto" }}>
                               {comboItemLabel(key)}:
                             </span>
@@ -284,7 +284,7 @@ export default function OrderConfirmation() {
                         ))}
                       </div>
                     ) : (
-                      <div style={{ fontSize: 12, color: "#555", whiteSpace: "pre-line" }}>{subtitle}</div>
+                      <div style={{ fontSize: "var(--fs-sm)", color: "#555", whiteSpace: "pre-line" }}>{subtitle}</div>
                     )}
                   </div>
                   <div style={{ fontWeight: 700, whiteSpace: "nowrap" }}>{formatMoney(lineCents)}</div>

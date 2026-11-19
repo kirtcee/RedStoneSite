@@ -279,7 +279,7 @@ export default function SidesDessertsAll({
         .feastCard__desc {
           margin: 10px 0 2px;
           color: var(--text-brown);
-          font-size: 0.9rem;
+          font-size: var(--fs-sm); font-weight: var(--w-medium);
           line-height: 1.33;
         }
       `}</style>

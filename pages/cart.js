@@ -613,10 +613,11 @@ export default function CartPage() {
         }
         .cart-box__note {
           margin: 6px 14px 14px;
-          font-size: 0.8rem;
+          font-size: var(--fs-sm);
           font-style: normal;
         }
         .cart-box__note strong {
+          font-size: 0.8rem; /* "Note:" label stays this size */
           font-family: var(--font-display);
           text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
           font-weight: 400;
@@ -768,7 +769,7 @@ export default function CartPage() {
           color: #fff;
           padding: 0.65rem 0.8rem;
           font-family: var(--font-heading);
-          font-size: 1.15rem;
+          font-size: var(--fs-md);
           line-height: 1;
           text-transform: uppercase;
           letter-spacing: 0.3px;
@@ -780,7 +781,7 @@ export default function CartPage() {
         }
         .cart-box {
           --cart-qty-w: 104px;
-          --cart-price-w: 64px;
+          --cart-price-w: 76px;
           --cart-gutter: 14px; /* side space around the step boxes + totals */
         }
         .cart-box :global(.cart-step__col) {
@@ -908,7 +909,7 @@ export default function CartPage() {
           background: none;
           border: 0;
           font-family: var(--font-display);
-          font-size: 0.85rem;
+          font-size: var(--fs-sm);
           text-transform: uppercase;
           letter-spacing: 0.03em;
           color: var(--text-brown);
@@ -916,6 +917,7 @@ export default function CartPage() {
         }
         .cart-box :global(.cart-line__price) {
           text-align: right;
+          font-size: var(--fs-md);
           font-weight: 700;
           color: #000;
           padding-top: 6px;
@@ -992,7 +994,7 @@ export default function CartPage() {
         @media (max-width: 640px) {
           .cart-box {
             --cart-qty-w: 92px;
-            --cart-price-w: 56px;
+            --cart-price-w: 66px;
             --cart-gutter: 10px;
           }
           .cart-box__head {
@@ -1016,7 +1018,7 @@ export default function CartPage() {
           }
           .cart-box :global(.cart-step__head) {
             padding: 0.6rem 0.6rem;
-            font-size: 1rem;
+            font-size: var(--fs-md);
           }
           .cart-box :global(.cart-step__body) {
             padding: 4px 8px;

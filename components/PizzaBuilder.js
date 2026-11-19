@@ -516,14 +516,14 @@ const InstrGroup = ({ title, children, centered = false }) => (
         marginBottom: "0.4rem",
         color: TEXT_BROWN,
         fontFamily: "var(--font-heading), Oswald, sans-serif",
-        fontSize: ".85rem",
+        fontSize: "var(--fs-sm)",
         textTransform: "uppercase",
         letterSpacing: ".3px",
       }}
     >
       {title}
     </p>
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>{children}</div>
+    <div className="pb-instr" style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>{children}</div>
   </div>
 );
 
@@ -1011,7 +1011,8 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                   background: isOverIncluded ? "#fff4e5" : "#f2f2f2",
                   border: `1px solid ${isOverIncluded ? "#e0a951" : LIGHT_BORDER}`,
                   borderRadius: 4,
-                  fontSize: ".85rem",
+                  fontSize: "var(--fs-sm)",
+                  fontWeight: "var(--w-medium)",
                   color: "#333"
                 }}
               >
@@ -1446,7 +1447,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
 </div>
 
 
-            <div style={{ padding: "1rem", background: LIGHT_BG }}>
+            <div className="pb-mypizza" style={{ padding: "1rem", background: LIGHT_BG }}>
               <p>
                 <strong>Size:</strong>{" "}
                 {isGlutenFree ? '13" (Gluten Free)' : `${selectedSize}" (${sizes.find((s) => s.size === selectedSize)?.label})`}
@@ -1599,6 +1600,20 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
 
       {/* Close X as a decal (no layout impact, never moves with scroll) */}
       <style jsx global>{`
+        /* Option text: cheese, sauces, crusts, toppings and the Special
+           Instructions choices. Semibold and a step bigger (the inline
+           styles in this file set weights too, hence !important). */
+        .pb-scope :global(.pb-left label) {
+          font-size: var(--fs-base) !important;
+          font-weight: var(--w-semibold) !important;
+        }
+        /* Special Instructions choices sit 3 to a row, so one step smaller */
+        .pb-scope :global(.pb-instr label) {
+          font-size: var(--fs-sm) !important;
+        }
+        .pb-scope :global(.pb-mypizza) {
+          font-size: var(--fs-base);
+        }
         .pb-scope input[type="radio"],
         .pb-scope input[type="checkbox"] {
           accent-color: #8b1a1a;

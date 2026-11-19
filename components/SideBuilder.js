@@ -223,7 +223,7 @@ export default function SideBuilder({
               alignItems: "center",
             }}
           >
-            <p style={{ fontWeight: 900, margin: 0 }}>{side}</p>
+            <p className="rs-qtyname" style={{ margin: 0 }}>{side}</p>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <button
                 type="button"
@@ -263,7 +263,7 @@ export default function SideBuilder({
                   alignItems: "center",
                 }}
               >
-                <p style={{ margin: 0, fontWeight: 600 }}>Gravy</p>
+                <p className="rs-qtyname" style={{ margin: 0 }}>Gravy</p>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <button
                     type="button"
@@ -304,7 +304,7 @@ export default function SideBuilder({
                         flex: "0 0 auto",
                       }}
                     />
-                    <p style={{ margin: 0, fontWeight: 500 }}>{dip}</p>
+                    <p className="rs-qtyname" style={{ margin: 0 }}>{dip}</p>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <button
@@ -332,7 +332,7 @@ export default function SideBuilder({
       {/* Summary */}
       <SectionBox>
         <h3 style={sectionBar}>Item</h3>
-        <div className="rs-bsec" style={{ padding: `${PAD_Y} 1rem`, background: LIGHT_BG }}>
+        <div className="rs-bsec rs-itembox" style={{ padding: `${PAD_Y} 1rem`, background: LIGHT_BG }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.6rem" }}>
             <ItemCheck />
             <span style={{ fontWeight: "bold" }}>({quantity})</span>
@@ -368,7 +368,7 @@ export default function SideBuilder({
             </div>
           ))}
 
-          <div style={{ fontWeight: 900, marginTop: "0.9rem" }}>
+          <div className="rs-subtotal" style={{ fontWeight: 900, marginTop: "0.9rem" }}>
             Item Subtotal: <span>{lineSubtotal}</span>
           </div>
         </div>

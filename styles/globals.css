@@ -554,6 +554,10 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
 .eta-right {
   padding: 12px 16px;
   color: #333;
+  font-weight: var(--w-medium); /* 500: thicker than regular body text */
+}
+.eta-right strong {
+  font-weight: var(--w-bold);
 }
 
 /* BYO box – cream card wrapping the CTA button + the size row beneath it,
@@ -1802,4 +1806,21 @@ textarea {
 }
 button {
   font-family: inherit;
+}
+
+/* ===== Builders (wings, sides, drinks & dips, special menu) =====
+   "Item" box: what's in this item, plus its subtotal. */
+.rs-itembox {
+  font-size: var(--fs-base);
+  font-weight: var(--w-medium);
+  white-space: pre-line; /* summaries can run over several lines */
+}
+.rs-itembox .rs-subtotal {
+  font-size: var(--fs-md);
+}
+/* Names beside a quantity stepper (French Fries, Gravy, each dip): all the
+   same size and weight. */
+.rs-qtyname {
+  font-size: var(--fs-base);
+  font-weight: var(--w-semibold);
 }

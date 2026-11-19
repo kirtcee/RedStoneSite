@@ -164,7 +164,7 @@ function EntreesView({
           .btn-add:hover{ filter:brightness(0.96); }
           .btn-outline{ background:#fff; border:3px solid var(--brand-blue); color:var(--brand-blue); }
           .btn-outline:hover{ background:#f4f9ff; }
-          .feastCard__desc{ margin:10px 0 2px; color:var(--text-brown); font-size:.9rem; line-height:1.33; }
+          .feastCard__desc{ margin:10px 0 2px; color:var(--text-brown); font-size: var(--fs-sm); font-weight: var(--w-medium); line-height:1.33; }
         `}</style>
 
         {/* mount the modal/logic controller */}
@@ -301,7 +301,7 @@ function EntreesView({
           .btn-add:hover{ filter:brightness(0.96); }
           .btn-outline{ background:#fff; border:3px solid var(--brand-blue); color:var(--brand-blue); }
           .btn-outline:hover{ background:#f4f9ff; }
-          .feastCard__desc{ margin:10px 0 2px; color:var(--text-brown); font-size:.9rem; line-height:1.33; }
+          .feastCard__desc{ margin:10px 0 2px; color:var(--text-brown); font-size: var(--fs-sm); font-weight: var(--w-medium); line-height:1.33; }
         `}</style>
 
         {/* Popup builder for Special Menu */}
@@ -478,7 +478,7 @@ function SidesView({ selectedSide, setSelectedSide }) {
         .btn-outline{ background:#fff; border:3px solid var(--brand-blue); color:var(--brand-blue); }
         .btn-outline:hover{ background:#f4f9ff; }
 
-        .feastCard__desc{ margin:10px 0 2px; color:var(--text-brown); font-size:.9rem; line-height:1.33; }
+        .feastCard__desc{ margin:10px 0 2px; color:var(--text-brown); font-size: var(--fs-sm); font-weight: var(--w-medium); line-height:1.33; }
       `}</style>
     </div>
   );
@@ -572,7 +572,7 @@ function DrinksView() {
         .btn-add{ background:#8b1a1a; color:#fff; border:3px solid transparent; }
         .btn-add:hover{ filter:brightness(0.96); }
 
-        .feastCard__desc{ margin:10px 0 2px; color:var(--text-brown); font-size:.9rem; line-height:1.33; }
+        .feastCard__desc{ margin:10px 0 2px; color:var(--text-brown); font-size: var(--fs-sm); font-weight: var(--w-medium); line-height:1.33; }
       `}</style>
 
       {/* Right-panel modal */}

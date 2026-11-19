@@ -469,7 +469,7 @@ export default function WingsBuilder({
                     background: "#eee",
                   }}
                 />
-                <span style={{ fontWeight: 800, whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}>
+                <span className="rs-qtyname" style={{ whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}>
                   {dip}
                 </span>
               </div>
@@ -503,7 +503,7 @@ export default function WingsBuilder({
 
       {/* 3. Item */}
       <Section index={3} title="Item">
-        <div style={{ marginTop: "0.25rem" }}>
+        <div className="rs-itembox" style={{ marginTop: "0.25rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" }}>
             <ItemCheck />
             <span style={{ fontWeight: 900 }}>({wingsQty})</span>
@@ -520,7 +520,7 @@ export default function WingsBuilder({
           <Divider />
 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ fontWeight: 900 }}>Item Subtotal: <span>{lineSubtotal}</span></div>
+            <div className="rs-subtotal" style={{ fontWeight: 900 }}>Item Subtotal: <span>{lineSubtotal}</span></div>
             <div style={{ color: "#666" }}>
               {wingsQty} × {selectedCount}-pc
             </div>

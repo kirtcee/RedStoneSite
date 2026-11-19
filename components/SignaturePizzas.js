@@ -269,7 +269,7 @@ export default function SignaturePizzasPage() {
         .feastCard__desc{
           margin: 8px 0 2px;
           color: var(--text-brown);
-          font-size: .9rem;
+          font-size: var(--fs-sm); font-weight: var(--w-medium);
           line-height: 1.33;
           text-align: left;
           word-break: break-word;

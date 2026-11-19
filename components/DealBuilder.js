@@ -488,13 +488,10 @@ export default function DealBuilder({ onClose: onCloseProp }) {
                   color: "#000",
                   fontSize: "1.05rem",
                   fontFamily: "var(--font-heading, Oswald, sans-serif)",
-                  marginBottom: 6,
+                  marginBottom: "1rem",
                 }}
               >
                 Items Available for This Coupon
-              </div>
-              <div style={{ color: BROWN, fontSize: 13, marginBottom: "1rem", textAlign: "center" }}>
-                Note: Some crust types, toppings, sauces, and premium items may come with an additional charge.
               </div>
 
               <div style={{ ...bleed, display: "flex", flexDirection: "column", gap: "0.6rem", marginBottom: "1rem" }}>

@@ -283,7 +283,7 @@ export function DrinksCategoryPanel({
       <SectionBox>
         <h3 style={sectionBar}>Item</h3>
 
-        <div className="rs-bsec" style={{ padding: "1rem", background: LIGHTER_BG }}>
+        <div className="rs-bsec rs-itembox" style={{ padding: "1rem", background: LIGHTER_BG }}>
           {items.length === 0 ? (
             <p style={{ margin: 0, color: "var(--text-brown)" }}>
               No items added yet.
@@ -355,7 +355,7 @@ export function DrinksCategoryPanel({
                   </div>
                 );
               })}
-              <div style={{ fontWeight: 900, marginTop: "0.9rem" }}>
+              <div className="rs-subtotal" style={{ fontWeight: 900, marginTop: "0.9rem" }}>
                 Item Subtotal: <span>{panelSubtotal}</span>
               </div>
             </div>

@@ -237,7 +237,8 @@ function DealCard({ deal, onAdd }) {
         }
         .deal-card__desc {
           margin: 0;
-          font-size: 0.82rem;
+          font-size: var(--fs-sm); /* same as the menu item descriptions */
+          font-weight: var(--w-medium);
           line-height: 1.4;
           color: var(--text-brown);
         }
