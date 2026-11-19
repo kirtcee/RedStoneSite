@@ -9,7 +9,7 @@ import { useRouter } from "next/router";
 import { useCart } from "./CartSystem";
 import { formatMoney } from "./Pricing";
 
-import { DELIVERY_FEE_CENTS, TAX_RATE } from "../utils/orderRules";
+import { DELIVERY_FEE_CENTS, TAX_RATE, taxOn } from "../utils/orderRules";
 export { DELIVERY_FEE_CENTS, TAX_RATE }; // older imports still point here
 const STORE_HOURS = { open: "11:00", close: "22:00" };
 const BORDER = "var(--menu-box-border)";
@@ -413,7 +413,7 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
   }, []);
 
   const deliveryCents = service === "delivery" ? DELIVERY_FEE_CENTS : 0;
-  const taxCents = Math.round(TAX_RATE * (subtotalCents + deliveryCents));
+  const taxCents = taxOn(subtotalCents); // delivery fee isn't taxed
   const totalCents = subtotalCents + deliveryCents + taxCents;
 
   // Selecting Carryout applies instantly (no extra info needed). Selecting

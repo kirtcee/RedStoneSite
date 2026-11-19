@@ -7,13 +7,13 @@
 import React from "react";
 import { useCart } from "./CartSystem";
 import { formatMoney } from "./Pricing";
-import { DELIVERY_FEE_CENTS, TAX_RATE } from "./OrderSettingsAside";
+import { DELIVERY_FEE_CENTS, taxOn } from "../utils/orderRules";
 
 export function useOrderTotals() {
   const cart = useCart();
   const subtotal = cart?.subtotalCents ?? 0;
   const delivery = cart?.service === "delivery" ? DELIVERY_FEE_CENTS : 0;
-  const tax = Math.round(TAX_RATE * (subtotal + delivery));
+  const tax = taxOn(subtotal); // delivery fee isn't taxed
   // What the coupons knock off the items' normal prices (before tax).
   const saved = cart?.pricing?.savingsCents ?? 0;
   return { subtotal, delivery, tax, total: subtotal + delivery + tax, saved, isLoaded: !!cart?.isLoaded };

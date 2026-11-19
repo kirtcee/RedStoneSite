@@ -14,7 +14,7 @@ import { findDealById } from "./dealCatalog";
 import { adminAuth } from "./firebaseAdmin";
 import { Timestamp } from "firebase-admin/firestore";
 
-import { TAX_RATE, DELIVERY_FEE_CENTS, DELIVERY_MINIMUM_CENTS } from "./orderRules";
+import { TAX_RATE, DELIVERY_FEE_CENTS, DELIVERY_MINIMUM_CENTS, taxOn } from "./orderRules";
 export { TAX_RATE, DELIVERY_FEE_CENTS };
 const MAX_ITEMS = 100;
 const MAX_QTY_PER_ITEM = 50;
@@ -173,7 +173,7 @@ export function buildOrder(body, { uid, paymentMethod }) {
   }
 
   const deliveryCents = serviceMethod === "Delivery" ? DELIVERY_FEE_CENTS : 0;
-  const taxCents = Math.round((subtotalCents + deliveryCents) * TAX_RATE);
+  const taxCents = taxOn(subtotalCents); // delivery fee isn't taxed
   const totalCents = subtotalCents + deliveryCents + taxCents;
 
   const isLater = orderTiming === "later";
