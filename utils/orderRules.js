@@ -19,8 +19,8 @@ export const STORE_PHONE = "905-385-9888";
 // ---- Delivery fee: priced on DRIVE TIME from the store (one way, normal
 // traffic, rounded up to the whole minute). Distance isn't used: on the
 // escarpment a house under 1 km away can be a 10-minute drive.
-//   4 min or less $2.99 | 5 min $3.99 | 6-7 min $4.99 | 8 min $5.99
-//   then $1 more for every extra minute (9 $6.99, 10 $7.99 ... 25 $22.99)
+//   4 min or less $3.99, then $1 more for every extra minute
+//   (5 min $4.99, 6 min $5.99 ... 25 min $24.99)
 //   over 25 min: no online price; ask them to check the address or call.
 export const DELIVERY_MAX_MINUTES = 25;
 
@@ -29,10 +29,8 @@ export const DELIVERY_MAX_MINUTES = 25;
 export function deliveryFeeForMinutes(minutes) {
   const m = Math.max(0, Math.ceil(Number(minutes) || 0));
   if (m > DELIVERY_MAX_MINUTES) return null;
-  if (m <= 4) return 299;
-  if (m === 5) return 399;
-  if (m <= 7) return 499;
-  return 599 + (m - 8) * 100; // 8 min $5.99, +$1 per extra minute
+  if (m <= 4) return 399; // minimum delivery fee
+  return 399 + (m - 4) * 100; // +$1 per minute after 4 (5 min $4.99, 25 min $24.99)
 }
 
 // Delivery needs at least this much food and drink: the subtotal after

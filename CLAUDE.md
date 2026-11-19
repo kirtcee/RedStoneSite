@@ -33,8 +33,8 @@
 
 ## Order rules
 - **Delivery fee = drive time** from the store (Google Routes API, no live
-  traffic, rounded up): 4 min or less $2.99, 5 min $3.99, 6-7 min $4.99,
-  8 min $5.99, then +$1 per minute; over 25 min = no online price, ask them
+  traffic, rounded up): 4 min or less $3.99, then +$1 per minute
+  (5 min $4.99 ... 25 min $24.99); over 25 min = no online price, ask them
   to check the address or call. Table: `deliveryFeeForMinutes()` in
   `utils/orderRules.js`. The server always works the fee out itself
   (`utils/deliveryQuote.js`, needs `GOOGLE_MAPS_SERVER_KEY`).
