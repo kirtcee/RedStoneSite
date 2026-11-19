@@ -507,7 +507,7 @@ export default function CheckoutPage() {
           margin: 0 0 16px;
           color: var(--text-brown);
           /* Red Stone Face (variable font) — tweak the two weights below
-             in Inspect: any number from 300 (Light) to 800 (ExtraBold). */
+             in Inspect: any number from 100 (Thin) to 950 (ExtraBlack). */
           --sub-weight: 300;      /* the sentence */
           --sub-bold-weight: 600; /* the bold words */
           font-family: var(--font-face);
