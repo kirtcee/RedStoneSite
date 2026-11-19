@@ -512,7 +512,7 @@ export default function CheckoutPage() {
           margin: 0 0 16px;
           color: var(--text-brown);
           /* Red Stone Face (variable font) — tweak the two weights below
-             in Inspect: any number from 100 (Thin) to 950 (ExtraBlack). */
+             in Inspect: any number from 300 (Light) to 950 (ExtraBlack). */
           --sub-weight: 400;      /* the sentence */
           --sub-bold-weight: 600; /* the bold words */
           font-family: var(--font-face);
@@ -862,6 +862,43 @@ export default function CheckoutPage() {
         .co-radio input:focus-visible {
           outline: 2px solid var(--text-brown);
           outline-offset: 2px;
+        }
+
+        /* ----- FONT TEST sizes -----
+           Red Stone Face is narrower than Inter, so the same size reads
+           smaller. While the test is on, small text gets bigger (nothing
+           under ~15px). Goes away with FONT_TEST_RED_STONE_FACE = false. */
+        .font-test-face .co-radio {
+          font-size: 1.1rem;
+        }
+        .font-test-face .co-wrap :global(.co-error) {
+          font-size: 1rem;
+        }
+        .font-test-face .co-wrap :global(.co-hint) {
+          font-size: 0.95rem;
+        }
+        .font-test-face .co-wrap :global(.co-hint--note) {
+          font-size: 1rem;
+        }
+        .font-test-face .co-wrap :global(.co-reqnote) {
+          font-size: 0.95rem;
+        }
+        .font-test-face .co-wrap :global(.co-req) {
+          font-weight: 700;
+          font-size: 1.15em;
+        }
+        .font-test-face .co-wrap :global(.co-card__secure),
+        .font-test-face .co-wrap :global(.co-card__loading) {
+          font-size: 0.95rem;
+        }
+        .font-test-face .co-items__opt {
+          font-size: 1rem;
+        }
+        .font-test-face .co-items__coupon {
+          font-size: 0.95rem;
+        }
+        .font-test-face .co-submitError {
+          font-size: 1rem;
         }
 
         .co-submitError {

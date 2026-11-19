@@ -67,13 +67,15 @@
   font-display: swap;
 }
 
-/* Red Stone Face — variable font: one file, any weight from 100 (Thin) to
-   950 (ExtraBlack); use font-weight to pick (e.g. 300, 450, 600, 900). */
+/* Red Stone Face — variable font: one file, any weight from 300 (Light) to
+   950 (ExtraBlack); use font-weight to pick (e.g. 300, 450, 600, 900).
+   RULE: nothing thinner than 300 — it's too thin to read. The file goes
+   down to 100, but this range makes browsers treat anything lighter as 300. */
 @font-face {
   font-family: 'Red Stone Face';
   src: url('/fonts/RedStoneFace-Variable.woff2?v=2') format('woff2-variations'),
        url('/fonts/RedStoneFace-Variable.woff2?v=2') format('woff2');
-  font-weight: 100 950;
+  font-weight: 300 950;
   font-style: normal;
   font-display: swap;
 }
@@ -88,13 +90,6 @@
   font-display: swap;
 }
 /* The fixed-weight versions, kept for comparison. */
-@font-face {
-  font-family: 'Red Stone Face Static';
-  src: url('/fonts/RedStoneFace-Thin.woff2?v=1') format('woff2');
-  font-weight: 100;
-  font-style: normal;
-  font-display: swap;
-}
 @font-face {
   font-family: 'Red Stone Face Static';
   src: url('/fonts/RedStoneFace-Medium.woff2?v=1') format('woff2');
@@ -157,7 +152,7 @@
   --font-text: 'TT Commons', 'Inter', sans-serif;
   --font-display-condensed: 'Red Stone Display Condensed', var(--font-display);
   --font-display-text: 'Red Stone Display Text', var(--font-text);
-  --font-face: 'Red Stone Face', var(--font-text); /* variable, 100–950 */
+  --font-face: 'Red Stone Face', var(--font-text); /* variable, 300–950 (never thinner) */
 
   /* effects */
   --radius: 6px;
