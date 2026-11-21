@@ -45,12 +45,15 @@ export default function PizzaPhoto({ slug, alt = "" }) {
         /* Tweak in Inspect on the .pizza-photo element:
              --angled-fill: how much of the box height the angled pizza fills
              --angled-cut:  how much of the angled pizza is cut off on the left
-             --overhead-fill: how much of the box the overhead pizza fills */
+             --overhead-fill: how much of the box the overhead pizza fills
+             --photo-shadow: the soft shadow under the pizza (follows its shape) */
         .pizza-photo {
           --angled-fill: 99%;
           --angled-cut: 20%;
           --overhead-fill: 94%;
+          --photo-shadow: drop-shadow(7px 8px 7px rgba(0, 0, 0, 0.32));
           position: relative;
+          background: #fff;
           width: 100%;
           height: 100%;
           overflow: hidden;
@@ -60,6 +63,7 @@ export default function PizzaPhoto({ slug, alt = "" }) {
           display: block;
           max-width: none;
           user-select: none;
+          filter: var(--photo-shadow);
         }
         .pizza-photo--angled img {
           top: 50%;
