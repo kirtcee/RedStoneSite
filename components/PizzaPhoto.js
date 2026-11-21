@@ -4,7 +4,7 @@
 // (photos in public/images/pizzas/<style>/<slug>.webp, trimmed to the pizza):
 //   - "overhead": the whole pizza from above, centred, fitting the box.
 //   - "angled":   the side-on photo, top and bottom almost filling the box,
-//                 with about a fifth of the pizza cut off on the left. Every
+//                 with about 18% of the pizza cut off on the left. Every
 //                 angled photo is stretched to the same 760x481 shape (the
 //                 Hawaiian / Meat Lover shot) so all pizzas look the same size.
 // The style used site-wide is DEFAULT_STYLE below. To compare on a phone,
@@ -48,10 +48,10 @@ export default function PizzaPhoto({ slug, alt = "" }) {
              --overhead-fill: how much of the box the overhead pizza fills
              --photo-shadow: the soft shadow under the pizza (follows its shape) */
         .pizza-photo {
-          --angled-fill: 99%;
-          --angled-cut: 20%;
+          --angled-fill: 92%;
+          --angled-cut: 18%;
           --overhead-fill: 94%;
-          --photo-shadow: drop-shadow(7px 8px 7px rgba(0, 0, 0, 0.32));
+          --photo-shadow: drop-shadow(7px 8px 6px rgba(0, 0, 0, 0.5));
           position: relative;
           background: #fff;
           width: 100%;
