@@ -7,6 +7,8 @@
 //                 with about 18% of the pizza cut off on the left. Every
 //                 angled photo is stretched to the same 760x481 shape (the
 //                 Hawaiian / Meat Lover shot) so all pizzas look the same size.
+// variant="cover": the menu's category cover pictures. Always the angled
+// photo, cut on the left AND the top, and enlarged to fill the box.
 // The style used site-wide is DEFAULT_STYLE below. To compare on a phone,
 // add ?photos=overhead or ?photos=angled to a page address; that choice is
 // remembered for the rest of the visit.
@@ -36,8 +38,10 @@ export function pizzaPhotoSrc(slug, style = "overhead") {
   return `/images/pizzas/${style}/${slug}.webp`;
 }
 
-export default function PizzaPhoto({ slug, alt = "" }) {
-  const style = usePizzaPhotoStyle();
+export default function PizzaPhoto({ slug, alt = "", variant = null }) {
+  const chosenStyle = usePizzaPhotoStyle();
+  const isCover = variant === "cover";
+  const style = isCover ? "angled" : chosenStyle;
   // Fade the photo in once it has loaded. Besides looking smoother, this
   // makes the browser redraw it in full: without it, a photo that loaded
   // after the page was drawn could have the right side of its shadow cut
@@ -51,7 +55,7 @@ export default function PizzaPhoto({ slug, alt = "" }) {
     if (img?.complete && img.naturalWidth) requestAnimationFrame(() => setLoaded(true)); // already cached
   }, [src]);
   return (
-    <div className={`pizza-photo pizza-photo--${style}`}>
+    <div className={`pizza-photo pizza-photo--${isCover ? "cover" : style}`}>
       <img
         ref={imgRef}
         src={src}
@@ -66,7 +70,11 @@ export default function PizzaPhoto({ slug, alt = "" }) {
              --angled-fill: how much of the box height the angled pizza fills
              --angled-cut:  how much of the angled pizza is cut off on the left
              --overhead-fill: how much of the box the overhead pizza fills
-             --photo-shadow: the soft shadow under the pizza (follows its shape) */
+             --photo-shadow: the soft shadow under the pizza (follows its shape)
+           Category covers (.pizza-photo--cover):
+             --cover-size:     pizza width compared to the box (bigger = more zoom)
+             --cover-cut-left: how much is cut off on the left
+             --cover-cut-top:  how much is cut off the top */
         .pizza-photo {
           --angled-fill: 92%;
           --angled-cut: 18%;
@@ -100,6 +108,18 @@ export default function PizzaPhoto({ slug, alt = "" }) {
           height: var(--angled-fill);
           width: auto;
           transform: translate(calc(-1 * var(--angled-cut)), -50%);
+        }
+        .pizza-photo--cover {
+          --cover-size: 120%;
+          --cover-cut-left: 18%;
+          --cover-cut-top: 18%;
+        }
+        .pizza-photo--cover img {
+          top: 0;
+          left: 0;
+          width: var(--cover-size);
+          height: auto;
+          transform: translate(calc(-1 * var(--cover-cut-left)), calc(-1 * var(--cover-cut-top)));
         }
         .pizza-photo--overhead img {
           inset: 0;

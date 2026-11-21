@@ -8,6 +8,7 @@ import PizzaBuilder from "../components/PizzaBuilder";
 import SideBuilder from "../components/SideBuilder";
 import SpecialtyPizzas from "../components/SpecialtyPizzas";
 import SignaturePizzas from "../components/SignaturePizzas";
+import PizzaPhoto from "../components/PizzaPhoto";
 import ComboBuilder, { comboSections, comboThumbFor } from "../components/ComboBuilder";
 import SpecialMenuBuilder from "../components/SpecialMenuBuilder";
 import SidesDessertsAll from "../components/SidesDessertsAll";
@@ -668,8 +669,8 @@ function MenuBody() {
 
   const catCards = useMemo(
     () => [
-      { id: "signature",   label: "Signature Pizzas", img: "/images/menu_signature.png", nav: { tab: "entrees", sub: "signature" } },
-      { id: "specialty",   label: "Specialty Pizzas", img: "/images/menu_specialty.png", nav: { tab: "entrees", sub: "specialty" } },
+      { id: "signature",   label: "Signature Pizzas", photo: "bourbon",  nav: { tab: "entrees", sub: "signature" } },
+      { id: "specialty",   label: "Specialty Pizzas", photo: "canadian", nav: { tab: "entrees", sub: "specialty" } },
       { id: "wings",       label: "Wings",            img: "/images/menu_wings.png",     nav: { tab: "entrees", sub: "wings" } },
       { id: "sides",       label: "Sides",            img: "/images/menu_sides.png",     nav: { tab: "sides" } },
       { id: "combos",      label: "Combos",           img: "/images/menu_combos.png",    nav: { tab: "entrees", sub: "combos" } },
@@ -776,7 +777,11 @@ function MenuBody() {
                     onClick={() => setTabSub(c.nav, { toTop: true })}
                   >
                     <div className="cat-card__imgWrap">
-                      <img src={c.img} alt="" className="cat-card__img" />
+                      {c.photo ? (
+                        <PizzaPhoto slug={c.photo} variant="cover" />
+                      ) : (
+                        <img src={c.img} alt="" className="cat-card__img" />
+                      )}
                     </div>
                     <div className="cat-card__label">{c.label}</div>
                   </button>
