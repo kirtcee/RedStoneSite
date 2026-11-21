@@ -4,7 +4,9 @@
 // (photos in public/images/pizzas/<style>/<slug>.webp, trimmed to the pizza):
 //   - "overhead": the whole pizza from above, centred, fitting the box.
 //   - "angled":   the side-on photo, top and bottom almost filling the box,
-//                 with about a quarter of the pizza cut off on the left.
+//                 with about a fifth of the pizza cut off on the left. Every
+//                 angled photo is stretched to the same 760x481 shape (the
+//                 Hawaiian / Meat Lover shot) so all pizzas look the same size.
 // The style used site-wide is DEFAULT_STYLE below. To compare on a phone,
 // add ?photos=overhead or ?photos=angled to a page address; that choice is
 // remembered for the rest of the visit.
@@ -45,8 +47,8 @@ export default function PizzaPhoto({ slug, alt = "" }) {
              --angled-cut:  how much of the angled pizza is cut off on the left
              --overhead-fill: how much of the box the overhead pizza fills */
         .pizza-photo {
-          --angled-fill: 96%;
-          --angled-cut: 25%;
+          --angled-fill: 99%;
+          --angled-cut: 20%;
           --overhead-fill: 94%;
           position: relative;
           width: 100%;
