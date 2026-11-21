@@ -10,7 +10,7 @@
 // The style used site-wide is DEFAULT_STYLE below. To compare on a phone,
 // add ?photos=overhead or ?photos=angled to a page address; that choice is
 // remembered for the rest of the visit.
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 
 export const DEFAULT_STYLE = "angled";
@@ -38,9 +38,29 @@ export function pizzaPhotoSrc(slug, style = "overhead") {
 
 export default function PizzaPhoto({ slug, alt = "" }) {
   const style = usePizzaPhotoStyle();
+  // Fade the photo in once it has loaded. Besides looking smoother, this
+  // makes the browser redraw it in full: without it, a photo that loaded
+  // after the page was drawn could have the right side of its shadow cut
+  // off by a white strip until something else made the page redraw.
+  const imgRef = useRef(null);
+  const [loaded, setLoaded] = useState(false);
+  const src = pizzaPhotoSrc(slug, style);
+  useEffect(() => {
+    setLoaded(false);
+    const img = imgRef.current;
+    if (img?.complete && img.naturalWidth) requestAnimationFrame(() => setLoaded(true)); // already cached
+  }, [src]);
   return (
     <div className={`pizza-photo pizza-photo--${style}`}>
-      <img src={pizzaPhotoSrc(slug, style)} alt={alt} loading="lazy" draggable={false} />
+      <img
+        ref={imgRef}
+        src={src}
+        alt={alt}
+        loading="lazy"
+        draggable={false}
+        className={loaded ? "is-loaded" : undefined}
+        onLoad={() => requestAnimationFrame(() => setLoaded(true))}
+      />
       <style jsx>{`
         /* Tweak in Inspect on the .pizza-photo element:
              --angled-fill: how much of the box height the angled pizza fills
@@ -64,6 +84,15 @@ export default function PizzaPhoto({ slug, alt = "" }) {
           max-width: none;
           user-select: none;
           filter: var(--photo-shadow);
+          /* its own drawing layer, so the shadow outside the photo's edges
+             is always painted (Safari/Chrome could leave it clipped) */
+          will-change: transform, filter, opacity;
+          backface-visibility: hidden;
+          opacity: 0;
+          transition: opacity 0.2s ease;
+        }
+        .pizza-photo img.is-loaded {
+          opacity: 1;
         }
         .pizza-photo--angled img {
           top: 50%;
