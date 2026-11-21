@@ -3,6 +3,7 @@ import PizzaBuilder from "../components/PizzaBuilder";
 import { priceLineItem } from "../components/Pricing";
 import { useCart } from "../components/CartSystem";
 import DebugPizzaOverlay from "../components/modals/DebugPizzaOverlay";
+import PizzaPhoto from "./PizzaPhoto";
 import { SPECIALTY_PIZZAS } from "../utils/pizzaRecipes";
 
 const specialtyPizzas = SPECIALTY_PIZZAS;
@@ -72,12 +73,7 @@ export default function SpecialtyPizzasPage() {
             <article key={pizza.name} className="feastCard">
               {/* Stretched image: full card width, fixed height; aspect ratio intentionally broken */}
               <div className="feastCard__imgWrap">
-                <img
-                  className="feastCard__img"
-                  src={`/images/specialty/${slug}.jpg`}
-                  alt={pizza.name}
-                  loading="lazy"
-                />
+                <PizzaPhoto slug={slug} alt={pizza.name} />
               </div>
 
               <button

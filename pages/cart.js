@@ -111,9 +111,13 @@ function itemImages(item) {
   const name = item?.pizzaName || item?.name || "";
   switch (item?.type) {
     case "pizza-byo":
-      return ["/images/byo_thumb.png"];
+      // a customized Signature/Specialty pizza keeps its own photo
+      return item.pizzaName
+        ? [`/images/pizzas/overhead/${slugify(item.pizzaName)}.webp`, "/images/byo_thumb.png"]
+        : ["/images/byo_thumb.png"];
     case "pizza-specialty":
       return [
+        `/images/pizzas/overhead/${slugify(name)}.webp`,
         `/images/${item.style === "classic" ? "specialty" : "signature"}/${slugify(name)}.jpg`,
         `/images/${item.style === "classic" ? "signature" : "specialty"}/${slugify(name)}.jpg`,
         "/images/menu_signature.png",

@@ -3,6 +3,7 @@ import PizzaBuilder from "../components/PizzaBuilder";
 import { priceLineItem } from "../components/Pricing";
 import { useCart } from "../components/CartSystem";
 import DebugPizzaOverlay from "../components/modals/DebugPizzaOverlay";
+import PizzaPhoto from "./PizzaPhoto";
 import { SIGNATURE_PIZZAS } from "../utils/pizzaRecipes";
 
 const signaturePizzas = SIGNATURE_PIZZAS;
@@ -71,12 +72,7 @@ export default function SignaturePizzasPage() {
             <article key={pizza.name} className="feastCard">
               {/* Stretched image to card width (intentionally breaks aspect) */}
               <div className="feastCard__imgWrap">
-                <img
-                  className="feastCard__img"
-                  src={`/images/signature/${slug}.jpg`}
-                  alt={pizza.name}
-                  loading="lazy"
-                />
+                <PizzaPhoto slug={slug} alt={pizza.name} />
               </div>
 
               <button
