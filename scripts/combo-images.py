@@ -36,6 +36,50 @@ def two_pizzas(back, front, width):
     place(c, f, fx, fy, k)
     return c.convert("RGB")
 
-for name, width in [("2-medium", 700), ("2-large", 780), ("2-xl", 860)]:
-    two_pizzas("cheese", "pepperoni", width).save(f"{OUT}/{name}.jpg", "JPEG", quality=84, optimize=True)
+def plate(count, width):
+    # wings plate photo for this many wings (falls back to the 6-wing plate
+    # until the bigger plates are added as public/images/wings/plate-<n>.png)
+    import os
+    path = f"{PUB}/wings/plate-{count}.png"
+    if not os.path.exists(path):
+        path = f"{PUB}/wings/plate-6.png"
+    im = Image.open(path).convert("RGBA")
+    return im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
+
+def two_pizzas_wings(back, front, pizza_w, wings, plate_w):
+    c = Image.new("RGBA", (W, H), (255, 255, 255, 255))
+    k = pizza_w / 200
+    b, f, w = pizza(back, pizza_w), pizza(front, pizza_w), plate(wings, plate_w)
+    # pizzas further back (upper part), wings plate in front on the right
+    bx = W - b.width - round(W * 0.03); by = round(H * 0.03)
+    fx = round(W * 0.03); fy = round(H * 0.20)
+    wx = W - w.width - round(W * 0.02); wy = H - w.height - round(H * 0.03)
+    place(c, b, bx, by, k)
+    place(c, f, fx, fy, k)
+    place(c, w, wx, wy, k)
+    return c.convert("RGB")
+
+def pizza_wings(slug, pizza_w, wings, plate_w):
+    c = Image.new("RGBA", (W, H), (255, 255, 255, 255))
+    k = pizza_w / 200
+    p, w = pizza(slug, pizza_w), plate(wings, plate_w)
+    px_ = round(W * 0.03); py = round((H - p.height) * 0.12)
+    wx = W - w.width - round(W * 0.02); wy = H - w.height - round(H * 0.04)
+    place(c, p, px_, py, k)
+    place(c, w, wx, wy, k)
+    return c.convert("RGB")
+
+def save(img, name):
+    img.save(f"{OUT}/{name}.jpg", "JPEG", quality=84, optimize=True)
     print("saved", name)
+
+for name, width in [("2-medium", 700), ("2-large", 780), ("2-xl", 860)]:
+    save(two_pizzas("cheese", "pepperoni", width), name)
+
+# 2 pizzas + wings (plate grows with the wing count)
+save(two_pizzas_wings("cheese", "pepperoni", 600, 16, 560), "2-medium-16-wings")
+save(two_pizzas_wings("cheese", "pepperoni", 650, 20, 600), "2-large-20-wings")
+save(two_pizzas_wings("cheese", "pepperoni", 700, 25, 640), "2-xl-25-wings")
+# 1 pizza + wings
+save(pizza_wings("pepperoni", 760, 6, 540), "small-6-wings")
+save(pizza_wings("pepperoni", 840, 12, 590), "large-12-wings")

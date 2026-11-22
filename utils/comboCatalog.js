@@ -41,11 +41,11 @@ const comboImages = {
   "2med": "/images/combos/2-medium.jpg",
   "2lrg": "/images/combos/2-large.jpg",
   "2xl": "/images/combos/2-xl.jpg",
-  medCombo: "/images/combos/2pizzas-wings.jpg",
-  lrgCombo: "/images/combos/2pizzas-wings.jpg",
-  xlCombo: "/images/combos/2pizzas-wings.jpg",
-  smallCombo: "/images/combos/pizza-wings.jpg",
-  lrgCombo2: "/images/combos/pizza-wings.jpg",
+  medCombo: "/images/combos/2-medium-16-wings.jpg",
+  lrgCombo: "/images/combos/2-large-20-wings.jpg",
+  xlCombo: "/images/combos/2-xl-25-wings.jpg",
+  smallCombo: "/images/combos/small-6-wings.jpg",
+  lrgCombo2: "/images/combos/large-12-wings.jpg",
   takecare: "/images/combos/takecare.jpg",
 };
 const fallbackImg = "/images/menu_combos.png";
