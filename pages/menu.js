@@ -145,8 +145,8 @@ function EntreesView({
           .feastCard{ display:flex; flex-direction:column; background:var(--menu-box-bg); border:1px solid var(--light-border); border-radius:.1875rem; padding:12px; }
           .feastCard__imgWrap{
             width:100%; height:133px; border-radius:4px; overflow:hidden;
-          }
-          .feastCard__img{ width:100%; height:100%; object-fit:fill; }
+           background:#fff;}
+          .feastCard__img{ width:100%; height:100%; object-fit:contain; } /* combo images: whole picture, never stretched */
           .feastCard__name{
             margin:8px 0 10px; padding:0; background:none; border:0; color:var(--brand-blue);
             font-family:var(--font-heading, Oswald, sans-serif);
