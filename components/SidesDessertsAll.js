@@ -19,10 +19,9 @@ const SIDE_SIZES = {
 const sizeToPricingLabel = (size) => (size === "Regular" ? "Medium" : size);
 
 /**
- * Only this view (Sides → View All) should use the alternate wings image.
- * The front menu tile keeps using /images/menu_wings.png.
+ * Wings photo for the Sides → View All wings card (same photo as everywhere).
  */
-const IMG_WINGS_VIEWALL  = "/images/sd_wings.png";   // 👈 alternate wings image
+const IMG_WINGS_VIEWALL  = "/images/wings.jpg";
 
 export default function SidesDessertsAll({
   onOpenSide,             // (sideName: string) => void
@@ -207,7 +206,7 @@ export default function SidesDessertsAll({
           display: block;
           width: 100%;
           height: 100%;
-          object-fit: fill; /* match your reference stretch */
+          object-fit: cover; /* real photos: crop, never stretch */
         }
 
         .feastCard__name {

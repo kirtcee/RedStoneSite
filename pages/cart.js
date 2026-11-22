@@ -61,9 +61,9 @@ const DRINK_POOL = [
   { key: "water", label: "Water", categoryId: "other", categoryLabel: "Other Drinks", img: "/images/drinks/other.jpg" },
 ];
 const DIP_POOL = [
-  { key: "Blue Cheese", label: "Blue Cheese", categoryId: "dips", categoryLabel: "Dips", img: "/images/dips/blue-cheese.png" },
-  { key: "Garlic", label: "Garlic", categoryId: "dips", categoryLabel: "Dips", img: "/images/dips/garlic.png" },
-  { key: "Ranch", label: "Ranch", categoryId: "dips", categoryLabel: "Dips", img: "/images/dips/ranch.png" },
+  { key: "Blue Cheese", label: "Blue Cheese", categoryId: "dips", categoryLabel: "Dips", img: "/images/dips/blue-cheese.jpg" },
+  { key: "Garlic", label: "Garlic", categoryId: "dips", categoryLabel: "Dips", img: "/images/dips/garlic.jpg" },
+  { key: "Ranch", label: "Ranch", categoryId: "dips", categoryLabel: "Dips", img: "/images/dips/ranch.jpg" },
 ];
 
 // 3 random picks, chosen after the page loads (so the server-rendered page
@@ -123,14 +123,14 @@ function itemImages(item) {
         "/images/menu_signature.png",
       ];
     case "wings":
-      return ["/images/menu_wings.png"];
+      return ["/images/wings.jpg", "/images/menu_wings.png"];
     case "side": {
       const pool = SIDE_POOL.find((s) => s.key === item.side);
       return [pool?.img, "/images/menu_sides.png"];
     }
     case "drinks-dips":
       return item.categoryId === "dips"
-        ? [`/images/dips/${slugify(item.items?.[0]?.label)}.png`]
+        ? [`/images/dips/${slugify(item.items?.[0]?.label)}.jpg`, `/images/dips/${slugify(item.items?.[0]?.label)}.png`]
         : ["/images/menu_drinks.png"];
     case "special":
       return [`/images/special-menu/${slugify(name)}.jpg`, "/images/menu_special.png"];

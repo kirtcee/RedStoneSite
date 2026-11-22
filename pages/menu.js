@@ -446,7 +446,7 @@ function SidesView({ selectedSide, setSelectedSide }) {
         .feastCard__imgWrap{
           width:100%; height:133px; border-radius:4px; overflow:hidden;
         }
-        .feastCard__img{ width:100%; height:100%; object-fit:fill; }
+        .feastCard__img{ width:100%; height:100%; object-fit:cover; /* real photos: crop, never stretch */ }
 
         .feastCard__name{
           margin:8px 0 10px; padding:0; background:none; border:0; color:var(--brand-blue);
@@ -514,7 +514,7 @@ function DrinksView() {
     { id: "twoLiters", label: "2L Bottles",  img: "/images/drinks/2l.jpg",    options: ["Coke","Gingerale","Diet Coke","Pepsi"] },
     { id: "cans",      label: "Cans",        img: "/images/drinks/cans.jpg",  options: ["coke","coke zero","diet coke","dr pepper","mug root beer","brisk iced tea","fuze iced tea","pepsi","diet pepsi","gingerale","sprite","orange crush","grape crush","crush cream soda"] },
     { id: "other",     label: "Other Drinks",img: "/images/drinks/other.jpg", options: ["blue gatorade","red gatorade","orange gatorade","yellow gatorade","redbull","apple juice","water"] },
-    { id: "dips",      label: "Dips",        img: "/images/drinks/dips.jpg",  options: ["Blue Cheese","Garlic","Ranch"] },
+    { id: "dips",      label: "Dips",        img: "/images/dips/dips-tile.jpg",  options: ["Blue Cheese","Garlic","Ranch"] },
   ];
 
   return (
@@ -671,7 +671,7 @@ function MenuBody() {
     () => [
       { id: "signature",   label: "Signature Pizzas", photo: "bourbon",  nav: { tab: "entrees", sub: "signature" } },
       { id: "specialty",   label: "Specialty Pizzas", photo: "canadian", nav: { tab: "entrees", sub: "specialty" } },
-      { id: "wings",       label: "Wings",            img: "/images/menu_wings.png",     nav: { tab: "entrees", sub: "wings" } },
+      { id: "wings",       label: "Wings",            img: "/images/wings.jpg",     nav: { tab: "entrees", sub: "wings" } },
       { id: "sides",       label: "Sides",            img: "/images/menu_sides.png",     nav: { tab: "sides" } },
       { id: "combos",      label: "Combos",           img: "/images/menu_combos.png",    nav: { tab: "entrees", sub: "combos" } },
       { id: "drinks-dips", label: "Drinks & Dips",    img: "/images/menu_drinks.png",    nav: { tab: "drinks" } },

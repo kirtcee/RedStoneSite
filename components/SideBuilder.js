@@ -295,15 +295,11 @@ export default function SideBuilder({
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", minWidth: 0 }}>
-                    <div
-                      style={{
-                        width: "42px",
-                        height: "42px",
-                        background: "#ddd",
-                        borderRadius: "8px",
-                        flex: "0 0 auto",
-                      }}
-                    />
+                    <img
+                          src={`/images/dips/${dip.toLowerCase().replace(/\s+/g, "-")}.jpg`}
+                          alt=""
+                          style={{ width: "42px", height: "42px", objectFit: "cover", borderRadius: "8px", flex: "0 0 auto", border: "1px solid var(--menu-box-border)", background: "#fff" }}
+                      />
                     <p className="rs-qtyname" style={{ margin: 0 }}>{dip}</p>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>

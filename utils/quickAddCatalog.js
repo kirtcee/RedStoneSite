@@ -46,7 +46,7 @@ export const QUICK_ADD_ITEMS = [
   drink("Coke 2L", "twoLiters", "2L Bottles", "Coke", "/images/drinks/2l.jpg"),
   drink("Pepsi 2L", "twoLiters", "2L Bottles", "Pepsi", "/images/drinks/2l.jpg"),
   drink("Coke Can", "cans", "Cans", "Coke", "/images/drinks/cans.jpg"),
-  drink("Garlic Dip", "dips", "Dips", "Garlic", "/images/dips/garlic.png"),
+  drink("Garlic Dip", "dips", "Dips", "Garlic", "/images/dips/garlic.jpg"),
 ].map((q) => ({ ...q, priceCents: priceLineItem(q.item) }));
 
 // Up to `count` suggestions for an order that's `shortCents` away from a

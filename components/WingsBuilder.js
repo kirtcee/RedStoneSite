@@ -460,14 +460,10 @@ export default function WingsBuilder({
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
-                <div
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 6,
-                    border: `1px solid ${LIGHT_BORDER}`,
-                    background: "#eee",
-                  }}
+                <img
+                  src={`/images/dips/${dip.toLowerCase().replace(/\s+/g, "-")}.jpg`}
+                  alt=""
+                  style={{ width: 36, height: 36, objectFit: "cover", borderRadius: 6, border: `1px solid ${LIGHT_BORDER}`, background: "#fff", flex: "0 0 auto" }}
                 />
                 <span className="rs-qtyname" style={{ whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}>
                   {dip}
