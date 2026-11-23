@@ -3,6 +3,7 @@ import Link from "next/link";
 import ConsoleDealCard from "../components/promos/ConsoleDealCard";
 import PomoDealCard from "../components/promos/PomoDealCard";
 import SpaceDealCard from "../components/promos/SpaceDealCard";
+import TakeCareCard from "../components/promos/TakeCareCard";
 
 export default function Home() {
   return (
@@ -46,9 +47,9 @@ export default function Home() {
           </div>
 
           {/* Gap then 928x140 image/button */}
-          <Link href="/menu" className="tile tile-928x140">
-            <img src="/images/home/deal-928x140-a.jpg" alt="Limited-time offer" />
-          </Link>
+          <div className="tile tile-928x140 tile--promo">
+            <TakeCareCard />
+          </div>
 
           {/* Gap then 928x140 image/button */}
           <Link href="/menu" className="tile tile-928x140">
@@ -231,6 +232,9 @@ export default function Home() {
           .mobile-start-row { display: block; }
           .deals-right { grid-template-columns: 1fr; row-gap: 12px; }
           .tile-577x519 { aspect-ratio: 4 / 3; } /* a bit taller on phones */
+          /* the wide banners: much taller on phones so they're readable,
+             but still shorter than the three cards above */
+          .tile-928x140, .tile-928x148, .tile-928x250 { aspect-ratio: 16 / 9; }
 
           .disclaimers { grid-template-columns: 1fr; text-align: center; }
         }
