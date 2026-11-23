@@ -1,6 +1,7 @@
 // pages/index.js
 import Link from "next/link";
 import ConsoleDealCard from "../components/promos/ConsoleDealCard";
+import PomoDealCard from "../components/promos/PomoDealCard";
 
 export default function Home() {
   return (
@@ -34,9 +35,9 @@ export default function Home() {
             </div>
 
             <div className="deals-right">
-              <Link href="/menu" className="tile tile-341x254">
-                <img src="/images/home/deal-341x254-a.jpg" alt="Deal: top right" />
-              </Link>
+              <div className="tile tile-341x254 tile--promo">
+                <PomoDealCard />
+              </div>
               <Link href="/menu" className="tile tile-341x254">
                 <img src="/images/home/deal-341x254-b.jpg" alt="Deal: bottom right" />
               </Link>
