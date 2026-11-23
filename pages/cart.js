@@ -68,9 +68,9 @@ const DRINK_POOL = [
   img: drinkImage(categoryId, key),
 }));
 const DIP_POOL = [
-  { key: "Blue Cheese", label: "Blue Cheese", categoryId: "dips", categoryLabel: "Dips", img: "/images/dips/blue-cheese.jpg" },
-  { key: "Garlic", label: "Garlic", categoryId: "dips", categoryLabel: "Dips", img: "/images/dips/garlic.jpg" },
-  { key: "Ranch", label: "Ranch", categoryId: "dips", categoryLabel: "Dips", img: "/images/dips/ranch.jpg" },
+  { key: "Blue Cheese", label: "Blue Cheese", categoryId: "dips", categoryLabel: "Dips", img: drinkImage("dips", "Blue Cheese") },
+  { key: "Garlic", label: "Garlic", categoryId: "dips", categoryLabel: "Dips", img: drinkImage("dips", "Garlic") },
+  { key: "Ranch", label: "Ranch", categoryId: "dips", categoryLabel: "Dips", img: drinkImage("dips", "Ranch") },
 ];
 
 // 3 random picks, chosen after the page loads (so the server-rendered page
@@ -301,7 +301,7 @@ function ItemRow({ item, priceCents, couponName, onQty, onRemove, onEdit }) {
 
 // Suggested item: picture + name. Tapping adds it to the cart right here
 // (sized sides first show an S/R/L picker), then flashes "Added".
-function QuickAddTile({ label, img, fallbackImg, sizes, onAdd }) {
+function QuickAddTile({ label, img, fallbackImg, sizes, onAdd, contain = false }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [added, setAdded] = useState(false);
   const timerRef = React.useRef(null);
@@ -323,12 +323,20 @@ function QuickAddTile({ label, img, fallbackImg, sizes, onAdd }) {
         onClick={() => (sizes ? setPickerOpen((v) => !v) : handleAdd(null))}
         aria-label={`Add ${label}`}
       >
-        <FallbackImg srcs={[img, fallbackImg]} alt="" className="cart-tile__img" />
+        <FallbackImg
+          srcs={[img, fallbackImg]}
+          alt=""
+          className={`cart-tile__img${contain ? " cart-tile__img--contain" : ""}`}
+        />
         <span className="cart-tile__name">{label}</span>
       </button>
-      {added && <span className="cart-tile__added">✓ Added</span>}
+      {added && (
+        <div className="cart-tile__over">
+          <span className="cart-tile__added">✓ Added</span>
+        </div>
+      )}
       {!added && sizes && pickerOpen && (
-        <div className="cart-tile__sizes">
+        <div className="cart-tile__over cart-tile__sizes">
           {sizes.map((s) => (
             <button
               key={s.size}
@@ -420,6 +428,7 @@ function DrinksDipsStep({ title, pool, fallbackImg, addItem }) {
             label={it.label}
             img={it.img}
             fallbackImg={fallbackImg}
+            contain
             sizes={null}
             onAdd={() =>
               addItem({
@@ -1016,6 +1025,11 @@ export default function CartPage() {
           width: 100%;
           aspect-ratio: 1 / 1;
         }
+        .cart-box :global(.cart-tile__img--contain) {
+          object-fit: contain;
+          padding: 8px 6px;
+          background: #fff;
+        }
         .cart-box :global(.cart-img--empty) {
           display: block;
         }
@@ -1026,11 +1040,25 @@ export default function CartPage() {
           color: #000;
           text-transform: uppercase;
         }
-        .cart-box :global(.cart-tile__added) {
+        /* a square over the tile's picture: the size buttons and "Added"
+           sit along its bottom edge so the food stays visible */
+        .cart-box :global(.cart-tile__over) {
           position: absolute;
-          left: 6px;
-          right: 6px;
-          top: 40%;
+          top: 0;
+          left: 0;
+          right: 0;
+          aspect-ratio: 1 / 1;
+          display: flex;
+          align-items: flex-end;
+          gap: 4px;
+          padding: 6px;
+          pointer-events: none;
+        }
+        .cart-box :global(.cart-tile__over > *) {
+          pointer-events: auto;
+        }
+        .cart-box :global(.cart-tile__added) {
+          flex: 1;
           padding: 6px 4px;
           border-radius: 999px;
           background: #e8f5e9;
@@ -1039,14 +1067,6 @@ export default function CartPage() {
           font-size: 0.8rem;
           text-align: center;
           pointer-events: none;
-        }
-        .cart-box :global(.cart-tile__sizes) {
-          position: absolute;
-          left: 6px;
-          right: 6px;
-          top: 40%;
-          display: flex;
-          gap: 4px;
         }
         .cart-box :global(.cart-tile__sizes button) {
           flex: 1;
