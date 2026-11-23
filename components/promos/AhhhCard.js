@@ -1,14 +1,10 @@
 // components/promos/AhhhCard.js
 //
 // Home page drinks "easter egg" strip (no button, nothing to click):
-// "Add ahhh to your order" with a row of our drinks. Warm, dark, lamp-lit
-// amber look.
-//
-// Optional photo: put a file at PHOTO_SRC and it shows on the left, its
-// edges faded into the background (no cut-out needed). If the file isn't
-// there, the strip just shows the words and the drinks.
-import { useEffect, useRef, useState } from "react";
-
+// "Add ahhh to your order" with a row of our drinks, over the photo
+// public/images/promos/ahhh.jpg (a web copy of ahhh.png with the black bar
+// at the top trimmed off). The photo fills the whole strip; the person is on
+// the left, so the words and drinks sit on the right.
 const PHOTO_SRC = "/images/promos/ahhh.jpg";
 
 // left to right; h = height compared to the strip
@@ -23,34 +19,13 @@ const DRINKS = [
 ];
 
 export default function AhhhCard() {
-  const imgRef = useRef(null);
-  const [photoOk, setPhotoOk] = useState(false);
-  useEffect(() => {
-    const img = imgRef.current;
-    if (img?.complete && img.naturalWidth) setPhotoOk(true);
-  }, []);
-
   return (
-    <div className={`ah${photoOk ? " ah--photo" : ""}`}>
-      <div className="ah-bg" aria-hidden="true" />
-      <span className="ah-lamp ah-lamp--a" aria-hidden="true" />
-      <span className="ah-lamp ah-lamp--b" aria-hidden="true" />
-
-      <img
-        ref={imgRef}
-        className="ah-photo"
-        src={PHOTO_SRC}
-        alt=""
-        aria-hidden="true"
-        onLoad={() => setPhotoOk(true)}
-        onError={() => setPhotoOk(false)}
-      />
+    <div className="ah">
+      <img className="ah-photo" src={PHOTO_SRC} alt="" aria-hidden="true" />
+      <div className="ah-shade" aria-hidden="true" />
 
       <p className="ah-line">
-        <span className="ah-row">
-          Add <span className="ah-big">ahhh</span>
-        </span>{" "}
-        <span className="ah-row">to your order</span>
+        <span className="ah-row">Add ahhh</span> <span className="ah-row">to your order</span>
       </p>
 
       <div className="ah-drinks" aria-hidden="true">
@@ -65,110 +40,60 @@ export default function AhhhCard() {
           position: absolute;
           inset: 0;
           overflow: hidden;
+          background: #1a0f07;
           color: #fff3dc;
         }
-        /* dark wood room, warm light */
-        .ah-bg {
+        .ah-photo {
           position: absolute;
           inset: 0;
-          background:
-            radial-gradient(40% 120% at 30% 50%, rgba(255, 170, 70, 0.28), transparent 70%),
-            radial-gradient(35% 120% at 78% 60%, rgba(255, 190, 100, 0.18), transparent 70%),
-            repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.12) 0 1px, transparent 1px 1.6cqw),
-            linear-gradient(180deg, #3a2412 0%, #24160b 60%, #160d06 100%);
-        }
-        /* two glowing wall lamps */
-        .ah-lamp {
-          position: absolute;
-          top: 22cqh;
-          width: 2.6cqw;
-          height: 22cqh;
-          border-radius: 0.4cqw;
-          background: linear-gradient(180deg, #ffd59a, #ff9f3a);
-          box-shadow: 0 0 3cqw 1.4cqw rgba(255, 160, 60, 0.55);
-          opacity: 0.85;
-        }
-        .ah-lamp--a { left: 50cqw; top: 8cqh; }
-        .ah-lamp--b { left: 31cqw; top: 12cqh; opacity: 0.45; }
-
-        /* optional photo, faded into the room on every side */
-        .ah-photo {
-          display: none;
-          position: absolute;
-          left: 0;
-          top: 0;
+          width: 100%;
           height: 100%;
-          width: auto;
-          max-width: 40cqw;
           object-fit: cover;
-          object-position: 30% 40%;
-          -webkit-mask-image: linear-gradient(90deg, #000 70%, transparent 100%);
-          mask-image: linear-gradient(90deg, #000 70%, transparent 100%);
-          filter: sepia(0.15) saturate(1.1) contrast(1.05);
+          object-position: left center;
         }
-        .ah--photo .ah-photo { display: block; }
-
+        /* darken the right side a little so the words read clearly */
+        .ah-shade {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(90deg, transparent 40%, rgba(15, 8, 3, 0.45) 75%);
+        }
         .ah-line {
           position: absolute;
-          left: 4cqw;
+          left: 46cqw;
           top: 50%;
           transform: translateY(-50%);
           z-index: 2;
           margin: 0;
           font-family: var(--font-display);
-          font-size: min(4.2cqw, 20cqh);
-          line-height: 1.05;
+          font-size: min(3cqw, 18cqh);
+          line-height: 1.1;
           letter-spacing: 0.03em;
           text-transform: uppercase;
+          text-shadow: 0 0.2cqw 1cqw rgba(0, 0, 0, 0.7);
+        }
+        .ah-row {
+          display: block;
           white-space: nowrap;
-          text-shadow: 0 0 1.6cqw rgba(255, 170, 70, 0.6);
         }
-        .ah--photo .ah-line { left: 30cqw; font-size: min(3.4cqw, 18cqh); }
-        .ah--photo .ah-photo { max-width: 30cqw; }
-        .ah--photo .ah-drinks { top: 16%; }
-        .ah-row { white-space: nowrap; }
-        /* "ahhh" glows like a cold drink in warm light */
-        .ah-big {
-          display: inline-block;
-          margin: 0 0.15em;
-          font-size: 1.7em;
-          color: #c9ff7a;
-          text-shadow: 0 0 1cqw rgba(170, 255, 90, 0.9), 0 0 3cqw rgba(120, 220, 60, 0.6);
-          transform: rotate(-4deg) translateY(0.04em);
-          animation: ah-fizz 2.4s ease-in-out infinite;
-        }
-        @keyframes ah-fizz {
-          0%, 100% { transform: rotate(-4deg) translateY(0.04em) scale(1); }
-          50% { transform: rotate(-2deg) translateY(-0.02em) scale(1.05); }
-        }
-
         .ah-drinks {
           position: absolute;
-          right: 3cqw;
-          top: 6%;
+          right: 2.5cqw;
+          top: 10%;
           bottom: 6%;
           z-index: 2;
           display: flex;
           align-items: flex-end;
-          gap: 0.6cqw;
+          gap: 0.5cqw;
         }
         .ah-drinks img {
           width: auto;
           filter: drop-shadow(0 0.4cqw 0.6cqw rgba(0, 0, 0, 0.6)) drop-shadow(0 0 1.2cqw rgba(255, 170, 70, 0.25));
           user-select: none;
         }
-        /* phones (shorter, narrower strip): two lines, smaller drinks */
+        /* phones: slightly bigger words, smaller drinks */
         @container (max-aspect-ratio: 5 / 1) {
-          .ah-row { display: block; }
-          .ah-line { font-size: 6.4cqw; }
-          .ah--photo .ah-line { left: 27cqw; font-size: 4.4cqw; }
-          .ah--photo .ah-photo { max-width: 30cqw; }
-          .ah-drinks { right: 2cqw; top: 10%; bottom: 6%; gap: 0.4cqw; }
-          .ah--photo .ah-drinks { top: 28%; }
-          .ah-lamp { display: none; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .ah-big { animation: none; }
+          .ah-line { left: 51cqw; top: 10%; transform: none; font-size: 3.6cqw; }
+          .ah-drinks { right: 2cqw; top: 40%; gap: 0.3cqw; }
         }
       `}</style>
     </div>
