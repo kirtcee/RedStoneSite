@@ -55,11 +55,10 @@ export const DRINK_CATEGORIES = {
   dips: {
     label: "Dips",
     tile: "/images/dips/dips-tile.jpg",
-    photos: true, // square photos rather than cut-outs
     options: [
-      { label: "Blue Cheese", img: "/images/dips/blue-cheese.jpg" },
-      { label: "Garlic", img: "/images/dips/garlic.jpg" },
-      { label: "Ranch", img: "/images/dips/ranch.jpg" },
+      { label: "Blue Cheese", img: "/images/dips/blue-cheese-cut.webp", mm: 60 },
+      { label: "Garlic", img: "/images/dips/garlic-cut.webp", mm: 60 },
+      { label: "Ranch", img: "/images/dips/ranch-cut.webp", mm: 60 },
     ],
   },
 };
@@ -74,6 +73,9 @@ export function findDrink(categoryId, label) {
   const key = norm(label);
   return cat.options.find((o) => norm(o.label) === key) || null;
 }
+
+// Cart thumbnails show up to this many of the picked drinks side by side.
+export const THUMB_MAX = { cans: 4, twoLiters: 3, other: 3, dips: 3 };
 
 export function drinkImage(categoryId, label) {
   return findDrink(categoryId, label)?.img || DRINK_CATEGORIES[categoryId]?.tile || "/images/menu_drinks.png";

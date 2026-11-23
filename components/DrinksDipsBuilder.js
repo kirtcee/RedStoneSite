@@ -35,12 +35,18 @@ export function DrinksCategoryPanel({
     }
     return out;
   });
-  const change = (label, delta) =>
-    setCounts((prev) => ({ ...prev, [label]: Math.max(0, Math.min(50, (prev[label] || 0) + delta)) }));
+  // the order drinks were first picked in (the cart picture shows the
+  // first few, so it matches what the customer tapped first)
+  const [order, setOrder] = useState(() => Object.keys(counts));
+  const change = (label, delta) => {
+    const next = Math.max(0, Math.min(50, (counts[label] || 0) + delta));
+    setCounts((prev) => ({ ...prev, [label]: next }));
+    setOrder((prev) => (next > 0 ? (prev.includes(label) ? prev : [...prev, label]) : prev.filter((l) => l !== label)));
+  };
 
   const items = useMemo(
-    () => options.filter((o) => counts[o.label] > 0).map((o) => ({ label: o.label, qty: counts[o.label] })),
-    [options, counts]
+    () => order.filter((l) => counts[l] > 0).map((l) => ({ label: l, qty: counts[l] })),
+    [order, counts]
   );
   const count = items.reduce((n, it) => n + it.qty, 0);
   const totalCents = priceDrinksDips(categoryId, items);

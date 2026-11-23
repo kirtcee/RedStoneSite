@@ -1,5 +1,5 @@
 // pages/cart.js
-import { DRINK_CATEGORIES, drinkImage } from "../utils/drinkCatalog";
+import { DRINK_CATEGORIES, THUMB_MAX, drinkImage, findDrink } from "../utils/drinkCatalog";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useCart, DealCodeEntry } from "../components/CartSystem";
@@ -103,6 +103,26 @@ function FallbackImg({ srcs, alt, className }) {
       loading="lazy"
       onError={() => setI((v) => v + 1)}
     />
+  );
+}
+
+// Cart picture for a drinks/dips line: the first few drinks picked (up to
+// 4 cans, or 3 of anything else), standing side by side on white at their
+// real sizes, like the category covers.
+function DrinksThumb({ item }) {
+  const max = THUMB_MAX[item?.categoryId] || 3;
+  const picked = (item?.items || [])
+    .map((it) => findDrink(item.categoryId, it?.label))
+    .filter(Boolean)
+    .slice(0, max);
+  if (!picked.length) return <span className="cart-line__img cart-img--empty" aria-hidden="true" />;
+  const tallest = Math.max(...picked.map((d) => d.mm || 1));
+  return (
+    <span className="cart-line__img cart-drinks" aria-hidden="true">
+      {picked.map((d) => (
+        <img key={d.label} src={d.img} alt="" style={{ height: `${Math.round(((d.mm || tallest) / tallest) * 86)}%` }} />
+      ))}
+    </span>
   );
 }
 
@@ -232,7 +252,11 @@ function ItemRow({ item, priceCents, couponName, onQty, onRemove, onEdit }) {
   return (
     <div className="cart-line">
       <div className="cart-line__item">
-        <FallbackImg srcs={itemImages(item)} alt="" className="cart-line__img" />
+        {item?.type === "drinks-dips" ? (
+          <DrinksThumb item={item} />
+        ) : (
+          <FallbackImg srcs={itemImages(item)} alt="" className="cart-line__img" />
+        )}
         <div className="cart-line__text">
           <button type="button" className="cart-line__name" onClick={() => onEdit?.(item)}>
             {title}
@@ -852,6 +876,22 @@ export default function CartPage() {
           background: var(--menu-box-bg);
           border: 1px solid var(--menu-box-border);
           border-radius: 0.1875rem;
+        }
+        .cart-box :global(.cart-drinks) {
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          gap: 1px;
+          padding: 0 2px 4px;
+          overflow: hidden;
+          background: #fff;
+        }
+        .cart-box :global(.cart-drinks img) {
+          flex: 0 1 auto;
+          min-width: 0;
+          max-width: 100%;
+          object-fit: contain;
+          object-position: bottom;
         }
         .cart-box :global(.cart-line__img) {
           flex: 0 0 52px;

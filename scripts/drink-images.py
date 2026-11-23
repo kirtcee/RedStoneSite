@@ -77,10 +77,24 @@ assert len(runs) == len(names), runs
 for (x0, x1), n in zip(runs, names):
     save(to_height(crop(g.crop((x0, 0, x1, g.height))), round(mm * PX_PER_MM)), n)
 
+# ---- Dips: cut out of their white photos, sized by the cup's real width
+# (about 62 mm across, half the width of a can is 33 mm)
+DIPS = {"blue-cheese": "blue-cheese", "garlic": "garlic", "ranch": "ranch"}
+for src, n in DIPS.items():
+    im = crop(cut_white(Image.open(f"public/images/dips/{src}.jpg")))
+    w = round(62 * PX_PER_MM)
+    im = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
+    im.save(f"public/images/dips/{n}-cut.webp", "WEBP", quality=88, method=6)
+    print(f"dip {n:20s} {im.size}")
+
 # ---- Menu tiles (Drinks page): a few drinks standing in a row on white ----
-def tile(names, name, overlap=0.18, fill=0.86):
-    TW, TH = 900, 600
-    ims = [Image.open(f"{OUT}/{n}.webp").convert("RGBA") for n in names]
+def tile(names, name, overlap=0.18, fill=0.86, size=(900, 600), folder=OUT, scales=None):
+    # scales: optional size multiplier per item (e.g. make a small dip cup easier to see)
+    # names are files in `folder` (or "dips/<name>" paths under public/images)
+    TW, TH = size
+    ims = [Image.open(f"public/images/{n}.webp" if "/" in n else f"{folder}/{n}.webp").convert("RGBA") for n in names]
+    if scales:
+        ims = [i.resize((round(i.width * f), round(i.height * f)), Image.LANCZOS) for i, f in zip(ims, scales)]
     k = TH * fill / max(i.height for i in ims)
     ims = [i.resize((round(i.width * k), round(i.height * k)), Image.LANCZOS) for i in ims]
     step = [round(i.width * (1 - overlap)) for i in ims]
@@ -97,9 +111,13 @@ def tile(names, name, overlap=0.18, fill=0.86):
         blk = Image.new("RGBA", i.size, (0, 0, 0, 255)); blk.putalpha(i.getchannel("A").point(lambda v: int(v * 0.35)))
         sh.alpha_composite(blk, (x + 8, y + 10)); c.alpha_composite(sh.filter(ImageFilter.GaussianBlur(9)))
         c.alpha_composite(i, (x, y)); x += st
-    c.convert("RGB").save(f"{OUT}/{name}.jpg", "JPEG", quality=85, optimize=True)
+    c.convert("RGB").save(f"public/images/{name}.jpg" if "/" in name else f"{OUT}/{name}.jpg", "JPEG", quality=85, optimize=True)
     print("tile", name)
 
 tile(["2l-coke", "2l-canada-dry", "2l-pepsi"], "tile-2l", overlap=0.12)
 tile(["can-coke", "can-sprite", "can-crush-orange", "can-pepsi"], "tile-cans", overlap=0.06)
 tile(["gatorade-red", "red-bull", "apple-juice", "water", "gatorade-blue"], "tile-other", overlap=0.15)
+# Dips tile and the Drinks & Dips cover on the menu's front page (3:2)
+tile(["dips/blue-cheese-cut", "dips/garlic-cut", "dips/ranch-cut"], "dips/dips-tile", overlap=0.10, fill=0.6)
+tile(["2l-coke", "gatorade-orange", "can-pepsi", "dips/garlic-cut"], "drinks/cover-drinks-dips", overlap=0.10, size=(1350, 900),
+     fill=0.94, scales=[1, 1, 1, 1.7])
