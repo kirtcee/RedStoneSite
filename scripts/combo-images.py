@@ -70,12 +70,12 @@ def side(path, width):
     im = Image.open(f"{PUB}/{path}").convert("RGBA")
     return im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
 
-def two_pizzas_front(back, front, pizza_w, item):
+def two_pizzas_front(back, front, pizza_w, item, over_x=OVER_X, over_y=OVER_Y):
     # 2 pizzas, plus one item (wings plate or garlic bread) in front on the right
     b, f = pizza(back, pizza_w), pizza(front, pizza_w)
     k = pizza_w / 200
     fx = -round(pizza_w * 0.64); fy = round(b.height * 0.37)
-    ix = fx + f.width - OVER_X; iy = fy + f.height - OVER_Y
+    ix = fx + f.width - over_x; iy = fy + f.height - over_y
     return [(b, 0, 0, k), (f, fx, fy, k), (item, ix, iy, k)]
 
 def two_pizzas_wings(back, front, pizza_w, wings):
@@ -93,7 +93,10 @@ def take_care(back, front, pizza_w, bread_w, can_h, can_step_x, can_step_y):
     # place, plus the 4 pops in the top left in a diagonal: the first can is
     # lowest and in front, each next one steps right by can_step_x and up by
     # can_step_y and sits behind the one before it.
-    parts = two_pizzas_front(back, front, pizza_w, side("sides/garlic-bread-plate.webp", bread_w))
+    # the bread plate tucks further in than the wings, so it overlaps the
+    # pizzas a little and pulls them toward the centre (BREAD_OVER_X / _Y)
+    parts = two_pizzas_front(back, front, pizza_w, side("sides/garlic-bread-plate.webp", bread_w),
+                             BREAD_OVER_X, BREAD_OVER_Y)
     cans = [Image.open(f"{PUB}/drinks/{n}.webp").convert("RGBA") for n in CANS]
     cans = [im.resize((round(im.width * can_h / im.height), can_h), Image.LANCZOS) for im in cans]
     f, fx, fy = parts[1][0], parts[1][1], parts[1][2]
@@ -107,6 +110,7 @@ def take_care(back, front, pizza_w, bread_w, can_h, can_step_x, can_step_y):
     return compose(can_parts[::-1] + parts)  # back can drawn first
 
 CAN_X, CAN_TUCK = 10, -55
+BREAD_OVER_X, BREAD_OVER_Y = 190, 200
 
 def save(img, name):
     img.save(f"{OUT}/{name}.jpg", "JPEG", quality=84, optimize=True)
