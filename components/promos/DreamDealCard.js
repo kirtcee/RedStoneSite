@@ -20,8 +20,8 @@ const DEAL_ID = "feed4";
 // rainbow's outer and inner edge) meet at the corner; each colour band is a
 // slice between them. Coordinates are 0-100 across the whole card.
 const RB_COLORS = ["#ff5a5a", "#ff9a3c", "#ffe45c", "#7fe07a", "#5fb8ff", "#6a7dff", "#b07bff"];
-const RB_OUTER = [[99, 0], [62, 30], [14, 106]]; // start, bend, end (outer/left edge)
-const RB_INNER = [[100, 1], [104, 62], [96, 106]]; // inner/right edge
+const RB_OUTER = [[99, 0], [54, 22], [14, 106]]; // start, bend, end (outer/left edge)
+const RB_INNER = [[100, 1], [100, 50], [112, 106]]; // inner/right edge
 function bez([a, b, c], t) {
   const u = 1 - t;
   return [u * u * a[0] + 2 * u * t * b[0] + t * t * c[0], u * u * a[1] + 2 * u * t * b[1] + t * t * c[1]];
