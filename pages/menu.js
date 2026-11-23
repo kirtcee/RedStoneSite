@@ -673,7 +673,7 @@ function MenuBody() {
       { id: "specialty",   label: "Specialty Pizzas", photo: "canadian", nav: { tab: "entrees", sub: "specialty" } },
       { id: "wings",       label: "Wings",            img: "/images/wings.jpg",     nav: { tab: "entrees", sub: "wings" } },
       { id: "sides",       label: "Sides",            img: "/images/menu_sides.png",     nav: { tab: "sides" } },
-      { id: "combos",      label: "Combos",           img: "/images/menu_combos.png",    nav: { tab: "entrees", sub: "combos" } },
+      { id: "combos",      label: "Combos",           img: "/images/combos/combos-cover.jpg", nav: { tab: "entrees", sub: "combos" } },
       { id: "drinks-dips", label: "Drinks & Dips",    img: "/images/menu_drinks.png",    nav: { tab: "drinks" } },
       { id: "special",     label: "Special Menu",     img: "/images/menu_special.png",   nav: { tab: "entrees", sub: "special" } },
     ],

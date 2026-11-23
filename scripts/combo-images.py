@@ -128,3 +128,8 @@ save(pizza_wings(FRONT, 600, 6), "small-6-wings")
 save(pizza_wings(FRONT, 720, 12), "large-12-wings")
 # 2 large pizzas + garlic bread + 4 pops
 save(take_care(BACK, FRONT, 650, 580, 280, 105, 45), "takecare")
+
+# Combos category cover on the menu page (3:2 tile): the Take Care image with
+# white added at the sides so nothing gets cropped off the top or bottom
+tc = Image.open(f"{OUT}/takecare.jpg"); cover = Image.new("RGB", (1350, 900), "white")
+cover.paste(tc, ((1350 - tc.width) // 2, 0)); save(cover, "combos-cover")
