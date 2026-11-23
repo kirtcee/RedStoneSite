@@ -1,314 +1,509 @@
 // components/promos/SoftClubCard.js
 //
-// Home page promo banner for the Party Combo, in the Gen X "soft club" style
-// (late 90s / early 2000s): icy pastel blue and lilac, frosted glass panels,
-// glossy see-through bubbles, chrome, a faint perspective grid, and wide
-// techno lettering (Michroma) with a pearly chrome price.
+// Home page promo banner for the Party Combo. A mix of three things:
+//   - a lab "experiment": cold teal fluorescent light, a clinical white
+//     specimen tray with X markers and crosshairs, specimen labels
+//   - Gen X soft club: blurred subway light streaks, teal/aqua glass,
+//     tiny catalogue text and a barcode
+//   - a 2000s computer: a Winamp / Windows 2000 style window
+//     ("party_combo.exe") with a blue LCD screen showing the price and a
+//     bouncing equalizer
+// Every font is Red Stone Face except the glossy Aqua "Order Now" button,
+// which uses Michroma (wide 2000s techno type).
 //
 // Two layouts from one card (container queries on the card's own shape):
-//   - phones (16:9): words + price on the left, food on a glass disc right
-//   - laptops (the 928x250 banner): food | glass panel with words | price, button
+//   - phones (16:9): the window on the left, the specimen tray on the right
+//   - laptops (the 928x250 banner): tray | window | catalogue text + button
 import Link from "next/link";
 import { findDealById } from "../../utils/dealCatalog";
 
 const DEAL_ID = "party";
+const EQ = [5, 9, 6, 11, 8, 4, 10, 7, 12, 6, 9, 5]; // equalizer bar heights (animation offsets)
+
+function Cross({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 20 20" aria-hidden="true">
+      <path d="M3 3 L17 17 M17 3 L3 17" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 export default function SoftClubCard() {
   const deal = findDealById(DEAL_ID);
   const price = ((deal?.price ?? 6499) / 100).toFixed(2);
 
   return (
-    <div className="sc">
-      <div className="sc-bg" aria-hidden="true" />
-      <div className="sc-grid" aria-hidden="true" />
-      <div className="sc-ring sc-ring--a" aria-hidden="true" />
-      <div className="sc-ring sc-ring--b" aria-hidden="true" />
-      {[0, 1, 2, 3, 4].map((i) => (
-        <span key={i} className={`sc-bubble sc-bubble--${i}`} aria-hidden="true" />
-      ))}
+    <div className="px">
+      {/* ---- background: teal fluorescent hall with light streaks ---- */}
+      <div className="px-bg" aria-hidden="true" />
+      <div className="px-streaks" aria-hidden="true" />
+      <div className="px-lights" aria-hidden="true" />
+      <div className="px-scan" aria-hidden="true" />
 
-      <div className="sc-food" aria-hidden="true">
-        <div className="sc-disc" />
-        <img className="sc-img sc-img--bottle" src="/images/drinks/2l-pepsi.webp" alt="" />
-        <img className="sc-img sc-img--p1" src="/images/pizzas/angled/veggie-lover.webp" alt="" />
-        <img className="sc-img sc-img--p2" src="/images/pizzas/angled/pepperoni.webp" alt="" />
-        <img className="sc-img sc-img--p3" src="/images/pizzas/angled/meat-lover.webp" alt="" />
-        <img className="sc-img sc-img--wings" src="/images/wings/plate-20.webp" alt="" />
-        <img className="sc-img sc-img--bread" src="/images/sides/garlic-bread-plate.webp" alt="" />
+      {/* ---- the specimen tray with the food ---- */}
+      <div className="px-lab" aria-hidden="true">
+        <div className="px-tray" />
+        <div className="px-target px-target--a" />
+        <div className="px-target px-target--b" />
+        <img className="px-img px-img--bottle" src="/images/drinks/2l-pepsi.webp" alt="" />
+        <img className="px-img px-img--p1" src="/images/pizzas/angled/veggie-lover.webp" alt="" />
+        <img className="px-img px-img--p2" src="/images/pizzas/angled/pepperoni.webp" alt="" />
+        <img className="px-img px-img--p3" src="/images/pizzas/angled/meat-lover.webp" alt="" />
+        <img className="px-img px-img--wings" src="/images/wings/plate-20.webp" alt="" />
+        <img className="px-img px-img--bread" src="/images/sides/garlic-bread-plate.webp" alt="" />
+        <Cross className="px-x px-x--1" />
+        <Cross className="px-x px-x--2" />
+        <Cross className="px-x px-x--3" />
+        <span className="px-tag px-tag--1">Spec. 01, Pizza x3</span>
+        <span className="px-tag px-tag--2">Spec. 02, Wings x20</span>
       </div>
 
-      <div className="sc-panel">
-        <div className="sc-kicker">
-          <span className="sc-dot" aria-hidden="true" />
-          Feeds the Crew
+      {/* ---- the 2000s program window ---- */}
+      <div className="px-win">
+        <div className="px-bar">
+          <span className="px-bar__icon" aria-hidden="true">
+            <Cross className="px-bar__x" />
+          </span>
+          <span className="px-bar__title">party_combo.exe</span>
+          <span className="px-bar__btns" aria-hidden="true">
+            <i>_</i>
+            <i>□</i>
+            <i>×</i>
+          </span>
         </div>
-        <h2 className="sc-name">Party Combo</h2>
-        <p className="sc-items">
-          3 Large 2-Topping Pizzas, 20 Wings{"\n"}Garlic Bread, 2L Drink, 3 Dips
-        </p>
+        <div className="px-menu" aria-hidden="true">
+          File&nbsp;&nbsp;Play&nbsp;&nbsp;Options&nbsp;&nbsp;Help
+        </div>
+        <div className="px-body">
+          <div className="px-lcd">
+            <div className="px-lcd__top" aria-hidden="true">
+              <span>Experiment 03</span>
+              <span>Serves 6+</span>
+            </div>
+            <h2 className="px-name">Party Combo</h2>
+            <div className="px-lcd__row">
+              <div className="px-price">${price}</div>
+              <div className="px-eq" aria-hidden="true">
+                {EQ.map((h, i) => (
+                  <span key={i} style={{ "--h": h, animationDelay: `${-i * 0.13}s` }} />
+                ))}
+              </div>
+            </div>
+            <div className="px-scroll" aria-hidden="true">
+              <span>Now Serving: 3 Large Pizzas + 20 Wings + Garlic Bread + 2L + 3 Dips ::: </span>
+            </div>
+          </div>
+          <p className="px-items">
+            3 Large 2-Topping Pizzas, 20 Wings{"\n"}Garlic Bread, 2L Drink, 3 Dips
+          </p>
+        </div>
       </div>
 
-      <div className="sc-buy">
-        <div className="sc-price" data-text={`$${price}`}>
-          ${price}
+      {/* ---- catalogue text, barcode, button ---- */}
+      <div className="px-side">
+        <div className="px-cat" aria-hidden="true">
+          Selected Works 03{"\n"}Contemporary Pizza Club
         </div>
-        <Link href={`/coupons?deal=${DEAL_ID}`} className="sc-btn">
+        <div className="px-barcode" aria-hidden="true" />
+        <Link href={`/coupons?deal=${DEAL_ID}`} className="px-btn">
           <span>Order Now</span>
         </Link>
       </div>
 
       <style jsx>{`
-        .sc {
-          --ice: #dff1ff;
-          --sky: #9fd3ff;
-          --aqua: #5ec8ff;
-          --lilac: #c9b8ff;
-          --navy: #1d3a78;
-          --techno: "Promo Michroma", var(--font-display);
+        .px {
+          --teal: #0f3b3a;
+          --mint: #9fe6d8;
+          --aqua: #5ad1ff;
+          --lcd: #0b2a6f;
+          --lcd-text: #a9dcff;
           container-type: size;
           position: absolute;
           inset: 0;
           overflow: hidden;
-          color: var(--navy);
           font-family: var(--font-body);
+          color: #e6f6f3;
         }
-        .sc-bg {
+
+        /* fluorescent teal hall */
+        .px-bg {
           position: absolute;
           inset: 0;
           background:
-            radial-gradient(60% 80% at 82% 30%, rgba(255, 255, 255, 0.95), transparent 60%),
-            radial-gradient(70% 90% at 10% 100%, rgba(201, 184, 255, 0.75), transparent 60%),
-            linear-gradient(160deg, #eef8ff 0%, #c4e5ff 45%, #a9cfff 75%, #d8ccff 100%);
+            radial-gradient(70% 60% at 70% 30%, rgba(190, 255, 240, 0.35), transparent 70%),
+            linear-gradient(180deg, #1d5552 0%, #123f3e 45%, #0a2a2c 100%);
         }
-        /* faint perspective grid on the floor */
-        .sc-grid {
+        /* motion-blurred light streaks, like a train going past */
+        .px-streaks {
           position: absolute;
-          left: -20%;
-          right: -20%;
-          bottom: -10%;
-          height: 55%;
-          transform: perspective(40cqw) rotateX(62deg);
-          transform-origin: bottom;
+          inset: 0;
           background:
-            repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.7) 0 1px, transparent 1px 5cqw),
-            repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.7) 0 1px, transparent 1px 5cqw);
-          -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 90%);
-          mask-image: linear-gradient(to top, #000 10%, transparent 90%);
-          opacity: 0.8;
+            linear-gradient(176deg, transparent 38%, rgba(220, 255, 245, 0.55) 40%, transparent 43%),
+            linear-gradient(176deg, transparent 52%, rgba(160, 230, 255, 0.35) 53%, transparent 55%),
+            linear-gradient(176deg, transparent 63%, rgba(255, 245, 210, 0.3) 63.6%, transparent 65%);
+          filter: blur(0.6cqw);
+          animation: px-pass 6s linear infinite;
         }
-        /* thin chrome orbit rings */
-        .sc-ring {
+        @keyframes px-pass {
+          0% { transform: translateX(-6%); }
+          100% { transform: translateX(6%); }
+        }
+        /* rows of ceiling lights */
+        .px-lights {
           position: absolute;
-          border-radius: 50%;
-          border: 0.3cqw solid rgba(255, 255, 255, 0.85);
-          box-shadow: 0 0 1.2cqw rgba(255, 255, 255, 0.8), inset 0 0 1cqw rgba(94, 200, 255, 0.35);
+          left: 0;
+          right: 0;
+          top: 0;
+          height: 18%;
+          background: repeating-linear-gradient(90deg, rgba(230, 255, 250, 0.7) 0 6cqw, transparent 6cqw 14cqw);
+          filter: blur(0.5cqw);
+          opacity: 0.45;
+          -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
+          mask-image: linear-gradient(to bottom, #000, transparent);
         }
-        .sc-ring--a { width: 70cqw; height: 22cqw; right: -8cqw; top: 26cqh; transform: rotate(-12deg); }
-        .sc-ring--b { width: 40cqw; height: 12cqw; left: -10cqw; top: 6cqh; transform: rotate(8deg); opacity: 0.6; }
-        /* glossy see-through bubbles */
-        .sc-bubble {
+        /* faint CRT scanlines over everything */
+        .px-scan {
           position: absolute;
-          border-radius: 50%;
-          background:
-            radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.95) 0 10%, rgba(255, 255, 255, 0) 24%),
-            radial-gradient(circle at 70% 75%, rgba(201, 184, 255, 0.55), rgba(94, 200, 255, 0.15) 60%, rgba(255, 255, 255, 0.05) 72%);
-          border: 1px solid rgba(255, 255, 255, 0.9);
-          box-shadow: inset -0.6cqw -0.8cqw 1.4cqw rgba(94, 160, 255, 0.35), 0 0.6cqw 1.6cqw rgba(29, 58, 120, 0.12);
-          animation: sc-float 7s ease-in-out infinite;
-        }
-        .sc-bubble--0 { width: 9cqw; height: 9cqw; left: 44cqw; top: 8cqh; }
-        .sc-bubble--1 { width: 5cqw; height: 5cqw; left: 52cqw; top: 56cqh; animation-delay: -2s; }
-        .sc-bubble--2 { width: 13cqw; height: 13cqw; right: -3cqw; top: -6cqh; animation-delay: -4s; }
-        .sc-bubble--3 { width: 4cqw; height: 4cqw; left: 47cqw; top: 58cqh; animation-delay: -1s; }
-        .sc-bubble--4 { width: 6cqw; height: 6cqw; right: 3cqw; bottom: 4cqh; animation-delay: -5s; }
-        @keyframes sc-float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-1.6cqw); }
+          inset: 0;
+          z-index: 6;
+          pointer-events: none;
+          background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.07) 0 1px, transparent 1px 3px);
         }
 
-        /* ---- the food on a frosted glass disc ---- */
-        .sc-food {
+        /* ---- specimen tray ---- */
+        .px-lab {
           position: absolute;
-          right: 1cqw;
-          top: 8cqh;
-          width: 52cqw;
-          height: 88cqh;
+          right: 2cqw;
+          top: 6cqh;
+          width: 48cqw;
+          height: 90cqh;
         }
-        .sc-disc {
+        .px-tray {
           position: absolute;
-          left: 4%;
-          right: 4%;
-          bottom: 4%;
-          height: 34%;
+          left: 2%;
+          right: 2%;
+          bottom: 2%;
+          height: 74%;
+          border-radius: 2cqw;
+          background: linear-gradient(180deg, #f7fbfa 0%, #dbe9e6 100%);
+          border: 1px solid #ffffff;
+          box-shadow: 0 1.4cqw 2.4cqw rgba(0, 0, 0, 0.45), inset 0 0 0 0.6cqw rgba(160, 200, 195, 0.35);
+          transform: perspective(40cqw) rotateX(28deg);
+          transform-origin: bottom;
+        }
+        /* crosshair targets on the tray */
+        .px-target {
+          position: absolute;
+          width: 12cqw;
+          height: 12cqw;
           border-radius: 50%;
-          background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(201, 225, 255, 0.35));
-          border: 1px solid rgba(255, 255, 255, 0.95);
-          box-shadow: 0 1.4cqw 3cqw rgba(29, 58, 120, 0.25), inset 0 0.6cqw 1.4cqw rgba(255, 255, 255, 0.9);
-          -webkit-backdrop-filter: blur(1cqw);
-          backdrop-filter: blur(1cqw);
+          border: 1px dashed rgba(15, 59, 58, 0.55);
+          background:
+            linear-gradient(rgba(15, 59, 58, 0.5), rgba(15, 59, 58, 0.5)) center / 1px 100% no-repeat,
+            linear-gradient(rgba(15, 59, 58, 0.5), rgba(15, 59, 58, 0.5)) center / 100% 1px no-repeat;
+          transform: scaleY(0.45);
         }
-        .sc-img {
+        .px-target--a { left: 6%; bottom: 8%; }
+        .px-target--b { right: 30%; bottom: 4%; }
+        .px-img {
           position: absolute;
           height: auto;
-          /* a cool, airy grade: a touch brighter, slightly blue */
-          filter: brightness(1.06) saturate(0.95) hue-rotate(-6deg) drop-shadow(0 0.8cqw 1cqw rgba(29, 58, 120, 0.3));
+          /* cold, clinical grade */
+          filter: saturate(0.85) contrast(1.05) brightness(1.02) hue-rotate(-8deg) drop-shadow(0 0.8cqw 0.9cqw rgba(0, 0, 0, 0.45));
           user-select: none;
         }
-        .sc-img--bottle { height: 52%; width: auto; right: 4%; top: 0; }
-        .sc-img--p1 { width: 44%; left: 18%; top: 4%; }
-        .sc-img--p2 { width: 44%; left: 40%; top: 18%; }
-        .sc-img--p3 { width: 48%; left: 6%; top: 28%; }
-        .sc-img--wings { width: 34%; right: 6%; bottom: 8%; }
-        .sc-img--bread { width: 30%; left: 2%; bottom: 6%; }
-
-        /* ---- frosted glass panel with the words ---- */
-        .sc-panel {
+        .px-img--bottle { height: 54%; width: auto; right: 3%; top: 0; }
+        .px-img--p1 { width: 42%; left: 16%; top: 14%; }
+        .px-img--p2 { width: 42%; left: 40%; top: 26%; }
+        .px-img--p3 { width: 46%; left: 4%; top: 36%; }
+        .px-img--wings { width: 30%; right: 6%; bottom: 4%; }
+        .px-img--bread { width: 26%; left: 10%; bottom: 3%; }
+        :global(.px-x) {
           position: absolute;
-          left: 4cqw;
-          top: 7cqh;
-          width: 46cqw;
-          padding: 3cqh 3cqw 3.4cqh;
-          border-radius: 3cqw;
-          background: linear-gradient(160deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.3));
-          border: 1px solid rgba(255, 255, 255, 0.95);
-          box-shadow: 0 1cqw 2.6cqw rgba(29, 58, 120, 0.15), inset 0 0.3cqw 0.6cqw rgba(255, 255, 255, 0.9);
-          -webkit-backdrop-filter: blur(1.4cqw);
-          backdrop-filter: blur(1.4cqw);
-          z-index: 2;
+          width: 3.4cqw;
+          height: 3.4cqw;
+          color: #0f3b3a;
+          filter: drop-shadow(0 0 0.4cqw rgba(255, 255, 255, 0.8));
         }
-        .sc-kicker {
+        :global(.px-x--1) { left: 46%; top: 6%; color: #e6f6f3; }
+        :global(.px-x--2) { left: 52%; bottom: 8%; }
+        :global(.px-x--3) { right: 1%; top: 58%; color: #e6f6f3; }
+        .px-tag {
+          position: absolute;
+          padding: 0.4cqh 1cqw 0.2cqh;
+          background: #f7fbfa;
+          border: 1px solid #9fbdb8;
+          color: #0f3b3a;
+          font-family: var(--font-display);
+          font-size: 1.6cqw;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          white-space: nowrap;
+          box-shadow: 0.3cqw 0.3cqw 0 rgba(0, 0, 0, 0.25);
+        }
+        .px-tag--1 { left: 0; top: 18%; transform: rotate(-4deg); z-index: 2; }
+        .px-tag--2 { right: 0; bottom: 0; transform: rotate(3deg); }
+
+        /* ---- the program window (bevelled silver-blue chrome) ---- */
+        .px-win {
+          position: absolute;
+          left: 3.5cqw;
+          top: 6cqh;
+          width: 47cqw;
+          z-index: 3;
+          border-radius: 1cqw 1cqw 0.6cqw 0.6cqw;
+          background: linear-gradient(180deg, #d8e1ec 0%, #aebccf 100%);
+          border: 1px solid #f2f6fb;
+          box-shadow: 0 1.4cqw 3cqw rgba(0, 0, 0, 0.5), inset 0 0 0 1px #7d8ca3;
+          overflow: hidden;
+        }
+        .px-bar {
           display: flex;
           align-items: center;
-          gap: 1.2cqw;
-          font-family: var(--techno);
-          font-size: 1.9cqw;
-          letter-spacing: 0.22em;
-          text-transform: uppercase;
-          color: #4a6fb3;
-        }
-        .sc-dot {
-          width: 1.6cqw;
-          height: 1.6cqw;
-          border-radius: 50%;
-          background: radial-gradient(circle at 35% 30%, #fff 0 20%, var(--aqua) 50%, #1f8fe0 100%);
-          box-shadow: 0 0 1cqw var(--aqua);
-        }
-        .sc-name {
-          margin: 1.6cqh 0 1.6cqh;
-          font-family: var(--techno);
-          font-weight: 400;
-          font-size: 5cqw;
-          line-height: 1.05;
+          gap: 1cqw;
+          padding: 1cqh 1.2cqw 0.8cqh;
+          background: linear-gradient(180deg, #3a64c8 0%, #1e3f99 55%, #2b55b8 100%);
+          color: #fff;
+          font-family: var(--font-display);
+          font-size: 2cqw;
           letter-spacing: 0.04em;
-          text-transform: uppercase;
-          color: var(--navy);
+          text-transform: none;
         }
-        .sc-items {
-          margin: 0;
-          white-space: pre-line;
-          font-size: 2.5cqw;
+        .px-bar__icon {
+          display: inline-flex;
+          width: 2.4cqw;
+          height: 2.4cqw;
+          border-radius: 0.4cqw;
+          background: #e6f6f3;
+          color: #1e3f99;
+          padding: 0.3cqw;
+        }
+        :global(.px-bar__x) { width: 100%; height: 100%; }
+        .px-bar__title { flex: 1 1 auto; }
+        .px-bar__btns {
+          display: flex;
+          gap: 0.5cqw;
+        }
+        .px-bar__btns i {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 2.4cqw;
+          height: 2.2cqw;
+          border-radius: 0.3cqw;
+          background: linear-gradient(180deg, #e9eef6, #b8c5d8);
+          color: #1e3f99;
+          font-style: normal;
+          font-size: 1.6cqw;
+          line-height: 1;
+        }
+        .px-menu {
+          padding: 0.6cqh 1.4cqw;
+          font-size: 1.6cqw;
           font-weight: var(--w-medium);
+          color: #22324f;
+          border-bottom: 1px solid #8c9bb2;
+        }
+        .px-body {
+          padding: 1.4cqh 1.4cqw 1.8cqh;
+        }
+        /* the blue LCD screen */
+        .px-lcd {
+          padding: 1.2cqh 1.8cqw 1cqh;
+          border-radius: 0.6cqw;
+          background:
+            repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 2px),
+            linear-gradient(180deg, #0d2f7a 0%, #08205a 100%);
+          box-shadow: inset 0 0.4cqw 1cqw rgba(0, 0, 0, 0.6), 0 0 0 1px #5e6f8c;
+          color: var(--lcd-text);
+          text-shadow: 0 0 0.8cqw rgba(120, 200, 255, 0.8);
+        }
+        .px-lcd__top {
+          display: flex;
+          justify-content: space-between;
+          font-family: var(--font-display);
+          font-size: 1.5cqw;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          opacity: 0.85;
+        }
+        .px-name {
+          margin: 0.6cqh 0 0;
+          font-family: var(--font-display);
+          font-size: 4.6cqw;
+          line-height: 1;
+          letter-spacing: 0.02em;
+          text-transform: uppercase;
+          color: #dff1ff;
+        }
+        .px-lcd__row {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 2cqw;
+          margin-top: 0.6cqh;
+        }
+        .px-price {
+          font-family: var(--font-display);
+          font-size: 7.6cqw;
+          line-height: 1;
+          color: #ffffff;
+          text-shadow: 0 0 1.2cqw rgba(120, 200, 255, 0.95), 0 0 0.3cqw rgba(255, 255, 255, 0.9);
+        }
+        .px-eq {
+          display: flex;
+          align-items: flex-end;
+          gap: 0.35cqw;
+          height: 6cqw;
+          padding-bottom: 0.6cqw;
+        }
+        .px-eq span {
+          width: 0.7cqw;
+          height: calc(var(--h) * 0.45cqw);
+          background: linear-gradient(0deg, #5ad1ff 0%, #9fe6d8 60%, #ffffff 100%);
+          box-shadow: 0 0 0.6cqw rgba(90, 209, 255, 0.8);
+          animation: px-eq 0.9s ease-in-out infinite alternate;
+          transform-origin: bottom;
+        }
+        @keyframes px-eq {
+          0% { transform: scaleY(0.25); }
+          100% { transform: scaleY(1); }
+        }
+        /* scrolling "now playing" text */
+        .px-scroll {
+          margin-top: 0.8cqh;
+          overflow: hidden;
+          white-space: nowrap;
+          font-size: 1.5cqw;
+          font-weight: var(--w-semibold);
+          letter-spacing: 0.04em;
+        }
+        .px-scroll span {
+          display: inline-block;
+          padding-left: 100%;
+          animation: px-marquee 14s linear infinite;
+        }
+        @keyframes px-marquee {
+          to { transform: translateX(-100%); }
+        }
+        .px-items {
+          margin: 1.4cqh 0 0;
+          white-space: pre-line;
+          font-size: 2.2cqw;
+          font-weight: var(--w-semibold);
           line-height: 1.35;
-          color: #3b5a96;
+          color: #22324f;
         }
 
-        /* ---- pearly chrome price + glossy aqua pill ---- */
-        .sc-buy {
+        /* ---- catalogue text + barcode + button (under the window on phones) ---- */
+        .px-side {
           position: absolute;
-          left: 4cqw;
+          left: 3.5cqw;
           bottom: 6cqh;
+          width: 47cqw;
           z-index: 3;
           display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 2.4cqh;
+          align-items: center;
+          justify-content: space-between;
+          gap: 2cqw;
         }
-        .sc-price {
-          position: relative;
-          font-family: var(--techno);
-          font-size: 7.4cqw;
-          line-height: 1;
-          letter-spacing: 0.01em;
-          font-weight: 400;
-          /* darker chrome: navy, a bright sky band, white, then navy again */
-          background: linear-gradient(180deg, #2a4f9e 0%, #5f8fe0 30%, #e9f4ff 48%, #1d3a78 52%, #4f7fd0 76%, #a9c8ff 100%);
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
-          -webkit-text-stroke: 0.12cqw rgba(255, 255, 255, 0.9);
-          filter: drop-shadow(0 0.25cqw 0 rgba(255, 255, 255, 0.9)) drop-shadow(0 0.6cqw 1.2cqw rgba(29, 58, 120, 0.35));
+        .px-cat {
+          white-space: pre-line;
+          font-family: var(--font-display);
+          font-size: 1.5cqw;
+          line-height: 1.4;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: var(--mint);
         }
-        .sc :global(.sc-btn) {
+        .px-barcode {
+          display: none;
+          width: 12cqw;
+          height: 4cqw;
+          background: repeating-linear-gradient(90deg, #e6f6f3 0 1px, transparent 1px 2px, #e6f6f3 2px 4px, transparent 4px 5px, #e6f6f3 5px 6px, transparent 6px 8px);
+          opacity: 0.85;
+        }
+        /* glossy 2000s Aqua button */
+        .px :global(.px-btn) {
           position: relative;
           display: inline-flex;
           align-items: center;
-          padding: 2.2cqh 4.2cqw 2cqh;
+          flex: 0 0 auto;
+          padding: 2.2cqh 2.8cqw 2cqh;
           border-radius: 999px;
-          background: linear-gradient(180deg, #bff0ff 0%, #5ec8ff 52%, #2aa4f0 53%, #6fd4ff 100%);
-          border: 1px solid rgba(255, 255, 255, 0.95);
-          box-shadow: 0 0.8cqw 1.6cqw rgba(29, 120, 200, 0.35), inset 0 -0.6cqw 1cqw rgba(0, 80, 160, 0.25);
+          background: linear-gradient(180deg, #c9f1ff 0%, #5ad1ff 50%, #1f9be6 51%, #6fd8ff 100%);
+          border: 1px solid #e9fbff;
+          box-shadow: 0 0.8cqw 1.6cqw rgba(0, 0, 0, 0.4), 0 0 2cqw rgba(90, 209, 255, 0.6);
           color: #fff;
-          font-family: var(--techno);
-          font-size: 2.6cqw;
+          font-family: "Promo Michroma", var(--font-display);
+          font-size: 2cqw;
           line-height: 1;
-          letter-spacing: 0.14em;
+          letter-spacing: 0.1em;
           text-transform: uppercase;
           text-decoration: none;
-          text-shadow: 0 0.2cqw 0.4cqw rgba(0, 70, 140, 0.45);
+          text-shadow: 0 0.2cqw 0.4cqw rgba(0, 60, 130, 0.5);
           white-space: nowrap;
           overflow: hidden;
-          transition: transform 0.15s ease, box-shadow 0.15s ease;
+          transition: transform 0.15s ease;
         }
-        /* the glossy shine on the top half */
-        .sc :global(.sc-btn::before) {
+        .px :global(.px-btn::before) {
           content: "";
           position: absolute;
-          left: 6%;
-          right: 6%;
-          top: 6%;
-          height: 44%;
+          left: 7%;
+          right: 7%;
+          top: 7%;
+          height: 42%;
           border-radius: 999px;
-          background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.1));
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.15));
           pointer-events: none;
         }
-        .sc :global(.sc-btn span) { position: relative; }
-        .sc :global(.sc-btn:hover),
-        .sc :global(.sc-btn:focus-visible) {
+        .px :global(.px-btn span) { position: relative; }
+        .px :global(.px-btn:hover),
+        .px :global(.px-btn:focus-visible) {
           transform: translateY(-0.2cqw);
-          box-shadow: 0 1.2cqw 2.2cqw rgba(29, 120, 200, 0.45), 0 0 0 0.5cqw rgba(255, 255, 255, 0.7);
           outline: none;
         }
         @media (prefers-reduced-motion: reduce) {
-          .sc * { animation: none !important; }
+          .px *,
+          .px :global(*) {
+            animation: none !important;
+          }
         }
 
-        /* ===== Laptop banner (928x250): food | panel | price, button ===== */
+        /* ===== Laptop banner (928x250): tray | window | catalogue + button ===== */
         @container (min-aspect-ratio: 3 / 1) {
-          .sc-food { left: 1cqw; right: auto; top: 4cqh; width: 33cqw; height: 94cqh; }
-          .sc-panel { left: 36cqw; top: 50%; transform: translateY(-50%); width: 32cqw; padding: 6cqh 2.2cqw; border-radius: 1.8cqw; }
-          .sc-kicker { font-size: 0.9cqw; gap: 0.6cqw; }
-          .sc-dot { width: 0.8cqw; height: 0.8cqw; }
-          .sc-name { font-size: 2.6cqw; margin: 4cqh 0; }
-          .sc-items { font-size: 1.15cqw; }
-          .sc-buy {
+          .px-lab { right: auto; left: 1.5cqw; top: 4cqh; width: 30cqw; height: 94cqh; }
+          .px-tag { font-size: 0.85cqw; }
+          :global(.px-x) { width: 1.8cqw; height: 1.8cqw; }
+          .px-target { width: 6cqw; height: 6cqw; }
+          .px-win { left: 34cqw; top: 50%; transform: translateY(-50%); width: 36cqw; }
+          .px-bar { font-size: 1.1cqw; padding: 2cqh 0.8cqw 1.6cqh; }
+          .px-bar__icon, .px-bar__btns i { width: 1.4cqw; height: 1.3cqw; }
+          .px-bar__btns i { font-size: 0.9cqw; }
+          .px-menu { font-size: 0.9cqw; padding: 1cqh 1cqw; }
+          .px-body { padding: 2.6cqh 1cqw 3cqh; }
+          .px-lcd { padding: 2.6cqh 1.4cqw 2cqh; }
+          .px-lcd__top { font-size: 0.8cqw; }
+          .px-name { font-size: 2.4cqw; margin-top: 1.4cqh; }
+          .px-price { font-size: 4cqw; }
+          .px-eq { height: 3.2cqw; padding-bottom: 0.3cqw; }
+          .px-eq span { width: 0.4cqw; height: calc(var(--h) * 0.24cqw); }
+          .px-scroll { font-size: 0.8cqw; margin-top: 1.6cqh; }
+          .px-items { font-size: 1.05cqw; margin-top: 2.6cqh; }
+          .px-side {
             left: auto;
             right: 3cqw;
             top: 50%;
             bottom: auto;
             transform: translateY(-50%);
+            width: 22cqw;
             flex-direction: column;
             align-items: flex-end;
-            gap: 6cqh;
+            gap: 4cqh;
           }
-          .sc-price { font-size: 4.2cqw; -webkit-text-stroke-width: 0.07cqw; }
-          .sc :global(.sc-btn) { font-size: 1.15cqw; padding: 6cqh 2.2cqw 5.4cqh; }
-          .sc-ring--a { width: 46cqw; height: 9cqw; right: auto; left: 30cqw; top: 54cqh; }
-          .sc-ring--b { width: 30cqw; height: 6cqw; left: 68cqw; top: 8cqh; }
-          .sc-bubble--0 { width: 4cqw; height: 4cqw; left: 32cqw; top: 6cqh; }
-          .sc-bubble--1 { width: 2.4cqw; height: 2.4cqw; left: 70cqw; top: 70cqh; }
-          .sc-bubble--2 { width: 6cqw; height: 6cqw; right: 20cqw; top: -10cqh; }
-          .sc-bubble--3 { width: 2cqw; height: 2cqw; left: 2cqw; top: 6cqh; }
-          .sc-bubble--4 { width: 3cqw; height: 3cqw; right: 22cqw; bottom: 8cqh; }
+          .px-cat { font-size: 0.9cqw; text-align: right; }
+          .px-barcode { display: block; width: 10cqw; height: 3cqw; }
+          .px :global(.px-btn) { font-size: 1.15cqw; padding: 6cqh 2.2cqw 5.4cqh; }
         }
       `}</style>
     </div>
