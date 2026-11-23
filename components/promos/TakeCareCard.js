@@ -137,6 +137,7 @@ export default function TakeCareCard() {
           top: -2%;
           width: 46%;
           height: 34%;
+          z-index: 0; /* the cans' own front-to-back order stays inside this group */
         }
         .tc-can {
           height: 70%;
@@ -144,8 +145,8 @@ export default function TakeCareCard() {
           left: calc(var(--i) * 17%);
           top: calc((3 - var(--i)) * 10%);
         }
-        .tc-img--back { width: 70%; right: 0; top: 14%; }
-        .tc-img--front { width: 74%; left: 0; top: 30%; }
+        .tc-img--back { width: 70%; right: 0; top: 14%; z-index: 1; }
+        .tc-img--front { width: 74%; left: 0; top: 30%; z-index: 1; }
         /* garlic bread tucked over the front of both pizzas */
         /* garlic bread over the gap between the two pizzas */
         .tc-img--bread { width: 40%; right: 0; top: 56%; z-index: 2; }
