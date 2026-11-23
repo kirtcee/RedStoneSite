@@ -25,90 +25,102 @@ def place(canvas, im, x, y, k):
     canvas.alpha_composite(sh, (x - pad + round(7 * k), y - pad + round(8 * k)))
     canvas.alpha_composite(im, (x, y))
 
-def two_pizzas(back, front, width):
-    c = Image.new("RGBA", (W, H), (255, 255, 255, 255))
-    k = width / 200  # shadow scale: card pizzas are ~200px wide on screen
-    b, f = pizza(back, width), pizza(front, width)
-    # back pizza up and to the right, front pizza down and to the left, overlapping
-    bx = W - b.width - round(W * 0.04); by = round((H - b.height) * 0.18)
-    fx = round(W * 0.04); fy = H - f.height - round((H - f.height) * 0.16)
-    place(c, b, bx, by, k)
-    place(c, f, fx, fy, k)
+def compose(parts, shift_y=0):
+    # parts: [(image, x, y, shadow_k)] in any coordinates. The whole group is
+    # centred on the white canvas, so smaller pizzas sit closer to the middle
+    # and the gaps between the items stay the same in every combo.
+    # If the group is too big for the canvas (with a margin), it's built on a
+    # bigger canvas and shrunk to fit.
+    x0 = min(x for _, x, _, _ in parts); x1 = max(x + im.width for im, x, _, _ in parts)
+    y0 = min(y for _, _, y, _ in parts); y1 = max(y + im.height for im, _, y, _ in parts)
+    m = 24
+    s = max(1, (x1 - x0 + 2 * m) / W, (y1 - y0 + 2 * m) / H)
+    cw, ch = round(W * s), round(H * s)
+    c = Image.new("RGBA", (cw, ch), (255, 255, 255, 255))
+    ox = round((cw - (x1 - x0)) / 2) - x0; oy = round((ch - (y1 - y0)) / 2) - y0 + shift_y
+    for im, x, y, k in parts:
+        place(c, im, x + ox, y + oy, k)
+    if s > 1:
+        print(f"  (shrunk to {1 / s:.0%} to fit)")
+        c = c.resize((W, H), Image.LANCZOS)
     return c.convert("RGB")
 
-def plate(count, width):
+BACK, FRONT = "veggie-lover", "meat-lover"  # every combo comes with 3 toppings
+PLATE_W = 540     # wings plate: the same size in every combo
+OVER_X = 110      # how far the wings plate tucks under the pizza's right edge
+OVER_Y = 130      # and how far up it overlaps the pizza's bottom edge
+
+def two_pizzas(back, front, width):
+    b, f = pizza(back, width), pizza(front, width)
+    k = width / 200
+    # back pizza up and to the right, front pizza down and to the left, overlapping
+    fx = -round(width * 0.42); fy = round(b.height * 0.54)
+    return compose([(b, 0, 0, k), (f, fx, fy, k)])
+
+def plate(count, width=PLATE_W):
     # wings plate photo: the biggest public/images/wings/plate-<n>.webp with
     # n <= count (an exact match when there is one), else the smallest
     import glob, re
     plates = sorted(int(re.search(r"plate-(\d+)", f).group(1)) for f in glob.glob(f"{PUB}/wings/plate-*.webp"))
     pick = max([n for n in plates if n <= count], default=plates[0])
-    path = f"{PUB}/wings/plate-{pick}.webp"
-    im = Image.open(path).convert("RGBA")
+    im = Image.open(f"{PUB}/wings/plate-{pick}.webp").convert("RGBA")
     return im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
-
-def two_pizzas_wings(back, front, pizza_w, wings, plate_w):
-    c = Image.new("RGBA", (W, H), (255, 255, 255, 255))
-    k = pizza_w / 200
-    b, f, w = pizza(back, pizza_w), pizza(front, pizza_w), plate(wings, plate_w)
-    # pizzas further back (upper part), wings plate in front on the right
-    bx = W - b.width - round(W * 0.03); by = round(H * 0.03)
-    fx = round(W * 0.03); fy = round(H * 0.20)
-    wx = W - w.width - round(W * 0.02); wy = H - w.height - round(H * 0.03)
-    place(c, b, bx, by, k)
-    place(c, f, fx, fy, k)
-    place(c, w, wx, wy, k)
-    return c.convert("RGB")
-
-def pizza_wings(slug, pizza_w, wings, plate_w):
-    c = Image.new("RGBA", (W, H), (255, 255, 255, 255))
-    k = pizza_w / 200
-    p, w = pizza(slug, pizza_w), plate(wings, plate_w)
-    px_ = round(W * 0.03); py = round((H - p.height) * 0.12)
-    wx = W - w.width - round(W * 0.02); wy = H - w.height - round(H * 0.04)
-    place(c, p, px_, py, k)
-    place(c, w, wx, wy, k)
-    return c.convert("RGB")
 
 def side(path, width):
     im = Image.open(f"{PUB}/{path}").convert("RGBA")
     return im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
 
+def two_pizzas_front(back, front, pizza_w, item):
+    # 2 pizzas, plus one item (wings plate or garlic bread) in front on the right
+    b, f = pizza(back, pizza_w), pizza(front, pizza_w)
+    k = pizza_w / 200
+    fx = -round(pizza_w * 0.64); fy = round(b.height * 0.37)
+    ix = fx + f.width - OVER_X; iy = fy + f.height - OVER_Y
+    return [(b, 0, 0, k), (f, fx, fy, k), (item, ix, iy, k)]
+
+def two_pizzas_wings(back, front, pizza_w, wings):
+    return compose(two_pizzas_front(back, front, pizza_w, plate(wings)))
+
+def pizza_wings(slug, pizza_w, wings):
+    p, w = pizza(slug, pizza_w), plate(wings)
+    k = pizza_w / 200
+    return compose([(p, 0, 0, k), (w, p.width - OVER_X, p.height - OVER_Y, k)])
+
 CANS = ["can-pepsi", "can-canada-dry", "can-crush-orange", "can-coke"]
 
-def take_care(back, front, pizza_w, bread_w, can_h, can_gap):
-    # 2 pizzas at the back, garlic bread in front on the left, 4 pops in a row
-    # on the right. can_gap = pixels between cans (negative = overlap).
-    c = Image.new("RGBA", (W, H), (255, 255, 255, 255))
-    k = pizza_w / 200
-    b, f = pizza(back, pizza_w), pizza(front, pizza_w)
-    bread = side("sides/garlic-bread-plate.webp", bread_w)
+def take_care(back, front, pizza_w, bread_w, can_h, can_step_x, can_step_y):
+    # same layout as 2 Large + 20 Wings with the garlic bread in the wings'
+    # place, plus the 4 pops in the top left in a diagonal: the first can is
+    # lowest and in front, each next one steps right by can_step_x and up by
+    # can_step_y and sits behind the one before it.
+    parts = two_pizzas_front(back, front, pizza_w, side("sides/garlic-bread-plate.webp", bread_w))
     cans = [Image.open(f"{PUB}/drinks/{n}.webp").convert("RGBA") for n in CANS]
     cans = [im.resize((round(im.width * can_h / im.height), can_h), Image.LANCZOS) for im in cans]
-    bx = W - b.width - round(W * 0.03); by = round(H * 0.02)
-    fx = round(W * 0.03); fy = round(H * 0.12)
-    place(c, b, bx, by, k)
-    place(c, f, fx, fy, k)
-    row_w = sum(im.width for im in cans) + can_gap * (len(cans) - 1)
-    x = W - row_w - round(W * 0.03); y = H - can_h - round(H * 0.04)
+    f, fx, fy = parts[1][0], parts[1][1], parts[1][2]
+    # first can: its left side at the front pizza's left edge (+CAN_X), its
+    # bottom CAN_TUCK px down behind the front pizza's left side
+    x = fx + CAN_X; y = fy + round(f.height * 0.5) + CAN_TUCK - can_h
+    can_parts = []
     for im in cans:
-        place(c, im, x, y, k * 0.6)
-        x += im.width + can_gap
-    place(c, bread, round(W * 0.02), H - bread.height - round(H * 0.03), k)
-    return c.convert("RGB")
+        can_parts.append((im, x, y, pizza_w / 200 * 0.6))
+        x += can_step_x; y -= can_step_y
+    return compose(can_parts[::-1] + parts)  # back can drawn first
+
+CAN_X, CAN_TUCK = 10, -55
 
 def save(img, name):
     img.save(f"{OUT}/{name}.jpg", "JPEG", quality=84, optimize=True)
     print("saved", name)
 
 for name, width in [("2-medium", 700), ("2-large", 780), ("2-xl", 860)]:
-    save(two_pizzas("cheese", "pepperoni", width), name)
+    save(two_pizzas(BACK, FRONT, width), name)
 
-# 2 pizzas + wings (plate grows with the wing count)
-save(two_pizzas_wings("cheese", "pepperoni", 600, 16, 560), "2-medium-16-wings")
-save(two_pizzas_wings("cheese", "pepperoni", 650, 20, 600), "2-large-20-wings")
-save(two_pizzas_wings("cheese", "pepperoni", 700, 25, 640), "2-xl-25-wings")
+# 2 pizzas + wings (the plate is the same size in all of them)
+save(two_pizzas_wings(BACK, FRONT, 600, 16), "2-medium-16-wings")
+save(two_pizzas_wings(BACK, FRONT, 650, 20), "2-large-20-wings")
+save(two_pizzas_wings(BACK, FRONT, 700, 25), "2-xl-25-wings")
 # 1 pizza + wings
-save(pizza_wings("pepperoni", 760, 6, 540), "small-6-wings")
-save(pizza_wings("pepperoni", 840, 12, 590), "large-12-wings")
+save(pizza_wings(FRONT, 600, 6), "small-6-wings")
+save(pizza_wings(FRONT, 720, 12), "large-12-wings")
 # 2 large pizzas + garlic bread + 4 pops
-save(take_care("cheese", "pepperoni", 650, 560, 300, 6), "takecare")
+save(take_care(BACK, FRONT, 650, 580, 280, 105, 45), "takecare")
