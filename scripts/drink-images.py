@@ -6,7 +6,8 @@
 import numpy as np
 from PIL import Image, ImageFilter
 from scipy import ndimage
-SRC = "source-photos/drinks"  # originals, kept out of public so they are not deployed; OUT = "public/images/drinks"
+SRC = "source-photos/drinks"  # originals, kept out of public so they are not deployed
+OUT = "public/images/drinks"
 PX_PER_MM = 4.0                      # 122 mm can -> 488 px tall
 CAN_H, CAN_W = round(122 * PX_PER_MM), None   # CAN_W = average can width, worked out below
 
