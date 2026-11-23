@@ -8,14 +8,31 @@
 // Two layouts from one card (container queries on the card's own shape):
 //   - phones (16:9): text on the left, food on the right
 //   - laptops (the 928x140 strip): food | title | details, price, button
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { findDealById } from "../../utils/dealCatalog";
 
 const DEAL_ID = "takecare";
 
+// Optional logo image for the title. Put a file at this path (transparent
+// PNG, or the gold logo on black) and the card shows it instead of the
+// brush-script text. If it's missing, the text is used.
+const LOGO_SRC = "/images/promos/take-care-logo.png";
+
+// The 4 pops, front (lowest) to back, stepping up and to the right.
+const CANS = ["combo-can-pepsi", "combo-can-canada-dry", "combo-can-crush-orange", "combo-can-coke"];
+
 export default function TakeCareCard() {
   const deal = findDealById(DEAL_ID);
   const price = ((deal?.price ?? 3599) / 100).toFixed(2);
+
+  // Show the logo image only once it has really loaded.
+  const logoRef = useRef(null);
+  const [logoOk, setLogoOk] = useState(false);
+  useEffect(() => {
+    const img = logoRef.current;
+    if (img?.complete && img.naturalWidth) setLogoOk(true);
+  }, []);
 
   return (
     <div className="tc">
@@ -23,15 +40,33 @@ export default function TakeCareCard() {
       <div className="tc-frame" aria-hidden="true" />
 
       <div className="tc-food" aria-hidden="true">
-        <img className="tc-img tc-img--can1" src="/images/drinks/combo-can-coke.webp" alt="" />
-        <img className="tc-img tc-img--can2" src="/images/drinks/combo-can-pepsi.webp" alt="" />
+        <div className="tc-cans">
+          {CANS.map((c, i) => (
+            <img
+              key={c}
+              className="tc-img tc-can"
+              src={`/images/drinks/${c}.webp`}
+              alt=""
+              style={{ "--i": i, zIndex: CANS.length - i }}
+            />
+          ))}
+        </div>
         <img className="tc-img tc-img--back" src="/images/pizzas/angled/veggie-lover.webp" alt="" />
         <img className="tc-img tc-img--front" src="/images/pizzas/angled/meat-lover.webp" alt="" />
         <img className="tc-img tc-img--bread" src="/images/sides/garlic-bread-plate.webp" alt="" />
       </div>
 
       <div className="tc-title">
-        <h2 className="tc-script">Take Care</h2>
+        <h2 className={`tc-script${logoOk ? " tc-script--hidden" : ""}`}>Take Care</h2>
+        <img
+          ref={logoRef}
+          className={`tc-logo${logoOk ? " is-on" : ""}`}
+          src={LOGO_SRC}
+          alt=""
+          aria-hidden="true"
+          onLoad={() => setLogoOk(true)}
+          onError={() => setLogoOk(false)}
+        />
         <div className="tc-combo">Combo</div>
       </div>
 
@@ -93,11 +128,25 @@ export default function TakeCareCard() {
             drop-shadow(0 0 0.8cqw rgba(196, 140, 86, 0.35)) drop-shadow(0.6cqw 1cqw 1.2cqw rgba(0, 0, 0, 0.9));
           user-select: none;
         }
-        .tc-img--can1 { height: 40%; width: auto; right: 16%; top: 2%; }
-        .tc-img--can2 { height: 40%; width: auto; right: 4%; top: 7%; }
-        .tc-img--back { width: 70%; right: 0; top: 26%; }
-        .tc-img--front { width: 74%; left: 0; top: 40%; }
-        .tc-img--bread { width: 44%; right: 0; bottom: -3%; }
+        /* 4 small cans in a diagonal, each one up and to the right of the
+           one in front of it (like the Take Care combo picture) */
+        .tc-cans {
+          position: absolute;
+          left: 14%;
+          top: 3%;
+          width: 46%;
+          height: 34%;
+        }
+        .tc-can {
+          height: 70%;
+          width: auto;
+          left: calc(var(--i) * 17%);
+          top: calc((3 - var(--i)) * 10%);
+        }
+        .tc-img--back { width: 70%; right: 0; top: 22%; }
+        .tc-img--front { width: 74%; left: 0; top: 38%; }
+        /* garlic bread tucked over the front of both pizzas */
+        .tc-img--bread { width: 44%; right: 14%; bottom: 7%; }
 
         /* ---- title: brush script + spaced-out caps ---- */
         .tc-title {
@@ -116,6 +165,21 @@ export default function TakeCareCard() {
           color: var(--gold);
           text-transform: none;
           text-shadow: 0 0 2cqw rgba(196, 140, 86, 0.3);
+        }
+        .tc-script--hidden {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          overflow: hidden;
+          clip: rect(0 0 0 0);
+        }
+        .tc-logo {
+          display: none;
+          width: 42cqw;
+          height: auto;
+        }
+        .tc-logo.is-on {
+          display: block;
         }
         .tc-combo {
           margin: 0.6cqh 0 0 1.4cqw;
@@ -160,15 +224,15 @@ export default function TakeCareCard() {
         .tc :global(.tc-btn) {
           display: inline-flex;
           align-items: center;
-          padding: 1.6cqh 3.4cqw 1.2cqh;
+          padding: 2.6cqh 5cqw 2.1cqh;
           border: 1px solid var(--gold);
           border-radius: 999px;
           background: transparent;
           color: var(--gold);
           font-family: var(--font-display);
-          font-size: 2.9cqw;
+          font-size: 3.6cqw;
           line-height: 1;
-          letter-spacing: 0.22em;
+          letter-spacing: 0.2em;
           text-transform: uppercase;
           text-decoration: none;
           white-space: nowrap;
@@ -190,11 +254,11 @@ export default function TakeCareCard() {
               radial-gradient(120% 140% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.85) 100%);
           }
           .tc-food { left: 2.5cqw; right: auto; top: 10cqh; bottom: 10cqh; width: 30cqw; }
+          .tc-cans { left: 0; top: 0; width: 24%; height: 62%; }
+          .tc-can { height: 68%; left: calc(var(--i) * 20%); top: calc((3 - var(--i)) * 11%); }
           .tc-img--back { width: 44%; right: 18%; top: 0; }
           .tc-img--front { width: 46%; left: 14%; top: 22%; }
-          .tc-img--bread { width: 30%; right: 0; bottom: -4%; }
-          .tc-img--can1 { height: 70%; left: 0; right: auto; top: 2%; }
-          .tc-img--can2 { height: 70%; left: 7%; right: auto; top: 12%; }
+          .tc-img--bread { width: 30%; right: 10%; bottom: 2%; }
           .tc-title {
             left: 35cqw;
             top: 50%;
@@ -202,6 +266,7 @@ export default function TakeCareCard() {
             text-align: center;
           }
           .tc-script { font-size: 5.6cqw; }
+          .tc-logo { width: 19cqw; }
           .tc-combo { font-size: 1.35cqw; margin: 2cqh 0 0 0.6cqw; }
           .tc-info {
             left: auto;
@@ -215,7 +280,7 @@ export default function TakeCareCard() {
           .tc-items { font-size: 1.2cqw; margin-bottom: 8cqh; }
           .tc-buy { justify-content: flex-end; gap: 1.8cqw; }
           .tc-price { font-size: 3cqw; }
-          .tc :global(.tc-btn) { font-size: 1.15cqw; padding: 6cqh 1.6cqw 5cqh; }
+          .tc :global(.tc-btn) { font-size: 1.5cqw; padding: 9cqh 2.4cqw 7.5cqh; }
         }
       `}</style>
     </div>
