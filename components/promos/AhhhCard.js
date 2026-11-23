@@ -21,7 +21,7 @@ const DRINKS = [
 export default function AhhhCard() {
   return (
     <div className="ah">
-      <img className="ah-photo" src={PHOTO_SRC} alt="" aria-hidden="true" />
+      <div className="ah-photo" style={{ backgroundImage: `url(${PHOTO_SRC})` }} aria-hidden="true" />
       <div className="ah-shade" aria-hidden="true" />
 
       <p className="ah-line">
@@ -43,13 +43,15 @@ export default function AhhhCard() {
           background: #1a0f07;
           color: #fff3dc;
         }
+        /* the photo always fits the strip's full height (never zoomed in),
+           pinned to the left; any extra on the right is just dark room */
         .ah-photo {
           position: absolute;
           inset: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          object-position: left center;
+          background-color: #1a0f07;
+          background-repeat: no-repeat;
+          background-position: left center;
+          background-size: auto 100%;
         }
         /* darken the right side a little so the words read clearly */
         .ah-shade {
@@ -65,7 +67,7 @@ export default function AhhhCard() {
           z-index: 2;
           margin: 0;
           font-family: var(--font-display);
-          font-size: min(3cqw, 18cqh);
+          font-size: min(3.4cqw, 20cqh);
           line-height: 1.1;
           letter-spacing: 0.03em;
           text-transform: uppercase;
@@ -92,8 +94,8 @@ export default function AhhhCard() {
         }
         /* phones: slightly bigger words, smaller drinks */
         @container (max-aspect-ratio: 5 / 1) {
-          .ah-line { left: 51cqw; top: 10%; transform: none; font-size: 3.6cqw; }
-          .ah-drinks { right: 2cqw; top: 40%; gap: 0.3cqw; }
+          .ah-line { left: 50cqw; top: 7%; transform: none; font-size: 4.8cqw; }
+          .ah-drinks { right: 2cqw; top: 48%; gap: 0.3cqw; }
         }
       `}</style>
     </div>
