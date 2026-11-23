@@ -370,13 +370,12 @@ function DateDropdown({ value, onChange }) {
   );
 }
 
-// variant="aside" (default): the sticky desktop sidebar on menu/cart/coupons,
-//   plus the mobile bottom checkout bar.
+// variant="aside" (default): the sticky desktop sidebar on menu/cart/coupons
+//   (hidden on phones, which reach checkout through the Cart page).
 // variant="drawer": just the ORDER SETTINGS card, for the mobile hamburger
 //   menu (components/Header.js) — no checkout button, sticky follower or
 //   bottom bar.
-// hideMobileBar: skip the phones' fixed Total/Checkout bar (the cart page
-// has its own Continue Checkout button and totals).
+// hideMobileBar: no longer used (the phones' Total/Checkout bar was removed).
 export default function OrderSettingsAside({ variant = "aside", hideMobileBar = false }) {
   const isDrawer = variant === "drawer";
   const router = useRouter();
@@ -470,24 +469,6 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
 
   return (
     <>
-      {/* Mobile-only stand-in for the Checkout button inside .menu-aside,
-          which is display:none below 860px (see globals.css) — without
-          this there is no way to reach /checkout from a phone at all. */}
-      {!isDrawer && !hideMobileBar && (
-      <div className="mobile-checkout-bar">
-        <div className="mobile-checkout-bar__total">
-          <span>Total</span>
-          <strong>{isLoaded ? formatMoney(totalCents) : "···"}</strong>
-        </div>
-        <button
-          type="button"
-          className="mobile-checkout-bar__btn"
-          onClick={() => goToCheckout()}
-        >
-          Checkout
-        </button>
-      </div>
-      )}
       <aside className={isDrawer ? "os-drawer" : "menu-aside"}>
       <div
         className={isDrawer ? undefined : "menu-aside__follower"}

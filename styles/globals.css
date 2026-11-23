@@ -1209,56 +1209,6 @@ body::before {
   display: none;
 }
 
-/* Mobile-only Checkout bar — see the 860px media query below for where it's
-   actually shown. Base state hidden so desktop (which has the full
-   OrderSettingsAside sidebar) never sees it. */
-.mobile-checkout-bar {
-  display: none;
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 2600;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 16px;
-  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-  background: #fff;
-  border-top: 1px solid #e5d9c3;
-  box-shadow: 0 -8px 20px rgba(0,0,0,0.12);
-}
-.mobile-checkout-bar__total {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.15;
-  color: var(--text-brown);
-}
-.mobile-checkout-bar__total span {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  opacity: 0.8;
-}
-.mobile-checkout-bar__total strong {
-  font-size: 1.15rem;
-  font-family: var(--font-heading, Oswald, sans-serif);
-  text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
-}
-.mobile-checkout-bar__btn {
-  flex: 0 0 auto;
-  border: none;
-  background: #000;
-  color: #fff;
-  font-family: var(--font-heading, Oswald, sans-serif);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  padding: 0.85rem 1.4rem;
-  border-radius: .1875rem;
-  cursor: pointer;
-}
-
 @media (max-width: 860px) {
   /* Collapse the desktop nav pills, decorative rosettes, and the
      carryout/delivery chip entirely — the hamburger drawer's "Select Order
@@ -1543,11 +1493,6 @@ body::before {
   .mobile-drawer__settings {
     padding: 10px 10px calc(12px + env(safe-area-inset-bottom, 0px));
   }
-  /* Drawer open: hide the fixed Total/Checkout bar so the drawer can use
-     the full height (bar is behind the drawer/backdrop anyway). */
-  html.mobile-nav-open .mobile-checkout-bar {
-    display: none !important;
-  }
   /* Slightly tighter rows so drawer + Order Settings fit without scrolling */
   .mobile-drawer__link {
     padding-top: 11px;
@@ -1559,22 +1504,10 @@ body::before {
   }
 
   /* Order Settings sidebar (menu/cart/coupons): dropped entirely on mobile
-     rather than stacked below the page content. Checkout itself is NOT
-     reachable any other way on mobile (the cart dropdown only links back
-     to /cart), so .mobile-checkout-bar below is the real replacement —
-     a persistent bottom bar with the running total and a Checkout button. */
+     rather than stacked below the page content. Phones reach checkout
+     through the Cart page's Continue Checkout button. */
   .menu-aside {
     display: none !important;
-  }
-
-  .mobile-checkout-bar {
-    display: flex !important;
-  }
-
-  /* Keep page content from ending up underneath the fixed bar — only on
-     pages that show it (not the cart). */
-  body:has(.mobile-checkout-bar) {
-    padding-bottom: 64px;
   }
 }
 

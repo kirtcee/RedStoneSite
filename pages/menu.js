@@ -676,7 +676,7 @@ function MenuBody() {
       { id: "sides",       label: "Sides",            img: "/images/sides/sides-cover.jpg", nav: { tab: "sides" } },
       { id: "combos",      label: "Combos",           img: "/images/combos/combos-cover.jpg", nav: { tab: "entrees", sub: "combos" } },
       { id: "drinks-dips", label: "Drinks & Dips",    img: "/images/drinks/cover-drinks-dips.jpg", nav: { tab: "drinks" } },
-      { id: "special",     label: "Special Menu",     img: "/images/menu_special.png",   nav: { tab: "entrees", sub: "special" } },
+      { id: "special",     label: "Special Menu",     img: "/images/special-menu/special-cover.jpg", nav: { tab: "entrees", sub: "special" } },
     ],
     []
   );

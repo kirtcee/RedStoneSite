@@ -60,3 +60,42 @@ def card(cut, name, fill=0.86, keep_left_edge=False):
 card(widen_left(cut_white(Image.open(f"{SRC}/panzerotti.png"))), "panzerotti", keep_left_edge=True)
 card(cut_white(Image.open(f"{SRC}/pizza-sub.png")), "pizza-sub", fill=0.86, keep_left_edge=True)  # the subs run off the left side in the photos
 card(cut_white(Image.open(f"{SRC}/meatball-sub.png")), "meatball-sub", fill=0.86, keep_left_edge=True)
+
+# ---- Special Menu category cover (menu front page, 3:2): the pizza sub
+# with the opened panzerotti in front of it ----
+from PIL import ImageDraw
+# outline of the opened panzerotti's top edge (original photo pixels); it
+# sits in front of the unopened one, so everything below this line is the
+# opened piece (both halves)
+OPENED_TOP = [(440, 770), (455, 700), (490, 630), (530, 570), (590, 490), (670, 410), (770, 355),
+              (830, 345), (910, 365), (1000, 395), (1050, 390), (1110, 350), (1170, 345)]
+
+def opened_panzerotti():
+    im = cut_white(Image.open(f"{SRC}/panzerotti.png"))
+    keep = Image.new("L", im.size, 0)
+    poly = OPENED_TOP + [(im.width, OPENED_TOP[-1][1]), (im.width, im.height), (OPENED_TOP[0][0] - 40, im.height)]
+    ImageDraw.Draw(keep).polygon(poly, fill=255)
+    keep = keep.filter(ImageFilter.GaussianBlur(1.2))
+    a = np.minimum(np.asarray(im.getchannel("A")), np.asarray(keep)).astype(np.uint8)
+    im.putalpha(Image.fromarray(a))
+    return im.crop(im.getchannel("A").point(lambda v: 255 if v > 12 else 0).getbbox())
+
+def place(c, im, x, y):
+    blk = Image.new("RGBA", im.size, (0, 0, 0, 255)); blk.putalpha(im.getchannel("A").point(lambda v: int(v * 0.42)))
+    sh = Image.new("RGBA", c.size, (0, 0, 0, 0)); sh.alpha_composite(blk, (x + 12, y + 18))
+    c.alpha_composite(sh.filter(ImageFilter.GaussianBlur(15))); c.alpha_composite(im, (x, y))
+
+def special_cover():
+    CW, CH = 1350, 900
+    c = Image.new("RGBA", (CW, CH), (255, 255, 255, 255))
+    sub = cut_white(Image.open(f"{SRC}/pizza-sub.png"))
+    sub = sub.crop(sub.getchannel("A").point(lambda v: 255 if v > 12 else 0).getbbox())
+    sub = sub.resize((round(CW * 0.80), round(sub.height * CW * 0.80 / sub.width)), Image.LANCZOS)
+    pz = opened_panzerotti()
+    pz = pz.resize((round(CW * 0.50), round(pz.height * CW * 0.50 / pz.width)), Image.LANCZOS)
+    place(c, sub, 0, round(CH * 0.06))                       # sub at the back, off the left edge
+    place(c, pz, CW - pz.width - round(CW * 0.05), CH - pz.height - round(CH * 0.05))  # panzerotti in front
+    c.convert("RGB").save(f"{OUT}/special-cover.jpg", "JPEG", quality=85, optimize=True, progressive=True)
+    print("saved special-cover")
+
+special_cover()
