@@ -1,6 +1,7 @@
 // pricing.js — single source of truth for menu prices + helpers
 import { findDealById, dealAllowsService, dealSlotConfig, itemMatchesDealSlot } from "../utils/dealCatalog";
 import { findPizzaRecipe } from "../utils/pizzaRecipes";
+import { findDrink } from "../utils/drinkCatalog";
 
 // 🔢 currency formatter (no tax logic here on purpose)
 // pricing.js
@@ -370,27 +371,30 @@ export function priceComboDipOverage(comboItem) {
   return Math.max(0, totalDips - included) * PRICES.dips.each;
 }
 
-// Per-unit price for a drinks/dips category item.
+// Per-unit price for a drinks/dips category item. Only drinks listed in
+// utils/drinkCatalog.js have a price; anything else (e.g. one we stopped
+// selling) is 0.
 export function priceDrinkItem(categoryId, label) {
+  const drink = findDrink(categoryId, label);
+  if (!drink) return 0;
   if (categoryId === "twoLiters") return PRICES.drinks.twoLiters;
   if (categoryId === "cans") return PRICES.drinks.cans;
   if (categoryId === "dips") return PRICES.dips.each;
-  if (categoryId === "other") {
-    const l = String(label || "").toLowerCase();
-    if (l.includes("gatorade")) return 250;
-    if (l.includes("redbull") || l.includes("red bull")) return 350;
-    if (l.includes("juice")) return 175;
-    if (l.includes("water")) return 150;
-    return 0;
-  }
-  return 0;
+  return drink.cents || 0;
 }
 
+// The whole line is 0 (so the server refuses it) if it's empty or any
+// drink in it isn't sold.
 export function priceDrinksDips(categoryId, items = []) {
-  return (Array.isArray(items) ? items : []).reduce(
-    (sum, it) => sum + priceDrinkItem(categoryId, it?.label) * (Number(it?.qty) || 0),
-    0
-  );
+  const list = (Array.isArray(items) ? items : []).filter((it) => (Number(it?.qty) || 0) > 0);
+  if (!list.length) return 0;
+  let sum = 0;
+  for (const it of list) {
+    const each = priceDrinkItem(categoryId, it?.label);
+    if (!each) return 0;
+    sum += each * Number(it.qty);
+  }
+  return sum;
 }
 
 // ===== ONE API to price any "onAdd" payload =====

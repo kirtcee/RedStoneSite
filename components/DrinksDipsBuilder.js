@@ -1,150 +1,58 @@
 // components/DrinksDipsBuilder.js
-import React, { useMemo, useState, useEffect } from "react";
-import { priceLineItem, formatMoney } from "./Pricing";
+//
+// Drinks / dips picker shown in the menu's popup. Every drink is a tile with
+// its photo and its own − / + count, so there's one way to pick things and
+// one button to add them all. The Add to Order button stays disabled until
+// something is picked, so an empty $0 line can't reach the cart.
+//
+// Photos and prices come from utils/drinkCatalog.js. Drinks are drawn at
+// their real heights relative to each other (a Red Bull is taller than a
+// can, a 2L bottle fills the box).
+import React, { useMemo, useState } from "react";
+import { priceDrinkItem, priceDrinksDips, formatMoney } from "./Pricing";
 import { useCart } from "./CartSystem";
-import ItemCheck from "./ItemCheck";
+import { DRINK_CATEGORIES, findDrink } from "../utils/drinkCatalog";
 
-/* ===== Theme (matches the Pizza Builder's cream-box makeover) ===== */
-const PANEL_INNER_MAX = 840;
-const MAROON = "#8b1a1a";
-const LIGHT_BORDER = "var(--menu-box-border)"; // thin dark-brown-tan border (--menu-box-border)
-const LIGHTER_BG = "var(--menu-box-bg)";   // cream box fill (--menu-box-bg)
-const TEXT_BROWN = "var(--text-brown)";   // body text color inside the boxes
-const BOX_RADIUS = ".1875rem";
-
-const sectionBar = {
-  background: "#000",
-  color: "#fff",
-  padding: "0.6rem 0.85rem",
-  fontFamily: "var(--font-heading, Oswald, sans-serif)",
-  fontWeight: 900,
-  textTransform: "uppercase",
-  letterSpacing: ".3px",
-  margin: 0,
-  fontSize: "1.3rem",
-  lineHeight: 1.1,
-};
-const dividerInset = {
-  borderTop: 0, // former divider: no line and no extra space
-  width: "calc(100% - 2rem)",
-  margin: 0,
-};
-// Wraps a numbered section (black header bar + cream body) in the same
-// bordered/rounded box used by the Pizza Builder's Section component.
-const SectionBox = ({ children }) => (
-  <div style={{ border: `1px solid ${LIGHT_BORDER}`, borderRadius: BOX_RADIUS, overflow: "hidden", marginBottom: "1rem" }}>
-    {children}
-  </div>
-);
-const circleButtonLg = {
-  background: MAROON,
-  color: "#fff",
-  borderRadius: "50%",
-  width: 48,
-  height: 48,
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  border: "none",
-  cursor: "pointer",
-  fontSize: "1.4rem",
-  lineHeight: 1,
-};
-const circleButtonLgDisabled = {
-  ...circleButtonLg,
-  background: "#ddd",
-  color: "#888",
-  cursor: "not-allowed",
-};
-
-/**
- * Drinks/Dips category panel (no overlay). Render this INSIDE your page modal.
- */
 export function DrinksCategoryPanel({
   title,
-  categoryId,        // 'twoLiters' | 'cans' | 'other' | 'dips'
+  categoryId, // 'twoLiters' | 'cans' | 'other' | 'dips'
   categoryLabel,
-  options = [],
   initialItems = [],
   onClose = () => {},
   onAdd = () => {},
 }) {
   const { addItem } = useCart();
+  const cat = DRINK_CATEGORIES[categoryId] || { options: [] };
+  const options = cat.options;
+  const tallest = Math.max(1, ...options.map((o) => o.mm || 1));
 
-  const [vw, setVw] = useState(
-    typeof window !== "undefined" ? window.innerWidth : 1200
+  // label -> count
+  const [counts, setCounts] = useState(() => {
+    const out = {};
+    for (const it of Array.isArray(initialItems) ? initialItems : []) {
+      const d = findDrink(categoryId, it?.label);
+      if (d) out[d.label] = (out[d.label] || 0) + (Number(it.qty) || 0);
+    }
+    return out;
+  });
+  const change = (label, delta) =>
+    setCounts((prev) => ({ ...prev, [label]: Math.max(0, Math.min(50, (prev[label] || 0) + delta)) }));
+
+  const items = useMemo(
+    () => options.filter((o) => counts[o.label] > 0).map((o) => ({ label: o.label, qty: counts[o.label] })),
+    [options, counts]
   );
-  useEffect(() => {
-    const onResize = () => setVw(window.innerWidth);
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-  const isNarrow = vw < 800;
-
-  const [active, setActive] = useState(options[0] || "");
-  const [qty, setQty] = useState(1);
-  const [items, setItems] = useState(
-    Array.isArray(initialItems) && initialItems.length ? initialItems : []
-  );
-
-  const addCurrent = () => {
-    if (!active) return;
-    setItems((prev) => {
-      const i = prev.findIndex((x) => x.label === active);
-      if (i >= 0) {
-        const copy = [...prev];
-        copy[i] = { ...copy[i], qty: copy[i].qty + qty };
-        return copy;
-      }
-      return [...prev, { label: active, qty }];
-    });
-    setQty(1);
-  };
-
-  const changeQty = (label, delta) => {
-    setItems((prev) =>
-      prev
-        .map((x) =>
-          x.label === label ? { ...x, qty: Math.max(1, x.qty + delta) } : x
-        )
-        .filter((x) => x.qty > 0)
-    );
-  };
-
-  const removeItem = (label) => {
-    setItems((prev) => prev.filter((x) => x.label !== label));
-  };
-
-  const summary = useMemo(() => {
-    if (!items.length) return `${categoryLabel}: none selected`;
-    return `${categoryLabel}: ` + items.map((i) => `${i.label} × ${i.qty}`).join(", ");
-  }, [items, categoryLabel]);
-
-  const currentPickPrice = formatMoney(
-    priceLineItem({
-      type: "drinks-dips",
-      categoryId,
-      items: active ? [{ label: active, qty }] : [],
-      qty: 1,
-    })
-  );
-
-  const panelSubtotal = formatMoney(
-    priceLineItem({
-      type: "drinks-dips",
-      categoryId,
-      items,
-      qty: 1,
-    })
-  );
+  const count = items.reduce((n, it) => n + it.qty, 0);
+  const totalCents = priceDrinksDips(categoryId, items);
 
   const finishAndAdd = () => {
+    if (!items.length) return;
     const payload = {
       type: "drinks-dips",
       categoryId,
       categoryLabel,
       items,
-      summary,
+      summary: `${categoryLabel}: ` + items.map((i) => `${i.label} × ${i.qty}`).join(", "),
       qty: 1,
     };
     addItem(payload);
@@ -153,234 +61,242 @@ export function DrinksCategoryPanel({
   };
 
   return (
-    <div
-      style={{
-        width: "100%",
-        maxWidth: `${PANEL_INNER_MAX}px`,
-        margin: "0 auto",
-        background: "#fff",
-        color: TEXT_BROWN,
-        // Extra breathing room inside the popup container
-        paddingTop: "16px",
-        paddingBottom: "16px",
-      }}
-    >
-      <SectionBox>
-        <h3 style={sectionBar}>{title}</h3>
-
-        <div className="rs-bsec" style={{ padding: "1rem", background: LIGHTER_BG }}>
-          <div
-            className="rs-optgrid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: isNarrow ? "1fr 1fr" : "repeat(3, 1fr)",
-              gap: "0.6rem",
-              marginBottom: "0.9rem",
-            }}
-          >
-            {options.map((opt) => {
-              const selected = opt === active;
-              return (
-                <button
-                  key={opt}
-                  onClick={() => setActive(opt)}
-                  style={{
-                    padding: "0.7rem",
-                    backgroundColor: selected ? MAROON : "#f0f0f0",
-                    color: selected ? "#fff" : "#111",
-                    border: "none",
-                    borderRadius: "8px",
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    fontFamily: "var(--font-heading, Oswald, sans-serif)", textTransform: "uppercase",
-                    fontWeight: 800,
-                  }}
-                  title={opt}
-                >
-                  {opt}
+    <div className="dd">
+      <div className="dd-box">
+        <h3 className="dd-bar">{title}</h3>
+        <p className="dd-hint">Pick as many as you like.</p>
+        <div className={`dd-grid${cat.photos ? " dd-grid--photos" : ""}`}>
+          {options.map((o) => {
+            const n = counts[o.label] || 0;
+            return (
+              <div key={o.label} className={`dd-tile${n ? " is-on" : ""}`}>
+                <button type="button" className="dd-pic" onClick={() => change(o.label, +1)} aria-label={`Add one ${o.label}`}>
+                  <img
+                    src={o.img}
+                    alt=""
+                    loading="lazy"
+                    style={cat.photos ? undefined : { height: `${Math.round(((o.mm || tallest) / tallest) * 100)}%` }}
+                  />
+                  {n > 0 && <span className="dd-badge">{n}</span>}
                 </button>
-              );
-            })}
-          </div>
-
-          <div style={{ fontWeight: 800, marginBottom: 8 }}>
-            Price: {currentPickPrice}
-          </div>
-
-          <div style={dividerInset} />
-
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "1rem",
-              flexWrap: "wrap",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span
-                style={{
-                  fontWeight: 900,
-                  fontFamily: "var(--font-heading, Oswald, sans-serif)", textTransform: "uppercase",
-                }}
-              >
-                Quantity
-              </span>
-              <button
-                type="button"
-                onClick={() => setQty((q) => Math.max(1, q - 1))}
-                style={qty > 1 ? circleButtonLg : circleButtonLgDisabled}
-                disabled={qty <= 1}
-                aria-label="Decrease quantity"
-              >
-                −
-              </button>
-              <span
-                style={{
-                  padding: "0 0.6rem",
-                  minWidth: 30,
-                  textAlign: "center",
-                  fontWeight: 900,
-                }}
-              >
-                {qty}
-              </span>
-              <button
-                type="button"
-                onClick={() => setQty((q) => q + 1)}
-                style={circleButtonLg}
-                aria-label="Increase quantity"
-              >
-                +
-              </button>
-            </div>
-
-            <button
-              type="button"
-              onClick={addCurrent}
-              style={{
-                background: MAROON,
-                color: "#fff",
-                border: "none",
-                padding: "0.8rem 1.2rem",
-                borderRadius: "10px",
-                fontWeight: 900,
-                cursor: "pointer",
-                textTransform: "uppercase",
-                fontFamily: "var(--font-heading, Oswald, sans-serif)",
-              }}
-              title="Add this item"
-            >
-              Add Item ({currentPickPrice})
-            </button>
-          </div>
-        </div>
-      </SectionBox>
-
-      <SectionBox>
-        <h3 style={sectionBar}>Item</h3>
-
-        <div className="rs-bsec rs-itembox" style={{ padding: "1rem", background: LIGHTER_BG }}>
-          {items.length === 0 ? (
-            <p style={{ margin: 0, color: "var(--text-brown)" }}>
-              No items added yet.
-            </p>
-          ) : (
-            <div>
-              {items.map((it) => {
-                const linePrice = formatMoney(
-                  priceLineItem({
-                    type: "drinks-dips",
-                    categoryId,
-                    items: [{ label: it.label, qty: it.qty }],
-                    qty: 1,
-                  })
-                );
-                return (
-                  <div
-                    key={it.label}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: "0.7rem",
-                      marginBottom: "0.65rem",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
-                      <ItemCheck />
-                      <span style={{ fontWeight: 900 }}>({it.qty})</span>
-                      <span>{it.label}</span>
-                    </div>
-
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ fontWeight: 800 }}>{linePrice}</span>
-                      <button
-                        type="button"
-                        onClick={() => changeQty(it.label, -1)}
-                        style={it.qty > 1 ? circleButtonLg : circleButtonLgDisabled}
-                        disabled={it.qty <= 1}
-                        aria-label={`Decrease ${it.label}`}
-                      >
-                        −
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => changeQty(it.label, +1)}
-                        style={circleButtonLg}
-                        aria-label={`Increase ${it.label}`}
-                      >
-                        +
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => removeItem(it.label)}
-                        style={{
-                          background: "#fff",
-                          color: TEXT_BROWN,
-                          border: `1px solid ${LIGHT_BORDER}`,
-                          padding: "0.55rem 0.8rem",
-                          borderRadius: "8px",
-                          cursor: "pointer",
-                          fontWeight: 700,
-                        }}
-                      >
-                        Remove
-                      </button>
-                    </div>
+                <div className="dd-name">{o.label}</div>
+                <div className="dd-price">{formatMoney(priceDrinkItem(categoryId, o.label))}</div>
+                {n === 0 ? (
+                  <button type="button" className="dd-add" onClick={() => change(o.label, +1)}>
+                    Add
+                  </button>
+                ) : (
+                  <div className="dd-step">
+                    <button type="button" onClick={() => change(o.label, -1)} aria-label={`One less ${o.label}`}>
+                      −
+                    </button>
+                    <span aria-live="polite">{n}</span>
+                    <button type="button" onClick={() => change(o.label, +1)} aria-label={`One more ${o.label}`}>
+                      +
+                    </button>
                   </div>
-                );
-              })}
-              <div className="rs-subtotal" style={{ fontWeight: 900, marginTop: "0.9rem" }}>
-                Item Subtotal: <span>{panelSubtotal}</span>
+                )}
               </div>
-            </div>
-          )}
+            );
+          })}
         </div>
-      </SectionBox>
-
-      {/* Footer */}
-      <div className="rs-pill-row rs-pill-row--compact">
-        <button
-          type="button"
-          onClick={onClose}
-          className="rs-pill-btn rs-pill-btn--outline"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          onClick={finishAndAdd}
-          className="rs-pill-btn"
-          aria-label={`Add ${categoryLabel} to order (Subtotal ${panelSubtotal})`}
-        >
-          Add To Order
-        </button>
       </div>
+
+      <div className="dd-foot">
+        <div className="dd-sum">
+          {count === 0
+            ? "Nothing picked yet"
+            : `${count} ${count === 1 ? "item" : "items"}: ${items.map((i) => `${i.label} × ${i.qty}`).join(", ")}`}
+        </div>
+        <div className="dd-btns">
+          <button type="button" onClick={onClose} className="rs-pill-btn rs-pill-btn--outline dd-cancel">
+            Cancel
+          </button>
+          <button type="button" onClick={finishAndAdd} className="rs-pill-btn dd-go" disabled={count === 0}>
+            {count === 0 ? "Pick a Drink" : `Add to Order (${formatMoney(totalCents)})`}
+          </button>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .dd {
+          width: 100%;
+          max-width: 840px;
+          margin: 0 auto;
+          padding-top: 16px;
+          color: var(--text-brown);
+        }
+        .dd-box {
+          border: 1px solid var(--menu-box-border);
+          border-radius: 0.1875rem;
+          overflow: hidden;
+          background: var(--menu-box-bg);
+        }
+        .dd-bar {
+          margin: 0;
+          padding: 0.6rem 0.85rem;
+          background: #000;
+          color: #fff;
+          font-family: var(--font-display);
+          font-size: var(--fs-lg);
+          line-height: 1.1;
+          text-transform: uppercase;
+        }
+        .dd-hint {
+          margin: 8px 10px 0;
+          font-size: var(--fs-sm);
+          font-weight: var(--w-medium);
+        }
+        .dd-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+          gap: 6px;
+          padding: 8px 8px 10px;
+        }
+        .dd-tile {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          padding: 6px 4px 6px;
+          background: #fff;
+          border: 2px solid transparent;
+          border-radius: 6px;
+          box-shadow: 0 0 0 1px var(--menu-box-border);
+        }
+        .dd-tile.is-on {
+          border-color: #8b1a1a;
+          box-shadow: none;
+        }
+        .dd-pic {
+          position: relative;
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          width: 100%;
+          height: 84px;
+          padding: 0;
+          border: 0;
+          background: none;
+          cursor: pointer;
+        }
+        .dd-pic img {
+          max-width: 100%;
+          height: 100%;
+          object-fit: contain;
+          object-position: bottom;
+        }
+        .dd-grid--photos .dd-pic img {
+          width: 100%;
+          object-fit: cover;
+          border-radius: 4px;
+        }
+        .dd-badge {
+          position: absolute;
+          top: 0;
+          right: 0;
+          min-width: 24px;
+          height: 24px;
+          padding: 0 6px;
+          border-radius: 12px;
+          background: #8b1a1a;
+          color: #fff;
+          font-family: var(--font-display);
+          font-size: var(--fs-sm);
+          line-height: 24px;
+        }
+        .dd-name {
+          margin-top: 6px;
+          font-family: var(--font-display);
+          font-size: var(--fs-xs);
+          line-height: 1.1;
+          text-transform: uppercase;
+          color: #000;
+        }
+        .dd-price {
+          margin: 2px 0 6px;
+          font-size: var(--fs-xs);
+          font-weight: var(--w-semibold);
+        }
+        .dd-add,
+        .dd-step {
+          margin-top: auto;
+          width: 100%;
+          height: 32px;
+        }
+        .dd-add {
+          border: 2px solid #8b1a1a;
+          border-radius: 999px;
+          background: #fff;
+          color: #8b1a1a;
+          font-family: var(--font-display);
+          font-size: var(--fs-sm);
+          text-transform: uppercase;
+          cursor: pointer;
+        }
+        .dd-step {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-radius: 999px;
+          background: #8b1a1a;
+          color: #fff;
+        }
+        .dd-step button {
+          width: 32px;
+          height: 32px;
+          border: 0;
+          background: none;
+          color: #fff;
+          font-size: 1.3rem;
+          line-height: 1;
+          cursor: pointer;
+        }
+        .dd-step span {
+          font-family: var(--font-display);
+          font-size: var(--fs-base);
+        }
+        .dd-foot {
+          position: sticky;
+          /* the popup's scroll area has padding at the bottom (63px on
+             phones, 24px wider): reach past it to the screen's edge */
+          bottom: calc(-1 * var(--modal-pad-y, 24px));
+          z-index: 2;
+          margin: 12px -12px 0;
+          padding: 10px 12px calc(14px + env(safe-area-inset-bottom));
+          background: #fff;
+          box-shadow: 0 -10px 12px -10px rgba(0, 0, 0, 0.25);
+        }
+        .dd-sum {
+          margin: 0 2px 10px;
+          font-size: var(--fs-sm);
+          font-weight: var(--w-medium);
+          line-height: 1.3;
+        }
+        .dd-btns {
+          display: flex;
+          gap: 10px;
+        }
+        .dd-btns :global(.rs-pill-btn) {
+          margin: 0;
+          font-size: var(--fs-md);
+          white-space: nowrap;
+        }
+        .dd-btns :global(.dd-cancel) {
+          flex: 0 0 auto;
+          width: auto;
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+        .dd-btns :global(.dd-go) {
+          flex: 1 1 auto;
+          min-width: 0;
+        }
+        .dd-foot :global(.rs-pill-btn[disabled]) {
+          opacity: 0.45;
+          cursor: not-allowed;
+        }
+      `}</style>
     </div>
   );
 }

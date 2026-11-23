@@ -8,7 +8,7 @@ import React, { useMemo, useState } from "react";
 
 export const CAN_OPTIONS = [
   "Coke", "Coke Zero", "Diet Coke", "Dr Pepper", "Mug Root Beer",
-  "Brisk Iced Tea", "Fuze Iced Tea", "Pepsi", "Diet Pepsi", "Gingerale",
+  "Brisk Iced Tea", "Pepsi", "Diet Pepsi", "Gingerale",
   "Sprite", "Orange Crush", "Grape Crush", "Crush Cream Soda",
 ];
 

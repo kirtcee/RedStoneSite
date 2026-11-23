@@ -76,3 +76,30 @@ runs = [r for r in runs if r[1] - r[0] > 10]
 assert len(runs) == len(names), runs
 for (x0, x1), n in zip(runs, names):
     save(to_height(crop(g.crop((x0, 0, x1, g.height))), round(mm * PX_PER_MM)), n)
+
+# ---- Menu tiles (Drinks page): a few drinks standing in a row on white ----
+def tile(names, name, overlap=0.18, fill=0.86):
+    TW, TH = 900, 600
+    ims = [Image.open(f"{OUT}/{n}.webp").convert("RGBA") for n in names]
+    k = TH * fill / max(i.height for i in ims)
+    ims = [i.resize((round(i.width * k), round(i.height * k)), Image.LANCZOS) for i in ims]
+    step = [round(i.width * (1 - overlap)) for i in ims]
+    row_w = sum(step[:-1]) + ims[-1].width
+    k2 = min(1, (TW * 0.92) / row_w)          # shrink to fit the width
+    if k2 < 1:
+        ims = [i.resize((round(i.width * k2), round(i.height * k2)), Image.LANCZOS) for i in ims]
+        step = [round(i.width * (1 - overlap)) for i in ims]; row_w = sum(step[:-1]) + ims[-1].width
+    c = Image.new("RGBA", (TW, TH), (255, 255, 255, 255))
+    x = (TW - row_w) // 2; base = TH - round((TH - max(i.height for i in ims)) / 2)
+    for i, st in zip(ims, step):
+        y = base - i.height
+        sh = Image.new("RGBA", c.size, (0, 0, 0, 0))
+        blk = Image.new("RGBA", i.size, (0, 0, 0, 255)); blk.putalpha(i.getchannel("A").point(lambda v: int(v * 0.35)))
+        sh.alpha_composite(blk, (x + 8, y + 10)); c.alpha_composite(sh.filter(ImageFilter.GaussianBlur(9)))
+        c.alpha_composite(i, (x, y)); x += st
+    c.convert("RGB").save(f"{OUT}/{name}.jpg", "JPEG", quality=85, optimize=True)
+    print("tile", name)
+
+tile(["2l-coke", "2l-canada-dry", "2l-pepsi"], "tile-2l", overlap=0.12)
+tile(["can-coke", "can-sprite", "can-crush-orange", "can-pepsi"], "tile-cans", overlap=0.06)
+tile(["gatorade-red", "red-bull", "apple-juice", "water", "gatorade-blue"], "tile-other", overlap=0.15)

@@ -4,6 +4,7 @@
 // make), used by the delivery-minimum popup to suggest things that get an
 // order over the minimum. Each `item` is exactly what the matching builder
 // would add, so pricing and the kitchen treat it like any other line.
+import { drinkImage } from "./drinkCatalog";
 import { priceLineItem } from "../components/Pricing";
 
 const side = (sideName, size, pricingSize, img) => ({
@@ -43,9 +44,9 @@ export const QUICK_ADD_ITEMS = [
   side("Poutine", "Large", "Large", "/images/sides/poutine.jpg"),
   side("Onion Rings", "Regular", "Medium", "/images/sides/onion-rings.jpg"),
   side("Shawarma Poutine", "Regular", "Medium", "/images/sides/shawarma-poutine.jpg"),
-  drink("Coke 2L", "twoLiters", "2L Bottles", "Coke", "/images/drinks/2l.jpg"),
-  drink("Pepsi 2L", "twoLiters", "2L Bottles", "Pepsi", "/images/drinks/2l.jpg"),
-  drink("Coke Can", "cans", "Cans", "Coke", "/images/drinks/cans.jpg"),
+  drink("Coke 2L", "twoLiters", "2L Bottles", "Coke", drinkImage("twoLiters", "Coke")),
+  drink("Pepsi 2L", "twoLiters", "2L Bottles", "Pepsi", drinkImage("twoLiters", "Pepsi")),
+  drink("Coke Can", "cans", "Cans", "Coke", drinkImage("cans", "Coke")),
   drink("Garlic Dip", "dips", "Dips", "Garlic", "/images/dips/garlic.jpg"),
 ].map((q) => ({ ...q, priceCents: priceLineItem(q.item) }));
 

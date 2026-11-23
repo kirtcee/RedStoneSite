@@ -13,6 +13,7 @@ import ComboBuilder, { comboSections, comboThumbFor } from "../components/ComboB
 import SpecialMenuBuilder from "../components/SpecialMenuBuilder";
 import SidesDessertsAll from "../components/SidesDessertsAll";
 import { DrinksCategoryPanel } from "../components/DrinksDipsBuilder";
+import { DRINK_CATEGORIES } from "../utils/drinkCatalog";
 import { useCart } from "../components/CartSystem";
 import { priceLineItem } from "../components/Pricing";
 
@@ -511,10 +512,11 @@ function SideBuilderPopup({ selectedSide, setSelectedSide }) {
 function DrinksView() {
   const [openCat, setOpenCat] = useState(null);
   const launchers = [
-    { id: "twoLiters", label: "2L Bottles",  img: "/images/drinks/2l.jpg",    options: ["Coke","Gingerale","Diet Coke","Pepsi"] },
-    { id: "cans",      label: "Cans",        img: "/images/drinks/cans.jpg",  options: ["coke","coke zero","diet coke","dr pepper","mug root beer","brisk iced tea","fuze iced tea","pepsi","diet pepsi","gingerale","sprite","orange crush","grape crush","crush cream soda"] },
-    { id: "other",     label: "Other Drinks",img: "/images/drinks/other.jpg", options: ["blue gatorade","red gatorade","orange gatorade","yellow gatorade","redbull","apple juice","water"] },
-    { id: "dips",      label: "Dips",        img: "/images/dips/dips-tile.jpg",  options: ["Blue Cheese","Garlic","Ranch"] },
+    ...["twoLiters", "cans", "other", "dips"].map((id) => ({
+      id,
+      label: DRINK_CATEGORIES[id].label,
+      img: DRINK_CATEGORIES[id].tile,
+    })),
   ];
 
   return (
@@ -554,7 +556,7 @@ function DrinksView() {
         .feastCard__imgWrap{
           width:100%; height:133px; border-radius:4px; overflow:hidden;
         }
-        .feastCard__img{ width:100%; height:100%; object-fit:fill; }
+        .feastCard__img{ width:100%; height:100%; object-fit:cover; }
 
         .feastCard__name{
           margin:8px 0 10px; padding:0; background:none; border:0; color:#000000;
@@ -590,7 +592,6 @@ function DrinksView() {
             title={launchers.find((x) => x.id === openCat)?.label || "Options"}
             categoryId={openCat}
             categoryLabel={launchers.find((x) => x.id === openCat)?.label || ""}
-            options={launchers.find((x) => x.id === openCat)?.options || []}
             initialItems={[]}
             onClose={() => setOpenCat(null)}
             onAdd={() => setOpenCat(null)}

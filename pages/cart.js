@@ -1,4 +1,5 @@
 // pages/cart.js
+import { DRINK_CATEGORIES, drinkImage } from "../utils/drinkCatalog";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useCart, DealCodeEntry } from "../components/CartSystem";
@@ -53,13 +54,19 @@ const SIDE_POOL = [
   { key: "Cheesy Garlic Bread", img: "/images/sides/cheesy-garlic-bread.jpg" },
 ];
 const DRINK_POOL = [
-  { key: "Coke", label: "Coke 2L", categoryId: "twoLiters", categoryLabel: "2L Bottles", img: "/images/drinks/2l.jpg" },
-  { key: "Gingerale", label: "Gingerale 2L", categoryId: "twoLiters", categoryLabel: "2L Bottles", img: "/images/drinks/2l.jpg" },
-  { key: "Pepsi", label: "Pepsi 2L", categoryId: "twoLiters", categoryLabel: "2L Bottles", img: "/images/drinks/2l.jpg" },
-  { key: "coke", label: "Coke Can", categoryId: "cans", categoryLabel: "Cans", img: "/images/drinks/cans.jpg" },
-  { key: "sprite", label: "Sprite Can", categoryId: "cans", categoryLabel: "Cans", img: "/images/drinks/cans.jpg" },
-  { key: "water", label: "Water", categoryId: "other", categoryLabel: "Other Drinks", img: "/images/drinks/other.jpg" },
-];
+  ["twoLiters", "Coke", "Coke 2L"],
+  ["twoLiters", "Gingerale", "Gingerale 2L"],
+  ["twoLiters", "Pepsi", "Pepsi 2L"],
+  ["cans", "Coke", "Coke Can"],
+  ["cans", "Sprite", "Sprite Can"],
+  ["other", "Water", "Water"],
+].map(([categoryId, key, label]) => ({
+  key,
+  label,
+  categoryId,
+  categoryLabel: DRINK_CATEGORIES[categoryId].label,
+  img: drinkImage(categoryId, key),
+}));
 const DIP_POOL = [
   { key: "Blue Cheese", label: "Blue Cheese", categoryId: "dips", categoryLabel: "Dips", img: "/images/dips/blue-cheese.jpg" },
   { key: "Garlic", label: "Garlic", categoryId: "dips", categoryLabel: "Dips", img: "/images/dips/garlic.jpg" },
@@ -131,7 +138,7 @@ function itemImages(item) {
     case "drinks-dips":
       return item.categoryId === "dips"
         ? [`/images/dips/${slugify(item.items?.[0]?.label)}.jpg`, `/images/dips/${slugify(item.items?.[0]?.label)}.png`]
-        : ["/images/menu_drinks.png"];
+        : [drinkImage(item.categoryId, item.items?.[0]?.label), "/images/menu_drinks.png"];
     case "special":
       return [`/images/special-menu/${slugify(name)}.jpg`, "/images/menu_special.png"];
     case "combo":
