@@ -4,6 +4,7 @@ import ConsoleDealCard from "../components/promos/ConsoleDealCard";
 import PomoDealCard from "../components/promos/PomoDealCard";
 import SpaceDealCard from "../components/promos/SpaceDealCard";
 import TakeCareCard from "../components/promos/TakeCareCard";
+import DreamDealCard from "../components/promos/DreamDealCard";
 
 export default function Home() {
   return (
@@ -52,9 +53,9 @@ export default function Home() {
           </div>
 
           {/* Gap then 928x140 image/button */}
-          <Link href="/menu" className="tile tile-928x140">
-            <img src="/images/home/deal-928x140-b.jpg" alt="Online coupons" />
-          </Link>
+          <div className="tile tile-928x140 tile--promo">
+            <DreamDealCard />
+          </div>
 
           {/* Gap then 928x250 image/button */}
           <Link href="/menu" className="tile tile-928x250">

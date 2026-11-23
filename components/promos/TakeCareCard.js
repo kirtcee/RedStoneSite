@@ -175,7 +175,8 @@ export default function TakeCareCard() {
         }
         .tc-logo {
           display: none;
-          width: 42cqw;
+          margin-left: 1.4cqw; /* lines up with "COMBO" */
+          width: 40cqw;
           height: auto;
         }
         .tc-logo.is-on {
@@ -266,7 +267,7 @@ export default function TakeCareCard() {
             text-align: center;
           }
           .tc-script { font-size: 5.6cqw; }
-          .tc-logo { width: 19cqw; }
+          .tc-logo { width: 18cqw; margin: 0 auto; }
           .tc-combo { font-size: 1.35cqw; margin: 2cqh 0 0 0.6cqw; }
           .tc-info {
             left: auto;
