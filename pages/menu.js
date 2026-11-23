@@ -284,7 +284,7 @@ function EntreesView({
           .feastCard__imgWrap{
             width:100%; height:133px; border-radius:4px; overflow:hidden;
           }
-          .feastCard__img{ display:block; width:100%; height:100%; object-fit:fill; }
+          .feastCard__img{ display:block; width:100%; height:100%; object-fit:cover; } /* real photos: crop, never stretch */
           .feastCard__name{
             margin:8px 0 10px; padding:0; background:none; border:0; color:var(--brand-blue);
             font-family:var(--font-heading, Oswald, sans-serif);
