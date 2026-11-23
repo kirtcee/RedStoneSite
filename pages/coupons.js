@@ -1,5 +1,6 @@
 // pages/coupons.js
-import React from "react";
+import React, { useEffect } from "react";
+import { useRouter } from "next/router";
 import { useCart, DealCodeEntry } from "../components/CartSystem";
 import { formatMoney } from "../components/Pricing";
 import { dealSections, dealThumbFor, dealAllowsService } from "../utils/dealCatalog";
@@ -249,6 +250,18 @@ function DealCard({ deal, onAdd }) {
 
 export default function CouponsPage() {
   const { isServiceConfirmed, service, openDeal } = useCart();
+  const router = useRouter();
+
+  // /coupons?deal=<id> (e.g. a home page promo card's "Order Now"): once
+  // Carryout or Delivery is chosen, open that deal's builder straight away
+  // (if it's valid for that service), then tidy the address.
+  useEffect(() => {
+    const id = String(router.query.deal || "");
+    if (!id || !isServiceConfirmed) return;
+    const deal = dealSections.flatMap((sec) => sec.deals).find((d) => d.id === id);
+    if (deal && !deal.comingSoon && dealAllowsService(deal, service)) openDeal(id);
+    router.replace("/coupons", undefined, { shallow: true });
+  }, [router.query.deal, isServiceConfirmed, service, openDeal, router]);
 
   const allDeals = dealSections.flatMap((sec) => sec.deals);
   const featured = allDeals.find((d) => !d.comingSoon && dealAllowsService(d, service));

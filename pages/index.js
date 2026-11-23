@@ -1,5 +1,6 @@
 // pages/index.js
 import Link from "next/link";
+import ConsoleDealCard from "../components/promos/ConsoleDealCard";
 
 export default function Home() {
   return (
@@ -28,9 +29,9 @@ export default function Home() {
         <section className="deals-wrap">
           {/* Row 1: 577x519 + (341x254 stacked) */}
           <div className="deals-grid-1">
-            <Link href="/menu" className="tile tile-577x519">
-              <img src="/images/home/deal-577x519.jpg" alt="Deal: large feature" />
-            </Link>
+            <div className="tile tile-577x519 tile--promo">
+              <ConsoleDealCard />
+            </div>
 
             <div className="deals-right">
               <Link href="/menu" className="tile tile-341x254">
@@ -191,6 +192,7 @@ export default function Home() {
           box-sizing: border-box; /* include border in set width/height */
         }
         .tile img { display: block; width: 100%; height: 100%; object-fit: cover; }
+        .tile--promo { border: 0; background: #111; }
 
         .tile-577x519 { aspect-ratio: 577 / 519; }
         .tile-341x254 { aspect-ratio: 341 / 254; }

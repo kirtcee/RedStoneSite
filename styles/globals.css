@@ -30,6 +30,26 @@
   font-display: swap;
 }
 
+/* Promo card font (home page Large 2-Topping card only,
+   components/promos/ConsoleDealCard.js). M PLUS 1p is free (SIL OFL,
+   public/fonts/promo/MPlus1p-LICENSE.txt). If a web licence for FOT-Rodin
+   is ever bought, add an @font-face named 'Promo Rodin' here and the card
+   switches to it automatically. */
+@font-face {
+  font-family: 'Promo M PLUS 1p';
+  src: url('/fonts/promo/MPlus1p-Medium.woff2?v=1') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Promo M PLUS 1p';
+  src: url('/fonts/promo/MPlus1p-ExtraBold.woff2?v=1') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* 2) Brand + Layout Vars */
 :root {
   /* brand colors */

@@ -26,11 +26,12 @@ export const dealSections = [
         code: "RSP-1299",
         name: "Large 2-Topping Pizza",
         subtitle: "Carryout Special",
-        description: "Carry Out Special: 1 Large 2-Topping Pizza",
+        description: "Carry Out Special: Large 2-Topping Pizzas (price is per pizza, 2 pizza minimum)",
         price: 1299,
+        perItem: "Price is per pizza, 2 pizza minimum.", // shown in the cart's coupon box
         serviceRestriction: "carryout",
         mode: "list",
-        minQty: 1,
+        minQty: 2,
         maxQty: null,
         eligibleItems: [
           {
@@ -52,7 +53,7 @@ export const dealSections = [
         description:
           "Get Any 2 or More: Medium 1-Topping Pizza, 6 Wings, Cheesy Garlic Bread, Large Fries, Large Poutine, Medium Shawarma Poutine, Medium Onion Rings. Price is per item.",
         price: 899,
-        perItem: true, // the cart's coupon box adds "Price is per item."
+        perItem: true, // the cart's coupon box adds "Price is per item." (or this text, if it's a string)
         serviceRestriction: null,
         mode: "list",
         minQty: 2,
