@@ -673,7 +673,7 @@ function MenuBody() {
       { id: "signature",   label: "Signature Pizzas", photo: "bourbon",  nav: { tab: "entrees", sub: "signature" } },
       { id: "specialty",   label: "Specialty Pizzas", photo: "canadian", nav: { tab: "entrees", sub: "specialty" } },
       { id: "wings",       label: "Wings",            img: "/images/wings.jpg",     nav: { tab: "entrees", sub: "wings" } },
-      { id: "sides",       label: "Sides",            img: "/images/menu_sides.png",     nav: { tab: "sides" } },
+      { id: "sides",       label: "Sides",            img: "/images/sides/sides-cover.jpg", nav: { tab: "sides" } },
       { id: "combos",      label: "Combos",           img: "/images/combos/combos-cover.jpg", nav: { tab: "entrees", sub: "combos" } },
       { id: "drinks-dips", label: "Drinks & Dips",    img: "/images/drinks/cover-drinks-dips.jpg", nav: { tab: "drinks" } },
       { id: "special",     label: "Special Menu",     img: "/images/menu_special.png",   nav: { tab: "entrees", sub: "special" } },
