@@ -8,6 +8,8 @@ import { DealItemEditor } from "./DealBuilder";
 import SpecialMenuBuilder from "./SpecialMenuBuilder";
 import DebugPizzaOverlay from "./modals/DebugPizzaOverlay";
 import { useCart } from "./CartSystem";
+import { DrinksCategoryPanel } from "./DrinksDipsBuilder";
+import { DRINK_CATEGORIES } from "../utils/drinkCatalog";
 
 // Client-only, matching how pages/menu.js loads it.
 const WingsBuilder = dynamic(() => import("./WingsBuilder"), {
@@ -101,6 +103,24 @@ export default function CartEditOverlay({ editingItem, onClose }) {
           onClose={onClose}
         />
       );
+
+    case "drinks-dips": {
+      // Reopens the drinks/dips picker with this line's drinks already
+      // picked; saving replaces the line and keeps its quantity.
+      const label = editingItem.categoryLabel || DRINK_CATEGORIES[editingItem.categoryId]?.label || "Drinks";
+      return (
+        <DebugPizzaOverlay open onClose={onClose} mode="portal" blockRogue title={`Edit ${label}`}>
+          <DrinksCategoryPanel
+            title={label}
+            categoryId={editingItem.categoryId}
+            categoryLabel={label}
+            initialItems={editingItem.items || []}
+            onClose={onClose}
+            onSave={(payload) => saveAndClose({ ...payload, qty: editingItem.qty || 1 })}
+          />
+        </DebugPizzaOverlay>
+      );
+    }
 
     default:
       return null;

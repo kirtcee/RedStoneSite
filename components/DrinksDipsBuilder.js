@@ -20,6 +20,7 @@ export function DrinksCategoryPanel({
   initialItems = [],
   onClose = () => {},
   onAdd = () => {},
+  onSave = null, // editing a cart line: called with the new line instead of adding one
 }) {
   const { addItem } = useCart();
   const cat = DRINK_CATEGORIES[categoryId] || { options: [] };
@@ -61,6 +62,10 @@ export function DrinksCategoryPanel({
       summary: `${categoryLabel}: ` + items.map((i) => `${i.label} × ${i.qty}`).join(", "),
       qty: 1,
     };
+    if (onSave) {
+      onSave(payload);
+      return;
+    }
     addItem(payload);
     onAdd(payload);
     onClose();
@@ -119,7 +124,9 @@ export function DrinksCategoryPanel({
             Cancel
           </button>
           <button type="button" onClick={finishAndAdd} className="rs-pill-btn dd-go" disabled={count === 0}>
-            {count === 0 ? "Pick a Drink" : `Add to Order (${formatMoney(totalCents)})`}
+            {count === 0
+              ? "Pick a Drink"
+              : `${onSave ? "Save Changes" : "Add to Order"} (${formatMoney(totalCents)})`}
           </button>
         </div>
       </div>
