@@ -130,14 +130,13 @@ export default function TakeCareCard() {
         }
         /* 4 small cans in a diagonal, each one up and to the right of the
            one in front of it (like the Take Care combo picture) */
-        /* the 4 cans sit below the pizzas, in front of them */
+        /* the 4 cans stand behind the pizzas, partly hidden by them */
         .tc-cans {
           position: absolute;
-          left: 26%;
-          bottom: 0;
+          left: 16%;
+          top: -2%;
           width: 46%;
           height: 34%;
-          z-index: 1;
         }
         .tc-can {
           height: 70%;
@@ -145,11 +144,11 @@ export default function TakeCareCard() {
           left: calc(var(--i) * 17%);
           top: calc((3 - var(--i)) * 10%);
         }
-        .tc-img--back { width: 70%; right: 0; top: 2%; }
-        .tc-img--front { width: 74%; left: 0; top: 18%; }
+        .tc-img--back { width: 70%; right: 0; top: 14%; }
+        .tc-img--front { width: 74%; left: 0; top: 30%; }
         /* garlic bread tucked over the front of both pizzas */
         /* garlic bread over the gap between the two pizzas */
-        .tc-img--bread { width: 40%; right: 0; top: 44%; z-index: 2; }
+        .tc-img--bread { width: 40%; right: 0; top: 56%; z-index: 2; }
 
         /* ---- title: brush script + spaced-out caps ---- */
         .tc-title {
@@ -258,10 +257,10 @@ export default function TakeCareCard() {
               radial-gradient(120% 140% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.85) 100%);
           }
           .tc-food { left: 2.5cqw; right: auto; top: 10cqh; bottom: 10cqh; width: 30cqw; }
-          .tc-cans { left: 0; top: auto; bottom: 2%; width: 24%; height: 50%; }
+          .tc-cans { left: 4%; top: -6%; bottom: auto; width: 24%; height: 56%; }
           .tc-can { height: 68%; left: calc(var(--i) * 20%); top: calc((3 - var(--i)) * 11%); }
-          .tc-img--back { width: 44%; right: 18%; top: -4%; }
-          .tc-img--front { width: 46%; left: 14%; top: 14%; }
+          .tc-img--back { width: 44%; right: 18%; top: 4%; }
+          .tc-img--front { width: 46%; left: 14%; top: 20%; }
           .tc-img--bread { width: 28%; right: 4%; top: 34%; bottom: auto; }
           .tc-title {
             left: 35cqw;

@@ -46,24 +46,20 @@ export default function DreamDealCard() {
         </defs>
         <rect width="400" height="120" filter="url(#dr-cloud-f)" mask="url(#dr-cloud-m)" />
       </svg>
-      {/* a faint, washed-out rainbow, the kind you half see */}
-      <div className="dr-rainbow" aria-hidden="true" />
-
-      {/* the hill, with a fine grass texture */}
-      <div className="dr-hill" aria-hidden="true">
-        <svg className="dr-grass" viewBox="0 0 200 100" preserveAspectRatio="none">
-          <filter id="dr-grass-f">
-            <feTurbulence type="fractalNoise" baseFrequency="0.9 2.2" numOctaves="2" seed="3" />
-            <feColorMatrix
-              values="0 0 0 0 0.10
-                      0 0 0 0 0.35
-                      0 0 0 0 0.05
-                      0 0 0 0.9 0"
-            />
+      {/* a soft, photographic rainbow: it comes in from the top-right
+          corner and curves down through the bottom of the card */}
+      <svg className="dr-rainbow" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <filter id="dr-rb-blur" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="0.7" />
           </filter>
-          <rect width="200" height="100" filter="url(#dr-grass-f)" />
-        </svg>
-      </div>
+        </defs>
+        <g filter="url(#dr-rb-blur)" fill="none" strokeWidth="3.4">
+          {["#ff5a5a", "#ff9a3c", "#ffe45c", "#7fe07a", "#5fb8ff", "#6a7dff", "#b07bff"].map((c, i) => (
+            <circle key={c} cx="112" cy="128" r={112 - i * 3.2} stroke={c} />
+          ))}
+        </g>
+      </svg>
 
       <div className="dr-food" aria-hidden="true">
         <img className="dr-img dr-img--bottle" src="/images/drinks/2l-coke.webp" alt="" />
@@ -124,54 +120,17 @@ export default function DreamDealCard() {
           filter: blur(0.35cqw) saturate(1.3);
           opacity: 1;
         }
-        .dr-rainbow {
+        :global(.dr-rainbow) {
           position: absolute;
-          right: -6cqw;
-          top: 20cqh;
-          width: 70cqw;
-          aspect-ratio: 1;
-          border-radius: 50%;
-          background: radial-gradient(
-            circle closest-side,
-            transparent 0 80%,
-            rgba(160, 110, 255, 0.5) 81%,
-            rgba(90, 160, 255, 0.5) 84%,
-            rgba(110, 230, 150, 0.45) 87%,
-            rgba(255, 240, 120, 0.45) 90%,
-            rgba(255, 170, 90, 0.45) 93%,
-            rgba(255, 110, 120, 0.4) 96%,
-            transparent 99%
-          );
-          filter: blur(0.5cqw);
-          opacity: 0.55;
-          mix-blend-mode: screen;
+          right: 0;
+          top: 0;
+          width: 64cqw;
+          height: 100cqh;
+          opacity: 0.72;
+          overflow: visible;
         }
 
-        /* the hill: one big smooth dome, lit from the top-left */
-        .dr-hill {
-          position: absolute;
-          left: 30cqw;
-          right: -18cqw;
-          bottom: -62cqh;
-          height: 118cqh;
-          border-radius: 50%;
-          overflow: hidden;
-          background:
-            radial-gradient(55% 35% at 40% 8%, rgba(240, 255, 170, 0.6), transparent 70%),
-            radial-gradient(120% 90% at 50% 0%, #86e044 0%, #5cc12c 30%, #3a9a1c 60%, #276f14 100%);
-          box-shadow: 0 -0.4cqw 1.4cqw rgba(230, 255, 200, 0.45);
-          filter: blur(0.12cqw);
-        }
-        :global(.dr-grass) {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          mix-blend-mode: multiply;
-          opacity: 0.55;
-        }
-
-        /* the meal on top of the hill */
+        /* the meal, floating along the rainbow */
         .dr-food {
           position: absolute;
           left: 40cqw;
@@ -182,7 +141,7 @@ export default function DreamDealCard() {
         .dr-img {
           position: absolute;
           height: auto;
-          filter: saturate(1.15) contrast(0.95) brightness(1.04) drop-shadow(0.4cqw 0.8cqw 0.8cqw rgba(20, 50, 10, 0.45));
+          filter: saturate(1.15) contrast(0.95) brightness(1.04) drop-shadow(0.4cqw 1cqw 1cqw rgba(20, 30, 70, 0.4));
           user-select: none;
         }
         .dr-img--bottle { height: 78%; width: auto; right: 5%; top: 0; }
@@ -281,8 +240,7 @@ export default function DreamDealCard() {
         /* ===== Laptop strip (928x140): hill + food | title | buy ===== */
         @container (min-aspect-ratio: 3 / 1) {
           :global(.dr-clouds) { height: 62%; }
-          .dr-rainbow { left: 2cqw; right: auto; top: 10cqh; width: 34cqw; }
-          .dr-hill { left: -6cqw; right: auto; width: 44cqw; bottom: -150cqh; height: 230cqh; }
+          :global(.dr-rainbow) { left: auto; right: 0; width: 70cqw; opacity: 0.6; }
           .dr-food { left: 2cqw; right: auto; width: 32cqw; top: 6cqh; height: 90cqh; }
           .dr-img--bottle { height: 84%; right: auto; left: 0; top: 0; }
           .dr-img--back { width: 40%; left: 26%; top: 6%; }
