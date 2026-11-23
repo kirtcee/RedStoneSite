@@ -31,8 +31,31 @@ export const comboData = [
   {
     type: "Take Care Combo",
     combos: [
-      { id: "takecare", name: "2 Large Pizzas + Garlic Bread + 4 Pops", subtitle: "3 toppings each, 2 dips", items: ["pizza1", "pizza2", "bread", "pops"] },
+      { id: "takecare", name: "2 Large Pizzas + Garlic Bread + 4 Pops", subtitle: "3 toppings each, 2 dips", items: ["pizza1", "pizza2", "bread", "pops"], fixed: ["bread"] },
     ],
+  },
+];
+
+// Combos sold only through the Deals page (they open this same combo
+// builder, but aren't listed on the menu's Combos page).
+//   includedToppings: toppings per pizza before extra-topping charges (3 if not set)
+//   fixed: slots that are just included, with nothing to pick (Garlic Bread)
+export const dealCombos = [
+  {
+    id: "feed4",
+    name: "Feed 4",
+    subtitle: "2 Large 2-Topping Pizzas, 8 Wings, Garlic Bread, a 2L Drink, 2 dips",
+    items: ["pizza1", "pizza2", "wings", "bread", "drink"],
+    includedToppings: 2,
+    fixed: ["bread"],
+  },
+  {
+    id: "party",
+    name: "Party Combo",
+    subtitle: "3 Large 2-Topping Pizzas, 20 Wings, Garlic Bread, a 2L Drink, 3 dips",
+    items: ["pizza1", "pizza2", "pizza3", "wings", "bread", "drink"],
+    includedToppings: 2,
+    fixed: ["bread"],
   },
 ];
 
@@ -47,6 +70,8 @@ const comboImages = {
   smallCombo: "/images/combos/small-6-wings.jpg",
   lrgCombo2: "/images/combos/large-12-wings.jpg",
   takecare: "/images/combos/takecare.jpg",
+  feed4: "/images/deals/feed-4.jpg",
+  party: "/images/deals/party.jpg",
 };
 const fallbackImg = "/images/menu_combos.png";
 
@@ -57,22 +82,52 @@ export const comboDefaultSize = {
   "2med": "12", "2lrg": "14", "2xl": "16",
   medCombo: "12", lrgCombo: "14", xlCombo: "16",
   smallCombo: "10", lrgCombo2: "14", takecare: "14",
+  feed4: "14", party: "14",
 };
 
 export const sizeLabelMap = { "10": "Small", "12": "Medium", "14": "Large", "16": "X-Large" };
-export const comboWingsPieces = { medCombo: 16, lrgCombo: 20, xlCombo: 25, smallCombo: 6, lrgCombo2: 12 };
+export const comboWingsPieces = { medCombo: 16, lrgCombo: 20, xlCombo: 25, smallCombo: 6, lrgCombo2: 12, feed4: 8, party: 20 };
+
+// Feed 4's "more wings" upsell: picking one swaps the 8 included wings for
+// this many, for this much more (Pricing.js priceCombo adds the cents).
+export const COMBO_WING_UPGRADES = {
+  wings12: { count: 12, cents: 400 },
+  wings20: { count: 20, cents: 1200 },
+};
+
+// How many wings a combo comes with, after any wings upgrade.
+export function comboWingsCount(comboId, upgrade = null) {
+  return COMBO_WING_UPGRADES[upgrade]?.count || comboWingsPieces[comboId] || null;
+}
 
 export function getWingsPieceOptions(comboId) {
   const base = [6, 12, 20, 30];
   if (comboId === "medCombo") return [16, 12, 20, 30];
   if (comboId === "xlCombo") return [6, 25, 20, 30];
+  if (comboId === "feed4") return [8, 12, 20, 30];
   return base;
 }
 
 export function comboUpgradeOptions(comboId) {
   if (comboId === "smallCombo") return [{ id: "toMedium", label: "Upgrade to Medium (+$2)" }];
   if (comboId === "lrgCombo2") return [{ id: "toXL", label: "Upgrade to XL (+$3)" }];
+  if (comboId === "feed4") {
+    return [
+      { id: "wings12", label: "12 Wings instead of 8 (+$4)" },
+      { id: "wings20", label: "20 Wings instead of 8 (+$12)" },
+    ];
+  }
   return [];
+}
+
+// Title of a combo's upgrade section in the builder.
+export function comboUpgradeTitle(comboId) {
+  return comboId === "feed4" ? "Add More Wings" : "Upgrade";
+}
+
+// Toppings per pizza included in a combo's price.
+export function comboIncludedToppings(comboId) {
+  return findComboById(comboId)?.includedToppings ?? 3;
 }
 
 export function findComboById(id) {
@@ -80,7 +135,7 @@ export function findComboById(id) {
     const hit = sec.combos.find((c) => c.id === id);
     if (hit) return hit;
   }
-  return null;
+  return dealCombos.find((c) => c.id === id) || null;
 }
 
 // Display name for a combo id — falls back to the raw id if unknown so a
@@ -93,8 +148,10 @@ export function comboNameFor(id) {
 const COMBO_ITEM_LABELS = {
   pizza1: "Pizza 1",
   pizza2: "Pizza 2",
+  pizza3: "Pizza 3",
   pizza: "Pizza",
   wings: "Wings",
+  drink: "2L Drink",
   bread: "Garlic Bread",
   pops: "Pops",
   side: "Side",

@@ -2,6 +2,7 @@
 import { findDealById, dealAllowsService, dealSlotConfig, itemMatchesDealSlot } from "../utils/dealCatalog";
 import { findPizzaRecipe } from "../utils/pizzaRecipes";
 import { findDrink } from "../utils/drinkCatalog";
+import { COMBO_WING_UPGRADES, comboIncludedToppings } from "../utils/comboCatalog";
 
 // 🔢 currency formatter (no tax logic here on purpose)
 // pricing.js
@@ -126,6 +127,10 @@ export const PRICES = {
 
     // Take Care
     "takecare": 3599, // 2 Large (3 toppings each) + 2 Dips + Garlic Bread + 4 Pops
+
+    // Deals page combos (keep utils/dealCatalog.js's prices the same)
+    "feed4": 3999, // 2 Large (2 toppings each) + 8 Wings + Garlic Bread + 2L + 2 Dips
+    "party": 6499, // 3 Large (2 toppings each) + 20 Wings + Garlic Bread + 2L + 3 Dips
   },
 
   // How many total dip units are bundled free into each combo before $1/each kicks in.
@@ -134,6 +139,7 @@ export const PRICES = {
     medCombo: 2, lrgCombo: 2, xlCombo: 2,
     smallCombo: 1, lrgCombo2: 1,
     takecare: 2,
+    feed4: 2, party: 3,
   },
 
   // Upgrades mentioned in copy:
@@ -321,6 +327,9 @@ export function priceCombo(comboId, { upgrade = null } = {}) {
   if (comboId === "lrgCombo2" && upgrade === "toXL") {
     base += PRICES.upgrades.pizzaWingsLargeToXL;
   }
+  if (comboId === "feed4" && COMBO_WING_UPGRADES[upgrade]) {
+    base += COMBO_WING_UPGRADES[upgrade].cents;
+  }
   return base;
 }
 
@@ -335,11 +344,12 @@ export function priceComboToppingBonus(comboItem) {
     pricingSizeKey && PRICES.byo[pricingSizeKey] ? PRICES.byo[pricingSizeKey].extra : 0;
 
   const items = comboItem?.meta?.items || {};
+  const included = comboIncludedToppings(comboItem?.comboId); // 3, or 2 for Feed 4 / Party
   let bonus = 0;
   Object.values(items).forEach((sub) => {
     if (!sub || !Array.isArray(sub.toppings)) return; // only pizza sub-items have toppings
     const w = weightedToppingCount(sub);
-    if (w > 3) bonus += (w - 3) * extraRate;
+    if (w > included) bonus += (w - included) * extraRate;
   });
   return bonus;
 }
@@ -800,7 +810,8 @@ export function priceCart(items = [], appliedDeals = [], service = null) {
       needed: 0,
       savingsCents: 0,
     };
-    if (!deal || !deal.active) {
+    // a deal that just opens a combo (deal.comboId) is never a coupon
+    if (!deal || !deal.active || deal.comboId) {
       status.reason = "unknown";
       return status;
     }

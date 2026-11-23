@@ -4,6 +4,7 @@ import PizzaBuilder from "./PizzaBuilder";
 import WingsBuilder from "./WingsBuilder";
 import SideBuilder from "./SideBuilder";
 import PopsPicker from "./PopsPicker";
+import TwoLiterPicker from "./TwoLiterPicker";
 import { priceLineItem, formatMoney, describePizzaFull } from "./Pricing";
 import { useCart } from "./CartSystem";
 import DebugPizzaOverlay from "./modals/DebugPizzaOverlay";
@@ -16,9 +17,17 @@ import {
   comboWingsPieces,
   getWingsPieceOptions,
   comboUpgradeOptions,
+  comboUpgradeTitle,
+  comboWingsCount,
+  comboIncludedToppings,
+  COMBO_WING_UPGRADES,
   findComboById,
   comboItemLabel,
 } from "../utils/comboCatalog";
+
+// Slots a combo just includes (nothing to pick), e.g. Garlic Bread.
+const fixedSlots = (combo) => combo?.fixed || [];
+const FIXED_SUMMARY = { bread: "Garlic Bread" };
 
 // re-exported for existing consumers (e.g. pages/menu.js)
 export { comboSections, comboThumbFor };
@@ -45,6 +54,19 @@ export default function ComboBuilder({
   const pizzaSize =
     upgrade === "toMedium" ? "12" : upgrade === "toXL" ? "16" : comboSize;
 
+  // A wings upgrade (Feed 4) after the wings were already customized:
+  // change their piece count (and the count in their summary) to match.
+  const wingsCount = selectedCombo ? comboWingsCount(selectedCombo.id, upgrade) : null;
+  useEffect(() => {
+    if (!wingsCount) return;
+    setSavedItems((prev) => {
+      const w = prev.wings;
+      if (!w || !w.count || Number(w.count) === Number(wingsCount)) return prev;
+      const summary = String(w.summary || "").replace(/\b\d+-piece Wings/, `${wingsCount}-piece Wings`);
+      return { ...prev, wings: { ...w, count: wingsCount, summary } };
+    });
+  }, [wingsCount]);
+
   // Changing the upgrade after a pizza was already customized: resize it
   // (and refresh its summary) so the combo, cart and kitchen all agree.
   useEffect(() => {
@@ -68,11 +90,9 @@ export default function ComboBuilder({
     setComboSize(comboDefaultSize[combo.id] || "12");
     setQty(1);
     setUpgrade(null);
-    if (combo.id === "takecare") {
-      setSavedItems({ bread: { summary: "Garlic Bread", fixed: true } });
-    } else {
-      setSavedItems({});
-    }
+    const fixed = {};
+    for (const key of fixedSlots(combo)) fixed[key] = { summary: FIXED_SUMMARY[key] || comboItemLabel(key), fixed: true };
+    setSavedItems(fixed);
     setIsDirty(false);
   };
 
@@ -84,8 +104,8 @@ export default function ComboBuilder({
     const items = { ...(item.meta?.items || {}) };
     // Self-heal older takecare cart entries saved before bread/pops were
     // split out of the combined "side" slot.
-    if (combo.id === "takecare" && !items.bread) {
-      items.bread = { summary: "Garlic Bread", fixed: true };
+    for (const key of fixedSlots(combo)) {
+      if (!items[key]) items[key] = { summary: FIXED_SUMMARY[key] || comboItemLabel(key), fixed: true };
     }
     setSavedItems(items);
     setIsDirty(false);
@@ -124,7 +144,7 @@ export default function ComboBuilder({
     setIsDirty(true);
   };
 
-  const getLockedWingsCount = (comboId) => comboWingsPieces[comboId] || null;
+  const getLockedWingsCount = (comboId) => comboWingsCount(comboId, upgrade);
 
   const modalPrice = useMemo(() => {
     if (!selectedCombo) return formatMoney(0);
@@ -148,6 +168,7 @@ export default function ComboBuilder({
     const bits = [`${combo.name} (${sizeLabel})`];
     if (upg === "toMedium") bits.push("Upgraded to Medium");
     if (upg === "toXL") bits.push("Upgraded to XL");
+    if (COMBO_WING_UPGRADES[upg]) bits.push(`${COMBO_WING_UPGRADES[upg].count} Wings`);
     return bits.join(", ");
   };
 
@@ -241,6 +262,7 @@ export default function ComboBuilder({
         mode="portal"
         blockRogue
         freezeChild={false}
+        title={selectedCombo?.name || "Combo"}
       >
         {selectedCombo && (
           <div className="modal-body" style={{ padding: 0 }}>
@@ -251,13 +273,13 @@ export default function ComboBuilder({
                 <p style={{ margin: "4px 0 8px 0", color: TEXT_BROWN }}>{selectedCombo.subtitle}</p>
                 <p style={{ margin: 0, color: TEXT_BROWN }}>
                   <strong>Size:</strong> {sizeLabelMap[pizzaSize] || `${pizzaSize}"`}{" "}
-                  {upgrade ? "(upgraded)" : "(locked for this combo)"}
+                  {upgrade === "toMedium" || upgrade === "toXL" ? "(upgraded)" : "(locked for this combo)"}
                 </p>
               </Section>
 
               {/* ===== Section: Upgrade ===== */}
               {comboUpgradeOptions(selectedCombo.id).length > 0 && (
-                <Section title="Upgrade">
+                <Section title={comboUpgradeTitle(selectedCombo.id)}>
                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                     <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
                       <input
@@ -290,7 +312,7 @@ export default function ComboBuilder({
               {/* ===== Section: Items ===== */}
               <Section title="Items">
                 {selectedCombo.items.map((item, idx) => {
-                  const isFixedItem = selectedCombo.id === "takecare" && item === "bread";
+                  const isFixedItem = fixedSlots(selectedCombo).includes(item);
                   const isLast = idx === selectedCombo.items.length - 1;
                   return (
                     <div
@@ -315,6 +337,8 @@ export default function ComboBuilder({
                                   ? "wings"
                                   : item === "pops"
                                   ? "pops"
+                                  : item === "drink"
+                                  ? "drink"
                                   : "side",
                                 id: item,
                               })
@@ -448,7 +472,7 @@ export default function ComboBuilder({
         {customizingItem?.type === "pizza" && (
           <PizzaBuilder
             initialData={savedItems[customizingItem.id] || {}}
-            includedToppings={3}
+            includedToppings={comboIncludedToppings(selectedCombo?.id)}
             lockedSize={pizzaSize}
             allowSizeChoice={false}
             forceResponsiveStack
@@ -550,6 +574,23 @@ export default function ComboBuilder({
         {customizingItem?.type === "pops" && (
           <PopsPicker
             count={4}
+            initialData={savedItems[customizingItem.id] || {}}
+            onClose={() => setCustomizingItem(null)}
+            onSave={(data) => handleSave(customizingItem.id, data)}
+          />
+        )}
+      </DebugPizzaOverlay>
+
+      {/* 2L DRINK PICKER INSIDE COMBO (Feed 4 / Party Combo) */}
+      <DebugPizzaOverlay
+        open={customizingItem?.type === "drink"}
+        onClose={() => setCustomizingItem(null)}
+        mode="portal"
+        blockRogue
+        title="Choose Your 2L Drink"
+      >
+        {customizingItem?.type === "drink" && (
+          <TwoLiterPicker
             initialData={savedItems[customizingItem.id] || {}}
             onClose={() => setCustomizingItem(null)}
             onSave={(data) => handleSave(customizingItem.id, data)}

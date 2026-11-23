@@ -1,5 +1,6 @@
 // pages/coupons.js
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import ComboBuilder from "../components/ComboBuilder";
 import { useRouter } from "next/router";
 import { useCart, DealCodeEntry } from "../components/CartSystem";
 import { formatMoney } from "../components/Pricing";
@@ -159,7 +160,7 @@ function DealCard({ deal, onAdd }) {
           disabled={comingSoon}
           onClick={() => onAdd(deal.id)}
         >
-          {comingSoon ? "Coming Soon" : "Add Coupon"}
+          {comingSoon ? "Coming Soon" : deal.comboId ? "Order Now" : "Add Coupon"}
         </button>
       </div>
 
@@ -252,6 +253,15 @@ export default function CouponsPage() {
   const { isServiceConfirmed, service, openDeal } = useCart();
   const router = useRouter();
 
+  // Most deals open the coupon builder; a combo deal (deal.comboId: Take
+  // Care, Feed 4, Party) opens the combo builder instead.
+  const [comboToOpen, setComboToOpen] = useState(null);
+  const startDeal = (id) => {
+    const deal = dealSections.flatMap((sec) => sec.deals).find((d) => d.id === id);
+    if (deal?.comboId) setComboToOpen(deal.comboId);
+    else openDeal(id);
+  };
+
   // /coupons?deal=<id> (e.g. a home page promo card's "Order Now"): once
   // Carryout or Delivery is chosen, open that deal's builder straight away
   // (if it's valid for that service), then tidy the address.
@@ -259,7 +269,10 @@ export default function CouponsPage() {
     const id = String(router.query.deal || "");
     if (!id || !isServiceConfirmed) return;
     const deal = dealSections.flatMap((sec) => sec.deals).find((d) => d.id === id);
-    if (deal && !deal.comingSoon && dealAllowsService(deal, service)) openDeal(id);
+    if (deal && !deal.comingSoon && dealAllowsService(deal, service)) {
+      if (deal.comboId) setComboToOpen(deal.comboId);
+      else openDeal(id);
+    }
     router.replace("/coupons", undefined, { shallow: true });
   }, [router.query.deal, isServiceConfirmed, service, openDeal, router]);
 
@@ -284,7 +297,7 @@ export default function CouponsPage() {
               <>
                 <DealCodeEntry variant="card" />
 
-                {featured && <FeaturedDealBanner deal={featured} onOrder={() => openDeal(featured.id)} />}
+                {featured && <FeaturedDealBanner deal={featured} onOrder={() => startDeal(featured.id)} />}
 
                 {dealSections.map((sec, i) => {
                   const visible = sec.deals.filter((d) => d.comingSoon || dealAllowsService(d, service));
@@ -293,7 +306,7 @@ export default function CouponsPage() {
                     <div key={sec.type} id={`deal-section-${i}`} style={{ marginBottom: "1.5rem", scrollMarginTop: "var(--header-offset, 74.75px)" }}>
                       <section className="feast__grid feast__grid--three deals-grid" style={{ alignItems: "stretch" }}>
                         {visible.map((deal) => (
-                          <DealCard key={deal.id} deal={deal} onAdd={openDeal} />
+                          <DealCard key={deal.id} deal={deal} onAdd={startDeal} />
                         ))}
                       </section>
                     </div>
@@ -306,6 +319,9 @@ export default function CouponsPage() {
           <OrderSettingsAside />
         </div>
       </div>
+
+      {/* combo deals: ComboBuilder adds the combo to the cart itself */}
+      <ComboBuilder openComboId={comboToOpen} onClose={() => setComboToOpen(null)} />
     </main>
   );
 }

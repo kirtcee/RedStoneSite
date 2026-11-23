@@ -127,7 +127,7 @@ export function buildOrder(body, { uid, paymentMethod, deliveryQuote = null }) {
   }
   const appliedDeals = (rawDeals || [])
     .filter((d) => d && typeof d.id === "string" && typeof d.dealId === "string")
-    .filter((d) => findDealById(d.dealId)?.active)
+    .filter((d) => findDealById(d.dealId)?.active && !findDealById(d.dealId)?.comboId)
     .map((d) => ({ id: d.id.slice(0, 64), dealId: d.dealId }));
 
   if (serviceMethod !== "Carryout" && serviceMethod !== "Delivery") return fail(400, "bad_service_method");

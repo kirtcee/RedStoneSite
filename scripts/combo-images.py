@@ -133,3 +133,81 @@ save(take_care(BACK, FRONT, 650, 580, 280, 105, 45), "takecare")
 # white added at the sides so nothing gets cropped off the top or bottom
 tc = Image.open(f"{OUT}/takecare.jpg"); cover = Image.new("RGB", (1350, 900), "white")
 cover.paste(tc, ((1350 - tc.width) // 2, 0)); save(cover, "combos-cover")
+
+# ======================= Deals page cover images =======================
+# public/images/deals/*.jpg, same white 4:3 style as the combos.
+import os
+DEALS = f"{PUB}/deals"
+os.makedirs(DEALS, exist_ok=True)
+
+def item(path, width=None, height=None):
+    im = Image.open(f"{PUB}/{path}").convert("RGBA")
+    if width:
+        return im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
+    return im.resize((round(im.width * height / im.height), height), Image.LANCZOS)
+
+def save_deal(img, name):
+    img.save(f"{DEALS}/{name}.jpg", "JPEG", quality=84, optimize=True)
+    print("saved deal", name)
+
+# Large 2-Topping (2 pizza minimum): two specialty pizzas
+save_deal(two_pizzas("deluxe", "hawaiian", 780), "large-2topping")
+
+# Choose Any 2 or More: a pizza, wings, garlic bread and a poutine
+def pick2():
+    p = pizza("pepperoni", 560); k = 560 / 200
+    w = plate(6, 400)
+    b = item("sides/cheesy-garlic-bread-top.webp", width=330)
+    pt = item("sides/poutine-top.webp", width=300)
+    return compose([
+        (p, 0, 0, k),
+        (pt, p.width - 120, -40, k),
+        (b, -60, p.height - 120, k),
+        (w, p.width - 170, p.height - 150, k),
+    ])
+save_deal(pick2(), "pick2mix")
+
+# 2 Medium Pizzas + 8 Wings
+save_deal(two_pizzas_wings(BACK, FRONT, 600, 8), "2medium-8wings")
+
+# Feed 4: 2 large pizzas, 8 wings, garlic bread, a 2L, 2 dips
+def feed4():
+    parts = two_pizzas_front(BACK, FRONT, 650, plate(8))
+    b, bx, by, k = parts[0]; f, fx, fy, _ = parts[1]; w, wx, wy, _ = parts[2]
+    bottle = item("drinks/2l-coke.webp", height=round(b.height * 1.2))
+    bread = item("sides/garlic-bread-plate.webp", width=430)
+    dip1 = item("dips/garlic-cut.webp", width=125); dip2 = item("dips/ranch-cut.webp", width=125)
+    return compose([
+        # the 2L stands behind the back pizza's right side
+        (bottle, bx + b.width - round(bottle.width * 0.75), by + round(b.height * 0.78) - bottle.height, k * 0.6),
+        (b, bx, by, k), (f, fx, fy, k),
+        (bread, fx - 90, fy + f.height - 150, k),
+        (w, wx, wy, k),
+        (dip1, wx - 70, wy + w.height - 95, k * 0.5),
+        (dip2, wx + 45, wy + w.height - 60, k * 0.5),
+    ])
+save_deal(feed4(), "feed-4")
+
+# Party Combo: 3 large pizzas, 20 wings, garlic bread, a 2L, 3 dips
+def party():
+    pw = 600; k = pw / 200
+    p1, p2, p3 = pizza(BACK, pw), pizza("pepperoni", pw), pizza(FRONT, pw)
+    ph = p1.height
+    w = plate(20)
+    bottle = item("drinks/2l-pepsi.webp", height=round(ph * 1.3))
+    bread = item("sides/garlic-bread-plate.webp", width=420)
+    dips = [item(f"dips/{n}-cut.webp", width=120) for n in ("garlic", "ranch", "blue-cheese")]
+    x2, y2 = 470, 20                  # back row: two pizzas side by side
+    x3, y3 = 170, round(ph * 0.62)    # front pizza in the middle
+    wx, wy = x3 + pw - 140, y3 + ph - 170
+    bx, by = x3 - 250, y3 + ph - 170
+    parts = [
+        (bottle, x2 + pw - round(bottle.width * 0.7), y2 + round(ph * 0.7) - bottle.height, k * 0.6),
+        (p1, 0, 0, k), (p2, x2, y2, k), (p3, x3, y3, k),
+        (bread, bx, by, k),
+        (w, wx, wy, k),
+    ]
+    for i, d in enumerate(dips):
+        parts.append((d, wx - 150 + i * 100, wy + w.height - 80 + (i % 2) * 28, k * 0.5))
+    return compose(parts)
+save_deal(party(), "party")
