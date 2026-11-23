@@ -15,6 +15,33 @@ import { findDealById } from "../../utils/dealCatalog";
 
 const DEAL_ID = "feed4";
 
+// ---- Phone rainbow: a ribbon that starts as a thin sliver in the top-right
+// corner and widens as it sweeps down towards the viewer. Two curves (the
+// rainbow's outer and inner edge) meet at the corner; each colour band is a
+// slice between them. Coordinates are 0-100 across the whole card.
+const RB_COLORS = ["#ff5a5a", "#ff9a3c", "#ffe45c", "#7fe07a", "#5fb8ff", "#6a7dff", "#b07bff"];
+const RB_OUTER = [[99, 0], [62, 30], [14, 106]]; // start, bend, end (outer/left edge)
+const RB_INNER = [[100, 1], [104, 62], [96, 106]]; // inner/right edge
+function bez([a, b, c], t) {
+  const u = 1 - t;
+  return [u * u * a[0] + 2 * u * t * b[0] + t * t * c[0], u * u * a[1] + 2 * u * t * b[1] + t * t * c[1]];
+}
+const lerp = (p, q, f) => [p[0] + (q[0] - p[0]) * f, p[1] + (q[1] - p[1]) * f];
+const STEPS = 40;
+const RB_BANDS = RB_COLORS.map((color, k) => {
+  const a = [];
+  const b = [];
+  for (let i = 0; i <= STEPS; i++) {
+    const t = i / STEPS;
+    const o = bez(RB_OUTER, t);
+    const n = bez(RB_INNER, t);
+    a.push(lerp(o, n, k / RB_COLORS.length));
+    b.push(lerp(o, n, (k + 1) / RB_COLORS.length));
+  }
+  const pts = [...a, ...b.reverse()].map((p) => p.map((v) => v.toFixed(2)).join(",")).join(" ");
+  return { color, pts };
+});
+
 export default function DreamDealCard() {
   const deal = findDealById(DEAL_ID);
   const price = ((deal?.price ?? 3999) / 100).toFixed(2);
@@ -48,6 +75,25 @@ export default function DreamDealCard() {
       </svg>
       {/* a soft, photographic rainbow: it comes in from the top-right
           corner and curves down through the bottom of the card */}
+      <svg className="dr-rb-phone" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <filter id="dr-rbp-blur" x="-10%" y="-10%" width="120%" height="120%">
+            <feGaussianBlur stdDeviation="0.6" />
+          </filter>
+          <linearGradient id="dr-rbp-fade" x1="1" y1="0" x2="0.3" y2="1">
+            <stop offset="0" stopColor="#fff" stopOpacity="0.25" />
+            <stop offset="0.35" stopColor="#fff" stopOpacity="1" />
+          </linearGradient>
+          <mask id="dr-rbp-mask">
+            <rect width="100" height="100" fill="url(#dr-rbp-fade)" />
+          </mask>
+        </defs>
+        <g filter="url(#dr-rbp-blur)" mask="url(#dr-rbp-mask)">
+          {RB_BANDS.map((b) => (
+            <polygon key={b.color} points={b.pts} fill={b.color} />
+          ))}
+        </g>
+      </svg>
       <svg className="dr-rainbow" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
         <defs>
           <filter id="dr-rb-blur" x="-20%" y="-20%" width="140%" height="140%">
@@ -120,7 +166,16 @@ export default function DreamDealCard() {
           filter: blur(0.35cqw) saturate(1.3);
           opacity: 1;
         }
+        /* phone: the wide ribbon rainbow; laptop: the arc (below) */
+        :global(.dr-rb-phone) {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          opacity: 0.72;
+        }
         :global(.dr-rainbow) {
+          display: none;
           position: absolute;
           right: 0;
           top: 0;
@@ -130,13 +185,14 @@ export default function DreamDealCard() {
           overflow: visible;
         }
 
-        /* the meal, floating along the rainbow */
+        /* the meal, sliding down the rainbow towards you (phone: the box is
+           the whole card, so these % are of the card) */
         .dr-food {
           position: absolute;
-          left: 40cqw;
-          right: 1cqw;
-          top: 10cqh;
-          height: 58cqh;
+          left: 0;
+          right: 0;
+          top: 0;
+          height: 100cqh;
         }
         .dr-img {
           position: absolute;
@@ -144,11 +200,12 @@ export default function DreamDealCard() {
           filter: saturate(1.15) contrast(0.95) brightness(1.04) drop-shadow(0.4cqw 1cqw 1cqw rgba(20, 30, 70, 0.4));
           user-select: none;
         }
-        .dr-img--bottle { height: 78%; width: auto; right: 5%; top: 0; }
-        .dr-img--back { width: 44%; left: 22%; top: 18%; }
-        .dr-img--front { width: 46%; left: 6%; top: 38%; }
-        .dr-img--wings { width: 28%; left: 44%; bottom: -14%; }
-        .dr-img--bread { width: 26%; right: 0; bottom: -10%; }
+        /* smallest (farthest) at the top-right, biggest (closest) at the bottom */
+        .dr-img--bottle { height: 30%; width: auto; right: 7%; top: 6%; transform: rotate(18deg); }
+        .dr-img--back { width: 21%; left: 72%; top: 30%; transform: rotate(-8deg); }
+        .dr-img--front { width: 27%; left: 60%; top: 44%; transform: rotate(-12deg); }
+        .dr-img--wings { width: 20%; left: 55%; bottom: 3%; transform: rotate(-14deg); }
+        .dr-img--bread { width: 21%; right: 2%; bottom: 6%; transform: rotate(-6deg); }
 
         .dr-haze {
           position: absolute;
@@ -240,7 +297,9 @@ export default function DreamDealCard() {
         /* ===== Laptop strip (928x140): hill + food | title | buy ===== */
         @container (min-aspect-ratio: 3 / 1) {
           :global(.dr-clouds) { height: 62%; }
-          :global(.dr-rainbow) { left: auto; right: 0; width: 70cqw; opacity: 0.6; }
+          :global(.dr-rb-phone) { display: none; }
+          :global(.dr-rainbow) { display: block; left: auto; right: 0; width: 70cqw; opacity: 0.6; }
+          .dr-img { transform: none; }
           .dr-food { left: 2cqw; right: auto; width: 32cqw; top: 6cqh; height: 90cqh; }
           .dr-img--bottle { height: 84%; right: auto; left: 0; top: 0; }
           .dr-img--back { width: 40%; left: 26%; top: 6%; }
