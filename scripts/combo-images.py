@@ -37,12 +37,12 @@ def two_pizzas(back, front, width):
     return c.convert("RGB")
 
 def plate(count, width):
-    # wings plate photo: the biggest public/images/wings/plate-<n>.png with
-    # n <= count (so 16 wings uses plate-12, 25 uses plate-20), else the smallest
+    # wings plate photo: the biggest public/images/wings/plate-<n>.webp with
+    # n <= count (an exact match when there is one), else the smallest
     import glob, re
-    plates = sorted(int(re.search(r"plate-(\d+)", f).group(1)) for f in glob.glob(f"{PUB}/wings/plate-*.png"))
+    plates = sorted(int(re.search(r"plate-(\d+)", f).group(1)) for f in glob.glob(f"{PUB}/wings/plate-*.webp"))
     pick = max([n for n in plates if n <= count], default=plates[0])
-    path = f"{PUB}/wings/plate-{pick}.png"
+    path = f"{PUB}/wings/plate-{pick}.webp"
     im = Image.open(path).convert("RGBA")
     return im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
 
