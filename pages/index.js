@@ -2,6 +2,7 @@
 import Link from "next/link";
 import ConsoleDealCard from "../components/promos/ConsoleDealCard";
 import PomoDealCard from "../components/promos/PomoDealCard";
+import SpaceDealCard from "../components/promos/SpaceDealCard";
 
 export default function Home() {
   return (
@@ -38,9 +39,9 @@ export default function Home() {
               <div className="tile tile-341x254 tile--promo">
                 <PomoDealCard />
               </div>
-              <Link href="/menu" className="tile tile-341x254">
-                <img src="/images/home/deal-341x254-b.jpg" alt="Deal: bottom right" />
-              </Link>
+              <div className="tile tile-341x254 tile--promo">
+                <SpaceDealCard />
+              </div>
             </div>
           </div>
 
