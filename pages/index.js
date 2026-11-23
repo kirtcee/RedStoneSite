@@ -6,6 +6,7 @@ import SpaceDealCard from "../components/promos/SpaceDealCard";
 import TakeCareCard from "../components/promos/TakeCareCard";
 import DreamDealCard from "../components/promos/DreamDealCard";
 import SoftClubCard from "../components/promos/SoftClubCard";
+import AhhhCard from "../components/promos/AhhhCard";
 
 export default function Home() {
   return (
@@ -64,9 +65,9 @@ export default function Home() {
           </div>
 
           {/* Gap then 928x148 image/button */}
-          <Link href="/menu" className="tile tile-928x148">
-            <img src="/images/home/deal-928x148.jpg" alt="Sides & desserts" />
-          </Link>
+          <div className="tile tile-928x148 tile--promo tile--ahhh">
+            <AhhhCard />
+          </div>
         </section>
 
         {/* ===== Footer disclaimers with centered logo ===== */}
@@ -237,6 +238,8 @@ export default function Home() {
           /* the wide banners: much taller on phones so they're readable,
              but still shorter than the three cards above */
           .tile-928x140, .tile-928x148, .tile-928x250 { aspect-ratio: 16 / 9; }
+          /* the drinks strip: half the height of the banners above */
+          .tile-928x148 { aspect-ratio: 32 / 9; }
 
           .disclaimers { grid-template-columns: 1fr; text-align: center; }
         }
