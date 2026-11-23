@@ -86,7 +86,7 @@ def pizza_wings(slug, pizza_w, wings):
     k = pizza_w / 200
     return compose([(p, 0, 0, k), (w, p.width - OVER_X, p.height - OVER_Y, k)])
 
-CANS = ["can-pepsi", "can-canada-dry", "can-crush-orange", "can-coke"]
+CANS = ["combo-can-pepsi", "combo-can-canada-dry", "combo-can-crush-orange", "combo-can-coke"]
 
 def take_care(back, front, pizza_w, bread_w, can_h, can_step_x, can_step_y):
     # same layout as 2 Large + 20 Wings with the garlic bread in the wings'
