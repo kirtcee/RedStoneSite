@@ -60,6 +60,16 @@
   font-display: swap;
 }
 
+/* Party Combo promo card (components/promos/SoftClubCard.js).
+   Michroma is free (SIL OFL, public/fonts/promo/Michroma-LICENSE.txt). */
+@font-face {
+  font-family: 'Promo Michroma';
+  src: url('/fonts/promo/Michroma-Regular.woff2?v=1') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* 2) Brand + Layout Vars */
 :root {
   /* brand colors */
