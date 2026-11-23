@@ -228,6 +228,7 @@ export default function Home() {
           .start-row { display: none; }
           .mobile-start-row { display: block; }
           .deals-right { grid-template-columns: 1fr; row-gap: 12px; }
+          .tile-577x519 { aspect-ratio: 4 / 3; } /* a bit taller on phones */
 
           .disclaimers { grid-template-columns: 1fr; text-align: center; }
         }

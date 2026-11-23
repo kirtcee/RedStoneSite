@@ -1,7 +1,7 @@
 // components/promos/ConsoleDealCard.js
 //
 // Home page promo card for the Large 2-Topping deal, styled like an old
-// console's menu screen: a rounded CRT-style panel with a green-to-white
+// console's menu screen: a rounded CRT-style panel with a blue-to-white
 // glow, blue arrows on the sides, the deal in the middle (two specialty
 // pizzas, name, price) and a grey bar along the bottom with one glossy
 // "Order Now" pill.
@@ -11,9 +11,10 @@
 // width/height). When the box is wide (tablets and phones, 16:9) the
 // pizzas move to the left of the text.
 //
-// Font: --promo-font. "Promo Rodin" is FOT-Rodin (only used if a web licence
-// is bought and its @font-face is added in styles/globals.css); until then
-// the free M PLUS 1p (OFL) is used, which looks very close.
+// Fonts: Red Stone Face like the rest of the site; only the Order Now pill
+// uses --promo-font ("Promo Rodin" = FOT-Rodin if a web licence is ever
+// bought and its @font-face added in styles/globals.css; until then the free
+// M PLUS 1p, which looks very close). Colour: the Order Now outline blue.
 import Link from "next/link";
 import { findDealById } from "../../utils/dealCatalog";
 import { formatMoney } from "../Pricing";
@@ -82,22 +83,26 @@ export default function ConsoleDealCard() {
       </div>
 
       <style jsx>{`
+        /* Phone first: the base styles are the wide layout (phones/tablets,
+           pizzas on the left, text on the right); the @container block at
+           the bottom is the tall laptop tile (pizzas on top, text below). */
         .cdc {
-          --promo-font: "Promo Rodin", "Promo M PLUS 1p", sans-serif;
+          --blue: #35bdf2; /* the Order Now outline blue, used for all the card's colour */
+          --promo-font: "Promo Rodin", "Promo M PLUS 1p", sans-serif; /* Order Now button only */
           container-type: size;
           position: absolute;
           inset: 0;
           display: flex;
           flex-direction: column;
           background: #111;
-          font-family: var(--promo-font);
-          font-weight: 500;
+          font-family: var(--font-body);
+          font-weight: var(--w-medium);
           color: #4d4d4d;
           overflow: hidden;
         }
 
-        /* The screen: bulging CRT corners (elliptical radius), pale green at
-           the top fading to white, a soft inner glow at the edges */
+        /* The screen: bulging CRT corners (elliptical radius), pale blue at
+           the top fading to white, a soft blue glow at the edges */
         .cdc-screen {
           position: relative;
           flex: 1 1 auto;
@@ -105,17 +110,17 @@ export default function ConsoleDealCard() {
           border-radius: 9cqw 9cqw 0 0 / 8cqh 8cqh 0 0;
           background:
             radial-gradient(120% 90% at 50% 45%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 70%),
-            linear-gradient(180deg, #bfe9a8 0%, #e3f5d8 38%, #ffffff 78%);
+            linear-gradient(180deg, #b4e6fb 0%, #dff4fd 38%, #ffffff 78%);
           box-shadow:
-            inset 0 0 2.6cqw rgba(60, 120, 40, 0.28),
+            inset 0 0 2.6cqw rgba(53, 189, 242, 0.35),
             inset 0 0.4cqw 0 rgba(255, 255, 255, 0.9);
           overflow: hidden;
         }
 
-        /* Grey bar along the bottom, joined to the screen like the reference */
+        /* Grey bar along the bottom */
         .cdc-bar {
           position: relative;
-          flex: 0 0 18cqh;
+          flex: 0 0 19cqh;
           margin: 0 2.2cqw 2.2cqw;
           display: flex;
           align-items: center;
@@ -131,13 +136,13 @@ export default function ConsoleDealCard() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          min-width: 44cqw;
-          height: 10.5cqh;
-          padding: 0 6cqw;
-          border: 0.7cqw solid #35bdf2;
+          min-width: 32cqw;
+          height: 12cqh;
+          padding: 0 5cqw;
+          border: 0.55cqw solid var(--blue);
           border-radius: 999px;
           background:
-            linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(232, 232, 232, 1) 52%, #f7f7f7 100%);
+            linear-gradient(180deg, #fff 0%, rgba(255, 255, 255, 0.95) 45%, #e8e8e8 52%, #f7f7f7 100%);
           box-shadow:
             0 0.5cqw 1.2cqw rgba(0, 0, 0, 0.22),
             inset 0 -0.6cqw 1cqw rgba(0, 0, 0, 0.08),
@@ -145,8 +150,9 @@ export default function ConsoleDealCard() {
           color: #4a4a4a;
           font-family: var(--promo-font);
           font-weight: 500;
-          font-size: 4.6cqw;
+          font-size: 3.6cqw;
           letter-spacing: 0.01em;
+          text-transform: none;
           text-decoration: none;
           transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
         }
@@ -168,16 +174,16 @@ export default function ConsoleDealCard() {
           position: absolute;
           top: 50%;
           z-index: 2;
-          width: 5.2cqw;
+          width: 3.6cqw;
           height: auto;
           filter: drop-shadow(0 0.3cqw 0.5cqw rgba(0, 60, 100, 0.35));
         }
         .cdc :global(.cdc-arrow--left) {
-          left: 2.4cqw;
+          left: 2.2cqw;
           animation: cdc-nudge-l 1.6s ease-in-out infinite;
         }
         .cdc :global(.cdc-arrow--right) {
-          right: 2.4cqw;
+          right: 2.2cqw;
           animation: cdc-nudge-r 1.6s ease-in-out infinite;
         }
         @keyframes cdc-nudge-l {
@@ -192,20 +198,20 @@ export default function ConsoleDealCard() {
           .cdc :global(.cdc-arrow) { animation: none; transform: translateY(-50%); }
         }
 
-        /* ---- Tall box (the home page's 577x519 tile): pizzas on top, text below ---- */
+        /* ---- Wide (phones/tablets): pizzas left, text right ---- */
         .cdc-body {
           position: absolute;
-          inset: 0 9cqw;
+          inset: 0 7cqw;
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
           align-items: center;
           justify-content: center;
+          gap: 2.5cqw;
         }
         .cdc-pizzas {
           position: relative;
-          width: 100%;
-          height: 36cqh;
-          margin-top: 1cqh;
+          flex: 0 0 50%;
+          height: 74cqh;
         }
         .cdc-pizza {
           position: absolute;
@@ -214,39 +220,34 @@ export default function ConsoleDealCard() {
           user-select: none;
         }
         /* sized by width so both pizzas always show, overlapping */
-        .cdc-pizza--back {
-          right: 0;
-          top: -4%;
-          width: 62%;
-        }
-        .cdc-pizza--front {
-          left: 0;
-          bottom: -6%;
-          width: 70%;
-        }
+        .cdc-pizza--back { right: -4%; top: 9%; width: 92%; }
+        .cdc-pizza--front { left: -4%; bottom: 9%; width: 100%; }
         .cdc-text {
+          flex: 1 1 auto;
+          min-width: 0;
           text-align: center;
-          margin-top: 2.5cqh;
         }
         .cdc-tag {
           display: inline-block;
-          padding: 0.6cqh 3cqw;
+          padding: 0.5cqh 2.6cqw 0.3cqh;
           border-radius: 999px;
-          background: rgba(53, 189, 242, 0.14);
+          background: rgba(53, 189, 242, 0.16);
           color: #1d8fc4;
-          font-size: 3.1cqw;
+          font-family: var(--font-display);
+          font-size: 2.7cqw;
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
         }
         .cdc-title {
           position: relative;
-          margin: 1.2cqh 0 3.6cqh;
-          font-family: var(--promo-font);
-          font-weight: 500;
-          font-size: 6.3cqw;
-          line-height: 1.1;
-          color: #555;
+          margin: 2.2cqh 0 6.5cqh;
+          font-family: var(--font-display);
+          font-size: 4.1cqw;
+          line-height: 1;
+          color: #4d4d4d;
           white-space: nowrap;
-          text-transform: none;
-          letter-spacing: 0.005em;
+          text-transform: uppercase;
+          letter-spacing: 0.01em;
         }
         /* the soft mirror under the title, like a glossy floor */
         .cdc-title__mirror {
@@ -255,55 +256,58 @@ export default function ConsoleDealCard() {
           right: 0;
           top: 100%;
           transform: scaleY(-1);
-          margin-top: 0.05em;
+          margin-top: 0.08em;
           opacity: 0.16;
           -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent 70%);
           mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent 70%);
           pointer-events: none;
         }
         .cdc-price {
-          font-weight: 800;
-          font-size: 10.5cqw;
+          font-family: var(--font-display);
+          font-size: 9cqw;
           line-height: 1;
-          color: #2f8a1f;
-          text-shadow: 0 0.3cqw 0 #fff;
+          color: var(--blue);
+          text-transform: uppercase;
+          text-shadow: 0 0.25cqw 0 #1d8fc4, 0 0.6cqw 1cqw rgba(29, 143, 196, 0.25);
         }
         .cdc-price__each {
-          font-weight: 500;
-          font-size: 4.2cqw;
+          font-size: 3.4cqw;
           color: #4d4d4d;
+          text-shadow: none;
         }
         .cdc-fine {
-          margin-top: 0.8cqh;
-          font-size: 3.6cqw;
+          margin-top: 1.4cqh;
+          font-size: 2.9cqw;
+          font-weight: var(--w-semibold);
           color: #666;
         }
 
-        /* ---- Wide box (tablets/phones, 16:9): pizzas left, text right ---- */
-        @container (min-aspect-ratio: 13 / 10) {
+        /* ---- Tall (the laptop's 577x519 tile): pizzas on top, text below ---- */
+        @container (max-aspect-ratio: 13 / 10) {
           .cdc-body {
-            flex-direction: row;
-            inset: 0 7.5cqw;
-            gap: 3cqw;
+            flex-direction: column;
+            inset: 0 9cqw;
+            gap: 0;
           }
           .cdc-pizzas {
-            flex: 0 0 46%;
-            height: 64cqh;
-            margin-top: 0;
+            flex: 0 0 auto;
+            width: 100%;
+            height: 32cqh;
+            margin-top: 3cqh;
           }
-          .cdc-pizza--back { width: 74%; top: 2%; }
-          .cdc-pizza--front { width: 84%; bottom: 2%; }
-          .cdc-text {
-            flex: 1 1 auto;
-            margin-top: 0;
-          }
-          .cdc-tag { font-size: 2.3cqw; }
-          .cdc-title { font-size: 3.7cqw; margin: 2cqh 0 7cqh; }
-          .cdc-price { font-size: 7.4cqw; }
-          .cdc-price__each { font-size: 3cqw; }
-          .cdc-fine { font-size: 2.6cqw; }
-          .cdc-bar :global(.cdc-btn) { font-size: 3.2cqw; min-width: 30cqw; height: 11cqh; border-width: 0.5cqw; }
-          .cdc :global(.cdc-arrow) { width: 3.4cqw; }
+          .cdc-pizza--back { right: 2%; top: -2%; width: 58%; }
+          .cdc-pizza--front { left: 2%; bottom: -4%; width: 64%; }
+          .cdc-text { flex: 0 0 auto; margin-top: 2.5cqh; }
+          .cdc-tag { font-size: 3.3cqw; }
+          .cdc-title { font-size: 6cqw; margin: 1.4cqh 0 3.4cqh; }
+          .cdc-price { font-size: 10.5cqw; }
+          .cdc-price__each { font-size: 4.6cqw; }
+          .cdc-fine { font-size: 3.6cqw; margin-top: 1cqh; }
+          .cdc-bar { flex-basis: 18cqh; }
+          .cdc-bar :global(.cdc-btn) { font-size: 4.6cqw; min-width: 44cqw; height: 10.5cqh; border-width: 0.7cqw; padding: 0 6cqw; }
+          .cdc :global(.cdc-arrow) { width: 5.2cqw; left: auto; right: auto; }
+          .cdc :global(.cdc-arrow--left) { left: 2.4cqw; }
+          .cdc :global(.cdc-arrow--right) { right: 2.4cqw; }
         }
       `}</style>
     </div>
