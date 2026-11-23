@@ -130,12 +130,14 @@ export default function TakeCareCard() {
         }
         /* 4 small cans in a diagonal, each one up and to the right of the
            one in front of it (like the Take Care combo picture) */
+        /* the 4 cans sit below the pizzas, in front of them */
         .tc-cans {
           position: absolute;
-          left: 14%;
-          top: 3%;
+          left: 26%;
+          bottom: 0;
           width: 46%;
           height: 34%;
+          z-index: 1;
         }
         .tc-can {
           height: 70%;
@@ -143,10 +145,11 @@ export default function TakeCareCard() {
           left: calc(var(--i) * 17%);
           top: calc((3 - var(--i)) * 10%);
         }
-        .tc-img--back { width: 70%; right: 0; top: 22%; }
-        .tc-img--front { width: 74%; left: 0; top: 38%; }
+        .tc-img--back { width: 70%; right: 0; top: 2%; }
+        .tc-img--front { width: 74%; left: 0; top: 18%; }
         /* garlic bread tucked over the front of both pizzas */
-        .tc-img--bread { width: 44%; right: 14%; bottom: 7%; }
+        /* garlic bread over the gap between the two pizzas */
+        .tc-img--bread { width: 40%; right: 0; top: 44%; z-index: 2; }
 
         /* ---- title: brush script + spaced-out caps ---- */
         .tc-title {
@@ -175,15 +178,15 @@ export default function TakeCareCard() {
         }
         .tc-logo {
           display: none;
-          margin-left: 1.4cqw; /* lines up with "COMBO" */
-          width: 40cqw;
+          margin-left: -6.2cqw;
+          width: 50cqw;
           height: auto;
         }
         .tc-logo.is-on {
           display: block;
         }
         .tc-combo {
-          margin: 0.6cqh 0 0 1.4cqw;
+          margin: 0.6cqh 0 0 3.4cqw;
           font-family: var(--font-display);
           font-size: 3.2cqw;
           letter-spacing: 0.55em;
@@ -255,11 +258,11 @@ export default function TakeCareCard() {
               radial-gradient(120% 140% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.85) 100%);
           }
           .tc-food { left: 2.5cqw; right: auto; top: 10cqh; bottom: 10cqh; width: 30cqw; }
-          .tc-cans { left: 0; top: 0; width: 24%; height: 62%; }
+          .tc-cans { left: 0; top: auto; bottom: 2%; width: 24%; height: 50%; }
           .tc-can { height: 68%; left: calc(var(--i) * 20%); top: calc((3 - var(--i)) * 11%); }
-          .tc-img--back { width: 44%; right: 18%; top: 0; }
-          .tc-img--front { width: 46%; left: 14%; top: 22%; }
-          .tc-img--bread { width: 30%; right: 10%; bottom: 2%; }
+          .tc-img--back { width: 44%; right: 18%; top: -4%; }
+          .tc-img--front { width: 46%; left: 14%; top: 14%; }
+          .tc-img--bread { width: 28%; right: 4%; top: 34%; bottom: auto; }
           .tc-title {
             left: 35cqw;
             top: 50%;
