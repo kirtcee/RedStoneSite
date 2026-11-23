@@ -69,6 +69,33 @@ def pizza_wings(slug, pizza_w, wings, plate_w):
     place(c, w, wx, wy, k)
     return c.convert("RGB")
 
+def side(path, width):
+    im = Image.open(f"{PUB}/{path}").convert("RGBA")
+    return im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
+
+CANS = ["can-pepsi", "can-canada-dry", "can-crush-orange", "can-coke"]
+
+def take_care(back, front, pizza_w, bread_w, can_h, can_gap):
+    # 2 pizzas at the back, garlic bread in front on the left, 4 pops in a row
+    # on the right. can_gap = pixels between cans (negative = overlap).
+    c = Image.new("RGBA", (W, H), (255, 255, 255, 255))
+    k = pizza_w / 200
+    b, f = pizza(back, pizza_w), pizza(front, pizza_w)
+    bread = side("sides/garlic-bread-plate.webp", bread_w)
+    cans = [Image.open(f"{PUB}/drinks/{n}.webp").convert("RGBA") for n in CANS]
+    cans = [im.resize((round(im.width * can_h / im.height), can_h), Image.LANCZOS) for im in cans]
+    bx = W - b.width - round(W * 0.03); by = round(H * 0.02)
+    fx = round(W * 0.03); fy = round(H * 0.12)
+    place(c, b, bx, by, k)
+    place(c, f, fx, fy, k)
+    row_w = sum(im.width for im in cans) + can_gap * (len(cans) - 1)
+    x = W - row_w - round(W * 0.03); y = H - can_h - round(H * 0.04)
+    for im in cans:
+        place(c, im, x, y, k * 0.6)
+        x += im.width + can_gap
+    place(c, bread, round(W * 0.02), H - bread.height - round(H * 0.03), k)
+    return c.convert("RGB")
+
 def save(img, name):
     img.save(f"{OUT}/{name}.jpg", "JPEG", quality=84, optimize=True)
     print("saved", name)
@@ -83,3 +110,5 @@ save(two_pizzas_wings("cheese", "pepperoni", 700, 25, 640), "2-xl-25-wings")
 # 1 pizza + wings
 save(pizza_wings("pepperoni", 760, 6, 540), "small-6-wings")
 save(pizza_wings("pepperoni", 840, 12, 590), "large-12-wings")
+# 2 large pizzas + garlic bread + 4 pops
+save(take_care("cheese", "pepperoni", 650, 560, 300, 6), "takecare")
