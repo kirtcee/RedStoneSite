@@ -14,6 +14,7 @@ import SpecialMenuBuilder from "../components/SpecialMenuBuilder";
 import SidesDessertsAll from "../components/SidesDessertsAll";
 import { DrinksCategoryPanel } from "../components/DrinksDipsBuilder";
 import { DRINK_CATEGORIES } from "../utils/drinkCatalog";
+import MenuDealBanner from "../components/promos/MenuDealBanner";
 import { useCart } from "../components/CartSystem";
 import { priceLineItem } from "../components/Pricing";
 
@@ -712,10 +713,12 @@ function MenuBody() {
           {/* Entrées landing */}
           {tab === "entrees" && sub === "all" && (
             <>
-              {/* Deal banner spot (removed for now, see TODO.md "Menu page deal
-                  banner"). To bring it back, put a promo card here inside
-                  <div className="menu-heroRow">; .menu-heroRow /
-                  .menu-heroRow__hero in globals.css still hold its sizing. */}
+              {/* Deal banner (same 1322x370 box as the old placeholder image) */}
+              <div className="menu-heroRow">
+                <div className="menu-heroRow__hero menu-heroRow__hero--card">
+                  <MenuDealBanner />
+                </div>
+              </div>
 
               <div className="card eta-card">
                 <div className="eta-left">

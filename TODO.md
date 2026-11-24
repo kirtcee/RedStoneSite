@@ -24,11 +24,6 @@ Running list of things to finish before `mac-handoff` is merged into `main`
 - [ ] **Merge `mac-handoff` → `main`** to go live.
 
 ## Should do
-- [ ] **Menu page deal banner**: the spot under the "MENU" title is empty
-      for now (the placeholder image was removed). Design a promo card for it,
-      like the home page cards in `components/promos/`. The old box was a wide
-      banner (about 1322 x 370) and its CSS is still in `styles/globals.css`
-      (`.menu-heroRow`, `.menu-heroRow__hero`); see the note in `pages/menu.js`.
 - [ ] Desktop home page DELIVERY / CARRYOUT buttons: their page-specific
       styles never apply (same `<Link>` scoping issue fixed on the mobile
       Order Online button).

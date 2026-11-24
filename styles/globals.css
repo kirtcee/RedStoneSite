@@ -533,6 +533,8 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
 }
 
 /* Hero: single full-width image with 1322x370 ratio */
+/* the deal card version (components/promos/MenuDealBanner.js) */
+.menu-heroRow__hero--card { position: relative; box-shadow: none; }
 .menu-heroRow {
   display: block;
   margin-bottom: 16px;
