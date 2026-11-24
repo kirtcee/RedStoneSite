@@ -27,9 +27,10 @@ Running list of things to finish before `mac-handoff` is merged into `main`
 - [ ] **Kitchen login**: make sure the staff account has a strong password.
 
 ### Pages
-- [ ] **Privacy Policy and Terms / Refund Policy pages.** The site collects
-      names, phone numbers, emails and payments; Canadian privacy law (PIPEDA)
-      and Stripe both expect these. Link them in the footer and at checkout.
+- [ ] **Review the Privacy Policy and Terms of Ordering drafts** (`/privacy`,
+      `/terms`; text in `pages/privacy.js` and `pages/terms.js`). Check the
+      details match how you actually run things (refunds, paying at the door,
+      how long you keep records), and ideally have a lawyer look them over.
 - [ ] **"Coming Soon" pages in the menu**: Rewards, Order Tracker and Pizza
       Calculator are placeholders. Hide them from the navigation for launch,
       or finish them.

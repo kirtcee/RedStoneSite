@@ -85,6 +85,11 @@ export default function Home() {
               Delivery areas, charges, and minimums apply. Taxes extra where applicable.
             </p>
           </div>
+          <p className="legal-links">
+            <Link href="/terms">Terms of Ordering</Link>
+            <Link href="/privacy">Privacy Policy</Link>
+            <Link href="/contact">Contact Us</Link>
+          </p>
         </footer>
       </div>
 
@@ -220,6 +225,19 @@ export default function Home() {
           gap: 12px;
         }
         .disc { color: #888; font-size: 0.85rem; line-height: 1.35; }
+        .legal-links {
+          display: flex;
+          justify-content: center;
+          flex-wrap: wrap;
+          gap: 6px 22px;
+          margin: 16px 0 0;
+        }
+        .legal-links :global(a) {
+          color: #666;
+          font-size: var(--fs-sm);
+          text-decoration: underline;
+          text-underline-offset: 3px;
+        }
         .footer-logo img {
           width: 42px; height: 42px; object-fit: contain; display: block;
           filter: drop-shadow(0 1px 2px rgba(0,0,0,0.08));

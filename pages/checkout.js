@@ -620,11 +620,26 @@ export default function CheckoutPage() {
                   : "Placing Your Order…"
                 : "Place Your Order"}
             </button>
+            <p className="co-legal">
+              By placing your order you agree to our <Link href="/terms">Terms of Ordering</Link> and{" "}
+              <Link href="/privacy">Privacy Policy</Link>.
+            </p>
           </>
         )}
       </div>
 
       <style jsx>{`
+        .co-wrap :global(.co-legal) {
+          margin: 10px 0 0;
+          text-align: center;
+          font-size: var(--fs-sm);
+          font-weight: var(--w-medium);
+          color: var(--text-brown);
+        }
+        .co-wrap :global(.co-legal a) {
+          color: #8b1a1a;
+          font-weight: var(--w-semibold);
+        }
         .co-wrap {
           max-width: 820px;
           padding-top: 16px;

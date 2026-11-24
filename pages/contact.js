@@ -1,4 +1,5 @@
 // pages/contact.js
+import Link from "next/link";
 import { hoursSummary } from "../utils/storeHours";
 
 export default function ContactPage() {
@@ -30,6 +31,11 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
+      <p style={{ marginTop: 16 }}>
+        <Link href="/terms">Terms of Ordering</Link>
+        {"  |  "}
+        <Link href="/privacy">Privacy Policy</Link>
+      </p>
     </main>
   );
 }
