@@ -191,7 +191,7 @@ export default function KitchenDashboard() {
     <div className="kitchen">
       <header className="kitchen-header">
         <div className="kitchen-header__inner">
-          <h1>🍕 Kitchen Dashboard</h1>
+          <h1>Kitchen Dashboard</h1>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <span className="kitchen-count">
               {orders.length} order{orders.length === 1 ? "" : "s"} open
