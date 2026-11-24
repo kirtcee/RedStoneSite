@@ -259,22 +259,57 @@ export default function KitchenDashboard() {
     );
   }, [isStaff]);
 
-  const changeWait = async (key, delta) => {
-    const next = { ...waitTimes, [key]: Math.min(MAX_WAIT, Math.max(MIN_WAIT[key], waitTimes[key] + delta)) };
-    if (next[key] === waitTimes[key]) return;
-    setWaitTimes(next);
+  // − / + only change a draft; Confirm, then "Yes, Change It", saves it.
+  const [waitDraft, setWaitDraft] = useState(null); // null = no unsaved change
+  const [waitAsking, setWaitAsking] = useState(false);
+  const [waitSaving, setWaitSaving] = useState(false);
+  const [waitSaved, setWaitSaved] = useState(null); // success note text
+  const shownWait = waitDraft || waitTimes;
+  const waitDirty =
+    !!waitDraft && (waitDraft.carryout !== waitTimes.carryout || waitDraft.delivery !== waitTimes.delivery);
+
+  const changeWait = (key, delta) => {
+    const base = waitDraft || waitTimes;
+    const next = { ...base, [key]: Math.min(MAX_WAIT, Math.max(MIN_WAIT[key], base[key] + delta)) };
+    setWaitDraft(next);
+    setWaitAsking(false);
+    setWaitSaved(null);
+    setWaitError(null);
+  };
+
+  const saveWait = async () => {
+    if (!waitDirty) return;
+    setWaitSaving(true);
     setWaitError(null);
     try {
       await setDoc(doc(db, "settings", "waitTimes"), {
-        carryoutMinutes: next.carryout,
-        deliveryMinutes: next.delivery,
+        carryoutMinutes: waitDraft.carryout,
+        deliveryMinutes: waitDraft.delivery,
         updatedAt: serverTimestamp(),
       });
+      setWaitTimes(waitDraft);
+      setWaitSaved(
+        `Changed. Customers now see ${waitDraft.carryout} min for carryout and ${waitDraft.delivery} min for delivery.`
+      );
+      setWaitDraft(null);
     } catch (err) {
       console.warn("Could not save wait times", err?.code);
-      setWaitError("Couldn't save. Check the connection (or the Firestore rules).");
+      setWaitError(
+        err?.code === "permission-denied"
+          ? "Couldn't save: publish the updated Firestore rules (see TODO.md)."
+          : "Couldn't save. Check the connection and try again."
+      );
     }
+    setWaitSaving(false);
+    setWaitAsking(false);
   };
+
+  // the success note fades after a while
+  useEffect(() => {
+    if (!waitSaved) return undefined;
+    const t = setTimeout(() => setWaitSaved(null), 15000);
+    return () => clearTimeout(t);
+  }, [waitSaved]);
 
   // Keep chiming until every new order has been accepted.
   const unacceptedCount = orders.filter((o) => !o.acceptedAt && !completing[o.id]).length;
@@ -443,18 +478,56 @@ export default function KitchenDashboard() {
               <button
                 type="button"
                 onClick={() => changeWait(key, -WAIT_STEP)}
-                disabled={waitTimes[key] <= MIN_WAIT[key]}
+                disabled={shownWait[key] <= MIN_WAIT[key]}
                 aria-label={`Shorter ${label} time`}
               >
                 −
               </button>
-              <span className="wait-ctl__value">{waitTimes[key]} min</span>
+              <span className={`wait-ctl__value${waitDraft && waitDraft[key] !== waitTimes[key] ? " is-changed" : ""}`}>
+                {shownWait[key]} min
+              </span>
               <button type="button" onClick={() => changeWait(key, WAIT_STEP)} aria-label={`Longer ${label} time`}>
                 +
               </button>
             </div>
           ))}
-          {waitError && <span className="wait-panel__error">{waitError}</span>}
+          <div className="wait-panel__actions">
+            {waitDirty && !waitAsking && (
+              <>
+                <button type="button" className="wait-cancel" onClick={() => setWaitDraft(null)}>
+                  Cancel
+                </button>
+                <button type="button" className="wait-confirm" onClick={() => setWaitAsking(true)}>
+                  Confirm
+                </button>
+              </>
+            )}
+            {waitDirty && waitAsking && (
+              <div className="wait-ask">
+                <span>
+                  Change to {waitDraft.carryout} min carryout and {waitDraft.delivery} min delivery? Customers see it right
+                  away.
+                </span>
+                <button type="button" className="wait-cancel" onClick={() => setWaitAsking(false)} disabled={waitSaving}>
+                  No
+                </button>
+                <button type="button" className="wait-confirm" onClick={saveWait} disabled={waitSaving}>
+                  {waitSaving ? "Saving..." : "Yes, Change It"}
+                </button>
+              </div>
+            )}
+          </div>
+          {(waitSaved || waitError || waitDirty) && (
+            <div className="wait-panel__msg">
+              {waitError ? (
+                <span className="wait-panel__error">{waitError}</span>
+              ) : waitSaved ? (
+                <span className="wait-panel__ok">✓ {waitSaved}</span>
+              ) : (
+                <span className="wait-panel__pending">Not changed yet. Tap Confirm to change it on the site.</span>
+              )}
+            </div>
+          )}
         </div>
         <KitchenHealth
           ordersError={ordersError}
@@ -595,6 +668,22 @@ export default function KitchenDashboard() {
         .wait-ctl button:disabled { background: #ccc; cursor: not-allowed; }
         .wait-ctl__value { min-width: 64px; text-align: center; font-weight: 800; font-size: 18px; }
         .wait-panel__error { color: #c62828; font-weight: 700; }
+        .wait-ctl__value.is-changed { color: #e31837; }
+        .wait-panel__actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+        .wait-confirm, .wait-cancel {
+          padding: 9px 18px; border-radius: 8px; font: inherit; font-size: 16px; font-weight: 800; cursor: pointer;
+        }
+        .wait-confirm { border: 0; background: #1b7a3a; color: #fff; }
+        .wait-cancel { border: 1px solid #999; background: #fff; color: #222; }
+        .wait-confirm:disabled, .wait-cancel:disabled { opacity: 0.6; cursor: default; }
+        .wait-ask {
+          display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+          padding: 8px 10px; border-radius: 8px; background: #fff4d6; border: 1px solid #e0b400;
+          font-size: 15px; font-weight: 700;
+        }
+        .wait-panel__msg { flex-basis: 100%; font-size: 15px; }
+        .wait-panel__ok { color: #1b7a3a; font-weight: 700; }
+        .wait-panel__pending { color: #8a5a00; font-weight: 600; }
 
         /* ---- accept ---- */
         .order-card--unaccepted {
