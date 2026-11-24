@@ -212,12 +212,12 @@ export default function SoftClubCard() {
           filter: saturate(0.85) contrast(1.05) brightness(1.02) hue-rotate(-8deg) drop-shadow(0 0.8cqw 0.9cqw rgba(0, 0, 0, 0.45));
           user-select: none;
         }
-        .px-img--bottle { height: 54%; width: auto; right: 3%; top: 12%; }
-        .px-img--p1 { width: 42%; left: 16%; top: 24%; }
-        .px-img--p2 { width: 42%; left: 40%; top: 36%; }
-        .px-img--p3 { width: 46%; left: 4%; top: 46%; }
+        .px-img--bottle { height: 54%; width: auto; right: 3%; top: 0; }
+        .px-img--p1 { width: 42%; left: 16%; top: 14%; }
+        .px-img--p2 { width: 42%; left: 40%; top: 26%; }
+        .px-img--p3 { width: 46%; left: 4%; top: 36%; }
         .px-img--wings { width: 30%; right: 6%; bottom: 4%; }
-        .px-img--bread { width: 26%; left: 10%; bottom: 3%; }
+        .px-img--bread { width: 26%; left: 42%; bottom: 22%; }
         :global(.px-x) {
           position: absolute;
           width: 3.4cqw;
@@ -399,8 +399,8 @@ export default function SoftClubCard() {
         .px-side {
           position: absolute;
           left: 3.5cqw;
-          bottom: 6cqh;
-          width: 47cqw;
+          bottom: 5cqh;
+          width: 52cqw;
           z-index: 3;
           display: flex;
           align-items: center;
@@ -428,8 +428,9 @@ export default function SoftClubCard() {
           position: relative;
           display: inline-flex;
           align-items: center;
-          flex: 0 0 auto;
-          padding: 2.2cqh 2.8cqw 2cqh;
+          flex: 1 1 auto;
+          justify-content: center;
+          padding: 3.4cqh 3cqw 3cqh;
           border-radius: 999px;
           background: linear-gradient(180deg, #c9f1ff 0%, #5ad1ff 50%, #1f9be6 51%, #6fd8ff 100%);
           border: 1px solid #e9fbff;
@@ -437,7 +438,7 @@ export default function SoftClubCard() {
           color: #062a5c;
           font-family: "Promo Michroma", var(--font-display);
           font-weight: 700;
-          font-size: 2cqw;
+          font-size: 2.7cqw;
           line-height: 1;
           letter-spacing: 0.1em;
           text-transform: uppercase;
@@ -504,7 +505,7 @@ export default function SoftClubCard() {
           }
           .px-cat { font-size: 0.9cqw; text-align: right; }
           .px-barcode { display: block; width: 10cqw; height: 3cqw; }
-          .px :global(.px-btn) { font-size: 1.15cqw; padding: 6cqh 2.2cqw 5.4cqh; }
+          .px :global(.px-btn) { flex: 0 0 auto; font-size: 1.15cqw; padding: 6cqh 2.2cqw 5.4cqh; }
         }
       `}</style>
     </div>
