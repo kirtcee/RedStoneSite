@@ -79,7 +79,7 @@ for (x0, x1), n in zip(runs, names):
 
 # ---- Dips: cut out of their white photos, sized by the cup's real width
 # (about 62 mm across, half the width of a can is 33 mm)
-DIPS = {"blue-cheese": "blue-cheese", "garlic": "garlic", "ranch": "ranch"}
+DIPS = {"blue-cheese": "blue-cheese", "garlic": "garlic", "ranch": "ranch", "marinara": "marinara"}
 for src, n in DIPS.items():
     im = crop(cut_white(Image.open(f"public/images/dips/{src}.jpg")))
     w = round(62 * PX_PER_MM)

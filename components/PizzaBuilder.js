@@ -152,7 +152,7 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
   const DIP_DEFS = [
     { key: "garlic",     name: "Signature Garlic Dip", img: "/images/dips/garlic.jpg" },
     { key: "ranch",      name: "Ranch",                img: "/images/dips/ranch.jpg" },
-    { key: "marinara",   name: "Marinara",             img: "/images/dips/marinara.png" },
+    { key: "marinara",   name: "Marinara",             img: "/images/dips/marinara.jpg" },
     { key: "blueCheese", name: "Blue Cheese",          img: "/images/dips/blue-cheese.jpg" },
   ];
   const initialDips = DIP_DEFS.reduce((acc, d) => { acc[d.key] = initialData.dips?.[d.key] || 0; return acc; }, {});
