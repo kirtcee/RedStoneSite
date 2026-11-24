@@ -17,6 +17,7 @@ import { formatMoney, describePizzaFull } from "../components/Pricing";
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { STAFF_EMAIL } from "../utils/kitchenAuth";
 import KitchenHealth from "../components/KitchenHealth";
+import KitchenPastOrders from "../components/KitchenPastOrders";
 import { MIN_WAIT, MAX_WAIT, WAIT_STEP, readWaitTimes } from "../utils/waitTimes";
 
 const UNDO_MS = 8000; // how long "Undo" shows after Mark Completed
@@ -126,6 +127,7 @@ export default function KitchenDashboard() {
   // see printingOrder effect below, which fires window.print() for just
   // this one order via the .print-receipt/@media print rules).
   const [printingOrder, setPrintingOrder] = useState(null);
+  const [showPast, setShowPast] = useState(false);
 
   useEffect(() => {
     alertsEnabledRef.current = alertsEnabled;
@@ -407,6 +409,9 @@ export default function KitchenDashboard() {
                 🔔 Enable Order Alerts
               </button>
             )}
+            <button className="kitchen-logout" onClick={() => setShowPast(true)}>
+              Past Orders
+            </button>
             <button
               className="kitchen-logout"
               onClick={() => signOut(auth).then(() => router.push("/kitchen-login"))}
@@ -471,6 +476,13 @@ export default function KitchenDashboard() {
           </section>
         )}
       </main>
+
+      <KitchenPastOrders
+        open={showPast}
+        onClose={() => setShowPast(false)}
+        describeItem={describeItem}
+        onPrint={(o) => setPrintingOrder(o)}
+      />
 
       {/* "Undo" for Mark Completed (it only saves after UNDO_MS) */}
       {Object.keys(completing).length > 0 && (
