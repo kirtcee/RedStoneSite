@@ -1,141 +1,216 @@
 // components/promos/MenuDealBanner.js
 //
 // The deal banner under the "MENU" title (same 1322x370 box the old
-// placeholder image used). A plain promo in the menu page's own style:
-// cream box, brown border, Red Stone Face caps, the site's red pill button.
-// Shows the Choose Any 2 or More deal ($8.99 each); the price and the list
-// of choices come from utils/dealCatalog.js.
+// placeholder image used). A classic pizza-chain promo: the food spread out
+// on a warm wooden table, big white heavy words on the left, a white price
+// tag with a big red price, the code and conditions in small print, and a
+// red Order Now pill in the bottom right.
+// Shows the Choose Any 2 or More deal; price and code come from
+// utils/dealCatalog.js.
 import Link from "next/link";
 import { findDealById } from "../../utils/dealCatalog";
-import { formatMoney } from "../Pricing";
 
 const DEAL_ID = "pick2mix";
 
 export default function MenuDealBanner() {
   const deal = findDealById(DEAL_ID);
-  const price = formatMoney(deal?.price ?? 899);
-  // "Get Any 2 or More: A, B, C. Price is per item." -> "A, B, C"
-  const choices = String(deal?.description || "")
-    .replace(/^[^:]*:\s*/, "")
-    .replace(/\.\s*Price is per item\.?$/i, "")
-    .trim();
+  const [dollars, cents] = ((deal?.price ?? 899) / 100).toFixed(2).split(".");
 
   return (
     <div className="mdb">
-      <div className="mdb-pic">
-        <img src="/images/deals/pick2mix.jpg" alt="" />
+      {/* the table with the food on it */}
+      <div className="mdb-table" aria-hidden="true" />
+      <div className="mdb-food" aria-hidden="true">
+        <img className="mdb-img mdb-img--pizza" src="/images/pizzas/overhead/pepperoni.webp" alt="" />
+        <img className="mdb-img mdb-img--pizza2" src="/images/pizzas/overhead/hawaiian.webp" alt="" />
+        <img className="mdb-img mdb-img--poutine" src="/images/sides/poutine-top.webp" alt="" />
+        <img className="mdb-img mdb-img--bread" src="/images/sides/cheesy-garlic-bread-top.webp" alt="" />
+        <img className="mdb-img mdb-img--wings" src="/images/wings/plate-6.webp" alt="" />
       </div>
+      <div className="mdb-shade" aria-hidden="true" />
 
-      <div className="mdb-text">
-        <div className="mdb-tag">Deal</div>
-        <h2 className="mdb-name">Choose Any 2 or More</h2>
-        <p className="mdb-choices">{choices}</p>
-      </div>
-
-      <div className="mdb-buy">
-        <div className="mdb-price">
-          {price}
-          <span className="mdb-each">Each</span>
+      <div className="mdb-words">
+        <h2 className="mdb-title">
+          <span>Choose</span>
+          <span>Any 2</span>
+          <span>or More</span>
+        </h2>
+        <div className="mdb-fine">
+          <strong>Code: {deal?.code || "RSP-899"}</strong>
+          <em>Price is per item. 2 item minimum.</em>
         </div>
-        <Link href={`/coupons?deal=${DEAL_ID}`} className="rs-pill-btn mdb-btn">
-          Order Now
-        </Link>
       </div>
+
+      {/* white price tag */}
+      <div className="mdb-tag" aria-label={`$${dollars}.${cents} each`}>
+        <span className="mdb-tag__dollar" aria-hidden="true">$</span>
+        <span className="mdb-tag__num" aria-hidden="true">{dollars}</span>
+        <span className="mdb-tag__side" aria-hidden="true">
+          <span className="mdb-tag__cents">.{cents}</span>
+          <span className="mdb-tag__each">Each</span>
+        </span>
+      </div>
+
+      <Link href={`/coupons?deal=${DEAL_ID}`} className="mdb-btn">
+        Order Now
+      </Link>
 
       <style jsx>{`
         .mdb {
+          --red: #e3141c;
           container-type: size;
           position: absolute;
           inset: 0;
-          display: flex;
-          align-items: center;
-          gap: 2.5cqw;
-          padding: 0 3cqw 0 0;
-          background: var(--menu-box-bg);
-          border: 1px solid var(--menu-box-border);
-          border-radius: 0.1875rem;
-          color: var(--text-brown);
           overflow: hidden;
+          border-radius: 0.4rem;
+          background: #6b4527;
         }
-        .mdb-pic {
-          flex: 0 0 auto;
-          height: 100%;
-          aspect-ratio: 4 / 3;
-          background: #fff;
-          border-right: 1px solid var(--menu-box-border);
+        /* warm wooden table, lit from the top right */
+        .mdb-table {
+          position: absolute;
+          inset: 0;
+          background:
+            radial-gradient(70% 120% at 78% 20%, rgba(255, 214, 160, 0.45), transparent 70%),
+            repeating-linear-gradient(92deg, rgba(60, 32, 14, 0.18) 0 0.3cqw, transparent 0.3cqw 2.2cqw),
+            repeating-linear-gradient(92deg, rgba(255, 220, 170, 0.08) 0 0.15cqw, transparent 0.15cqw 0.9cqw),
+            linear-gradient(180deg, #a8754a 0%, #8a5a34 55%, #6b4326 100%);
         }
-        .mdb-pic img {
-          display: block;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
+        .mdb-food {
+          position: absolute;
+          inset: 0;
         }
-        .mdb-text {
-          flex: 1 1 auto;
-          min-width: 0;
+        .mdb-img {
+          position: absolute;
+          height: auto;
+          filter: drop-shadow(0.6cqw 1cqw 1cqw rgba(40, 20, 5, 0.55));
+          user-select: none;
         }
-        .mdb-tag {
-          display: inline-block;
-          padding: 0.6cqw 1.4cqw 0.4cqw;
-          border-radius: 999px;
-          background: #8b1a1a;
-          color: #fff;
-          font-family: var(--font-display);
-          font-size: max(var(--fs-xs), 1.4cqw);
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-        }
-        .mdb-name {
-          margin: 1.2cqw 0 1cqw;
-          font-family: var(--font-display);
-          font-size: 3.6cqw;
-          line-height: 1;
-          text-transform: uppercase;
-          color: #000;
-        }
-        .mdb-choices {
-          margin: 0;
-          font-size: max(var(--fs-xs), 1.5cqw);
-          font-weight: var(--w-medium);
-          line-height: 1.35;
-        }
-        .mdb-buy {
-          flex: 0 0 auto;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 1.6cqw;
-        }
-        .mdb-price {
-          font-family: var(--font-display);
-          font-size: 5.4cqw;
-          line-height: 1;
-          color: #000;
-          text-transform: uppercase;
-          white-space: nowrap;
-        }
-        .mdb-each {
-          margin-left: 0.6cqw;
-          font-size: 0.42em;
-          color: var(--text-brown);
-        }
-        .mdb :global(.mdb-btn) {
-          padding: 1.2cqw 2.6cqw 1cqw;
-          font-size: 1.9cqw;
-          white-space: nowrap;
-          box-shadow: none;
+        .mdb-img--pizza { width: 30cqw; left: 47cqw; top: -14cqh; transform: rotate(-10deg); }
+        .mdb-img--pizza2 { width: 26cqw; right: -6cqw; top: -24cqh; transform: rotate(14deg); }
+        .mdb-img--poutine { width: 17cqw; right: 15cqw; top: 34cqh; }
+        .mdb-img--bread { width: 17cqw; left: 37cqw; bottom: -30cqh; transform: rotate(8deg); }
+        .mdb-img--wings { width: 19cqw; left: 58cqw; bottom: -14cqh; transform: rotate(-6deg); }
+        /* darker on the left so the white words pop */
+        .mdb-shade {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(90deg, rgba(40, 20, 6, 0.75) 0%, rgba(40, 20, 6, 0.45) 30%, transparent 48%);
         }
 
-        /* phones: the box is small, so the choices list is left out and the
-           words are a little bigger */
+        .mdb-words {
+          position: absolute;
+          left: 2.6cqw;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 2;
+        }
+        .mdb-title {
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          font-family: var(--font-display);
+          font-size: 6.2cqw;
+          line-height: 0.9;
+          letter-spacing: -0.01em;
+          text-transform: uppercase;
+          color: #fff;
+          text-shadow: 0 0.3cqw 1.2cqw rgba(0, 0, 0, 0.45);
+        }
+        .mdb-fine {
+          display: flex;
+          flex-direction: column;
+          margin-top: 2cqh;
+          color: #fff;
+          text-shadow: 0 0.2cqw 0.6cqw rgba(0, 0, 0, 0.6);
+        }
+        .mdb-fine strong {
+          font-family: var(--font-display);
+          font-weight: 400;
+          font-size: max(var(--fs-xs), 1.5cqw);
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+        }
+        .mdb-fine em {
+          font-size: max(var(--fs-xs), 1.25cqw);
+          font-weight: var(--w-medium);
+          opacity: 0.95;
+        }
+
+        /* the white price tag: a card with a notched right edge, tilted */
+        .mdb-tag {
+          position: absolute;
+          left: 29cqw;
+          top: 12cqh;
+          z-index: 3;
+          display: flex;
+          align-items: flex-start;
+          padding: 1.4cqw 3cqw 1.2cqw 1.6cqw;
+          background: #fff;
+          color: var(--red);
+          font-family: var(--font-display);
+          text-transform: uppercase;
+          line-height: 0.8;
+          clip-path: polygon(0 0, 100% 0, 92% 50%, 100% 100%, 0 100%);
+          transform: rotate(-3deg);
+          filter: drop-shadow(0.4cqw 0.6cqw 0.6cqw rgba(0, 0, 0, 0.35));
+        }
+        .mdb-tag__dollar {
+          font-size: 4.4cqw;
+          margin-top: 0.6cqw;
+        }
+        .mdb-tag__num {
+          font-size: 15cqw;
+          letter-spacing: -0.03em;
+        }
+        .mdb-tag__side {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          margin-left: 0.4cqw;
+          gap: 0.8cqw;
+        }
+        .mdb-tag__cents {
+          font-size: 6.4cqw;
+          margin-top: 0.4cqw;
+        }
+        .mdb-tag__each {
+          font-size: 2.2cqw;
+          color: #222;
+          letter-spacing: 0.06em;
+        }
+
+        .mdb :global(.mdb-btn) {
+          position: absolute;
+          right: 2.6cqw;
+          bottom: 9cqh;
+          z-index: 3;
+          padding: 1.4cqw 3cqw 1.2cqw;
+          border-radius: 999px;
+          background: var(--red);
+          color: #fff;
+          font-family: var(--font-display);
+          font-size: 2.6cqw;
+          line-height: 1;
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+          text-decoration: none;
+          box-shadow: 0 0.5cqw 1.4cqw rgba(0, 0, 0, 0.35);
+          transition: filter 0.15s ease, transform 0.15s ease;
+        }
+        .mdb :global(.mdb-btn:hover),
+        .mdb :global(.mdb-btn:focus-visible) {
+          filter: brightness(1.08);
+          transform: translateY(-0.15cqw);
+          outline: none;
+        }
+
+        /* phones: the box is only about 100px tall, so the small print is
+           left out (it's on the deal itself) and the words get bigger */
         @container (max-width: 560px) {
-          .mdb { gap: 3cqw; }
-          .mdb-choices { display: none; }
-          .mdb-tag { font-size: 2.6cqw; padding: 1cqw 2.4cqw 0.7cqw; }
-          .mdb-name { font-size: 5.2cqw; margin-bottom: 0; }
-          .mdb-price { font-size: 7.4cqw; }
-          .mdb :global(.mdb-btn) { font-size: 3cqw; padding: 1.8cqw 3.6cqw 1.5cqw; }
-          .mdb-buy { gap: 2.4cqw; }
+          .mdb-fine { display: none; }
+          .mdb-title { font-size: 7.6cqw; }
+          .mdb-tag { left: 33cqw; top: 14cqh; }
+          .mdb :global(.mdb-btn) { font-size: 3.4cqw; padding: 1.8cqw 3.6cqw 1.5cqw; }
         }
       `}</style>
     </div>
