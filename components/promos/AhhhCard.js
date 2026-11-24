@@ -2,10 +2,10 @@
 //
 // Home page drinks "easter egg" strip (no button, nothing to click):
 // "Add ahhh to your order" with a row of our drinks, over the photo
-// public/images/promos/ahhh.jpg (a web copy of ahhh.png with the black bar
+// public/images/promos/ahhh-bg.jpg (a web copy of ahhh.png with the black bar
 // at the top trimmed off). The photo fills the whole strip; the person is on
 // the left, so the words and drinks sit on the right.
-const PHOTO_SRC = "/images/promos/ahhh.jpg";
+const PHOTO_SRC = "/images/promos/ahhh-bg.jpg";
 
 // left to right; h = height compared to the strip
 const DRINKS = [
