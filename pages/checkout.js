@@ -17,10 +17,31 @@ import { findDealById } from "../utils/dealCatalog";
 import { saveOrder, startCardPayment, finalizeCardPayment, friendlyOrderError } from "../utils/saveOrder";
 import StripeCardPayment from "../components/StripeCardPayment";
 import { DELIVERY_MINIMUM_CENTS } from "../utils/orderRules";
+import useWaitTimes from "../hooks/useWaitTimes";
+import {
+  canOrderNow,
+  nextOpening,
+  scheduleProblem,
+  timeSlotsFor,
+  torontoParts,
+  addDays,
+  MAX_SCHEDULE_DAYS,
+  formatClock,
+} from "../utils/storeHours";
+
+// The first time an order can be scheduled for (today or a later day).
+function firstOpenSlot() {
+  const today = torontoParts().date;
+  for (let i = 0; i <= MAX_SCHEDULE_DAYS; i++) {
+    const date = addDays(today, i);
+    const slots = timeSlotsFor(date);
+    if (slots.length) return { date, time: slots[0].value };
+  }
+  return null;
+}
 
 // Shown under the page title (same numbers as the menu page estimate)
 const CARRYOUT_ADDRESS = "576 Concession Street";
-const READY_MINUTES = { carryout: 20, delivery: 45 };
 
 // Recomputes from the item's raw fields rather than trusting a possibly
 // stale stored `.summary` string, so formatting stays consistent even for
@@ -97,9 +118,17 @@ function itemOptionRows(item) {
 
 function formatSchedule(date, time) {
   if (!date || !time) return null;
-  const d = new Date(`${date}T${time}:00`);
-  if (isNaN(d.getTime())) return null;
-  return d.toLocaleString("en-CA", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  // a Toronto date and time, shown as "Sat, Dec 5 at 11:00 AM" on any device
+  const [y, m, dd] = String(date).split("-").map(Number);
+  const day = new Date(Date.UTC(y, m - 1, dd)).toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+  const [hh, mm] = String(time).split(":").map(Number);
+  if (!y || Number.isNaN(hh)) return null;
+  return `${day} at ${formatClock(hh * 60 + mm)}`;
 }
 
 // ---- Form fields ----
@@ -175,6 +204,29 @@ export default function CheckoutPage() {
   const { service, deliveryAddress, isServiceConfirmed, openServiceGate, orderTiming, scheduleDate, scheduleTime } =
     cart || {};
   const totals = useOrderTotals();
+  const READY_MINUTES = useWaitTimes(); // the kitchen's current carryout / delivery times
+
+  // Store hours (utils/storeHours.js). Worked out after the page loads so
+  // the server render and the browser agree.
+  const [hoursCheck, setHoursCheck] = useState({ closedNow: false, badSchedule: false, opens: null });
+  useEffect(() => {
+    const check = () =>
+      setHoursCheck({
+        closedNow: orderTiming !== "later" && !canOrderNow(),
+        badSchedule: orderTiming === "later" && !!scheduleProblem(scheduleDate, scheduleTime),
+        opens: nextOpening(),
+      });
+    check();
+    const id = setInterval(check, 30000);
+    return () => clearInterval(id);
+  }, [orderTiming, scheduleDate, scheduleTime]);
+  const scheduleNext = () => {
+    const slot = firstOpenSlot();
+    if (!slot) return;
+    cart?.setOrderTiming?.("later");
+    cart?.setScheduleDate?.(slot.date);
+    cart?.setScheduleTime?.(slot.time);
+  };
 
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -230,6 +282,8 @@ export default function CheckoutPage() {
     }
     // Address too far to price online: the notice above the button explains.
     if (cart?.deliveryTooFar) return;
+    // Closed, or the scheduled time isn't valid: the notice above explains.
+    if (hoursCheck.closedNow || hoursCheck.badSchedule) return;
     // Delivery minimum (utils/orderRules.js): show what's missing instead.
     if (cart?.deliveryShortCents > 0) {
       cart.openMinGate?.();
@@ -522,6 +576,24 @@ export default function CheckoutPage() {
               </div>
             </section>
 
+            {hoursCheck.closedNow && (
+              <div className="co-minNote">
+                We're closed for online orders right now{hoursCheck.opens ? ` (we open ${hoursCheck.opens})` : ""}. You
+                can schedule your order for later.{" "}
+                <button type="button" className="co-minNote__btn" onClick={scheduleNext}>
+                  Schedule for Later
+                </button>
+              </div>
+            )}
+            {hoursCheck.badSchedule && (
+              <div className="co-minNote">
+                We're not open at your scheduled time, or it's too soon. Please pick another time in Order
+                Settings.{" "}
+                <button type="button" className="co-minNote__btn" onClick={scheduleNext}>
+                  Use the Next Open Time
+                </button>
+              </div>
+            )}
             {cart?.deliveryTooFar && (
               <div className="co-minNote">
                 This address is outside our regular delivery area. Please double-check the address, or call

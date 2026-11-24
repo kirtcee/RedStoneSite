@@ -192,7 +192,7 @@ export default function OrderConfirmation() {
 
   const items = Array.isArray(order.items) ? order.items : [];
   const pickupTime = order.pickupTime?.toDate
-    ? order.pickupTime.toDate().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    ? order.pickupTime.toDate().toLocaleTimeString([], { hour: "numeric", minute: "2-digit", timeZone: "America/Toronto" })
     : null;
   const fees = order.fees || {};
 

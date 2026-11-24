@@ -11,7 +11,18 @@ import { formatMoney } from "./Pricing";
 
 import { DELIVERY_FEE_CENTS, TAX_RATE, taxOn } from "../utils/orderRules";
 export { DELIVERY_FEE_CENTS, TAX_RATE }; // older imports still point here
-const STORE_HOURS = { open: "11:00", close: "22:00" };
+import {
+  torontoParts,
+  addDays,
+  timeSlotsFor,
+  hoursFor,
+  formatClock,
+  hoursSummary,
+  canOrderNow,
+  nextOpening,
+  MAX_SCHEDULE_DAYS,
+  LAST_ORDER_BEFORE_CLOSE,
+} from "../utils/storeHours";
 const BORDER = "var(--menu-box-border)";
 const LIGHT = "#faf2e9";
 const DARK = "#f0decc";
@@ -21,26 +32,6 @@ function formatAddress(addr) {
   if (!addr) return "Enter address";
   const { street, suite, city, postal } = addr;
   return [street, suite ? `Unit ${suite}` : "", city, postal].filter(Boolean).join(", ");
-}
-
-// 15-minute increments across the store's open hours, e.g. "11:00"->"11:15 AM".
-function buildTimeOptions(open, close) {
-  const [oh, om] = open.split(":").map(Number);
-  const [ch, cm] = close.split(":").map(Number);
-  const start = oh * 60 + om;
-  const end = ch * 60 + cm;
-  const opts = [];
-  for (let m = start; m <= end; m += 15) {
-    const h24 = Math.floor(m / 60);
-    const min = m % 60;
-    const period = h24 >= 12 ? "PM" : "AM";
-    const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
-    opts.push({
-      value: `${String(h24).padStart(2, "0")}:${String(min).padStart(2, "0")}`,
-      label: `${h12}:${String(min).padStart(2, "0")} ${period}`,
-    });
-  }
-  return opts;
 }
 
 function PersonIcon() {
@@ -224,8 +215,14 @@ function DateDropdown({ value, onChange }) {
     }
   };
 
+  const dayValue = (day) => `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  // only today (Toronto) up to MAX_SCHEDULE_DAYS ahead can be picked
+  const firstDay = torontoParts().date;
+  const lastDay = addDays(firstDay, MAX_SCHEDULE_DAYS);
+  const dayOff = (day) => dayValue(day) < firstDay || dayValue(day) > lastDay;
   const pickDay = (day) => {
-    onChange(`${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`);
+    if (dayOff(day)) return;
+    onChange(dayValue(day));
     setOpen(false);
   };
 
@@ -265,6 +262,7 @@ function DateDropdown({ value, onChange }) {
                   type="button"
                   className={`os-dateMenu__day${selectedInView && day === selD ? " is-selected" : ""}`}
                   onClick={() => pickDay(day)}
+                  disabled={dayOff(day)}
                 >
                   {day}
                 </button>
@@ -360,6 +358,11 @@ function DateDropdown({ value, onChange }) {
         .os-dateMenu__day:hover {
           background: ${DARK};
         }
+        .os-dateMenu__day:disabled {
+          opacity: 0.3;
+          cursor: default;
+          background: none;
+        }
         .os-dateMenu__day.is-selected {
           background: #8b1a1a;
           color: #fff;
@@ -401,13 +404,27 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
   const [changingLoc, setChangingLoc] = useState(false);
   const [newLoc, setNewLoc] = useState("");
   const [showHours, setShowHours] = useState(false);
-  const timeOptions = useMemo(() => buildTimeOptions(STORE_HOURS.open, STORE_HOURS.close), []);
+  // Scheduled times offered for the chosen day (Toronto time, store hours,
+  // nothing too soon); see utils/storeHours.js
+  const timeOptions = useMemo(() => timeSlotsFor(scheduleDate || torontoParts().date), [scheduleDate]);
+  const dayHours = scheduleDate ? hoursFor(scheduleDate) : null;
+  const openNow = canOrderNow();
+
+  // Keep the chosen date/time valid: never a past day, and a time that's
+  // actually offered for that day (first one available otherwise).
+  useEffect(() => {
+    const today = torontoParts().date;
+    if (!scheduleDate || scheduleDate < today) {
+      setScheduleDate(today);
+      return;
+    }
+    if (timeOptions.length && !timeOptions.some((o) => o.value === scheduleTime)) {
+      setScheduleTime(timeOptions[0].value);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scheduleDate, timeOptions]);
 
   useEffect(() => {
-    const today = new Date();
-    const yyyyMmDd = today.toISOString().slice(0, 10);
-    if (!scheduleDate) setScheduleDate(yyyyMmDd);
-    if (!scheduleTime) setScheduleTime("18:00");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -564,22 +581,37 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
               <div className="os-schedule">
                 <DateDropdown value={scheduleDate} onChange={setScheduleDate} />
 
-                <TimeDropdown value={scheduleTime} onChange={setScheduleTime} options={timeOptions} />
+                {timeOptions.length > 0 ? (
+                  <TimeDropdown value={scheduleTime} onChange={setScheduleTime} options={timeOptions} />
+                ) : (
+                  <div className="os-small os-small--warn">No times left on this day. Please pick another day.</div>
+                )}
 
-                <div className="os-small">
-                  Available hours for selected day: {STORE_HOURS.open} to {STORE_HOURS.close}
-                </div>
+                {dayHours && (
+                  <div className="os-small">
+                    Hours that day: {formatClock(dayHours.open)} to {formatClock(dayHours.close)}
+                  </div>
+                )}
               </div>
             )}
 
             <button onClick={() => setShowHours((v) => !v)} className="os-link">
               View Store Hours
             </button>
+            {orderTiming === "now" && !openNow && (
+              <div className="os-small os-small--warn">
+                We're closed for online orders right now{nextOpening() ? ` (we open ${nextOpening()})` : ""}. Choose
+                Later to schedule your order.
+              </div>
+            )}
             {showHours && (
               <div className="os-hours">
-                Mon to Sat: 11:00 to 22:00
-                <br />
-                Sun: 12:00 to 21:00
+                {hoursSummary().map((r) => (
+                  <div key={r.days}>
+                    {r.days}: {r.hours}
+                  </div>
+                ))}
+                <div>Last online order {LAST_ORDER_BEFORE_CLOSE} min before closing.</div>
               </div>
             )}
           </div>
@@ -726,6 +758,10 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
         }
         .os-schedule {
           margin-top: 10px;
+        }
+        .os-small--warn {
+          color: #a71318 !important;
+          font-weight: 700;
         }
         .os-small {
           margin-top: 6px;

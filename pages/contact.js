@@ -1,4 +1,6 @@
 // pages/contact.js
+import { hoursSummary } from "../utils/storeHours";
+
 export default function ContactPage() {
   return (
     <main className="container" style={{ paddingTop: "32px", paddingBottom: "32px" }}>
@@ -19,9 +21,12 @@ export default function ContactPage() {
         <div>
           <div style={{ fontWeight: 700, marginBottom: 4 }}>Hours</div>
           <div style={{ color: "#555" }}>
-            Mon to Sat: 11:00 AM to 10:00 PM
-            <br />
-            Sun: 12:00 PM to 9:00 PM
+            {/* from utils/storeHours.js, the same hours online ordering uses */}
+            {hoursSummary().map((r) => (
+              <div key={r.days}>
+                {r.days}: {r.hours}
+              </div>
+            ))}
           </div>
         </div>
       </div>

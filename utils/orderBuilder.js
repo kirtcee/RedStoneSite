@@ -16,6 +16,7 @@ import { Timestamp } from "firebase-admin/firestore";
 
 import { TAX_RATE, DELIVERY_FEE_CENTS, DELIVERY_MINIMUM_CENTS, taxOn } from "./orderRules";
 import { MIN_WAIT, clampWait, waitKey } from "./waitTimes";
+import { torontoToDate, canOrderNow, scheduleProblem } from "./storeHours";
 export { TAX_RATE, DELIVERY_FEE_CENTS };
 const MAX_ITEMS = 100;
 const MAX_QTY_PER_ITEM = 50;
@@ -86,7 +87,8 @@ export async function verifyUser(idToken) {
 export function pickupTimeFor(orderTiming, schedule, waitMinutes = 20) {
   const isLater = orderTiming === "later";
   const { date, time } = schedule || {};
-  const scheduled = isLater && date && time ? new Date(`${date}T${time}:00`) : null;
+  // the scheduled time is Toronto time (the server itself runs in UTC)
+  const scheduled = isLater && date && time ? torontoToDate(date, time) : null;
   return Timestamp.fromDate(
     scheduled && !isNaN(scheduled.getTime()) ? scheduled : new Date(Date.now() + waitMinutes * 60000)
   );
@@ -133,6 +135,15 @@ export function buildOrder(body, { uid, paymentMethod, deliveryQuote = null, wai
     .map((d) => ({ id: d.id.slice(0, 64), dealId: d.dealId }));
 
   if (serviceMethod !== "Carryout" && serviceMethod !== "Delivery") return fail(400, "bad_service_method");
+
+  // Store hours (utils/storeHours.js): "now" orders only while open,
+  // scheduled orders only for a real opening-hours time slot.
+  if (orderTiming === "later") {
+    const problem = scheduleProblem(schedule?.date, schedule?.time);
+    if (problem) return fail(400, problem === "too_far" ? "schedule_too_far" : "schedule_closed");
+  } else if (!canOrderNow()) {
+    return fail(400, "store_closed");
+  }
 
   const firstName = String(contact?.firstName || "").trim().slice(0, 60);
   const lastName = String(contact?.lastName || "").trim().slice(0, 60);

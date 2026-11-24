@@ -5,18 +5,6 @@ Running list of things to finish before `mac-handoff` is merged into `main`
 
 ## Must do (launch blockers)
 
-### Bugs / missing logic
-- [ ] **Scheduled times are off by 5 hours on the live site.** The server reads
-      a scheduled "7:00 PM" in UTC (Vercel's time zone), so it's saved as
-      2:00 PM Toronto time: wrong kitchen timers, wrong "Later" section, wrong
-      time on the confirmation page. Fix `pickupTimeFor` in
-      `utils/orderBuilder.js` to use America/Toronto.
-- [ ] **Store hours aren't enforced.** ASAP orders can be placed at 3 AM, and
-      scheduled times are offered 11 AM to 10 PM every day (Sunday is really
-      12 to 9, see `pages/contact.js`). Need: one shared hours table, "We're
-      closed, schedule for later" when closed, Sunday hours in the time picker,
-      and the server refusing closed / past times.
-
 ### Accounts, keys and settings
 - [ ] **Stripe "Pay Now"** is built (see `utils/stripeServer.js`). Left to do:
       - test it on the preview link with Stripe's test card 4242 4242 4242 4242
