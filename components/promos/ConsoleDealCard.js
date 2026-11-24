@@ -204,7 +204,7 @@ export default function ConsoleDealCard() {
         /* ---- Wide (phones/tablets): pizzas left, text right ---- */
         .cdc-body {
           position: absolute;
-          inset: 0 7cqw;
+          inset: 0 6cqw;
           display: flex;
           flex-direction: row;
           align-items: center;
@@ -213,7 +213,7 @@ export default function ConsoleDealCard() {
         }
         .cdc-pizzas {
           position: relative;
-          flex: 0 0 50%;
+          flex: 0 0 47%;
           height: 74cqh;
         }
         .cdc-pizza {
@@ -277,14 +277,15 @@ export default function ConsoleDealCard() {
         }
         .cdc-price {
           font-family: var(--font-display);
-          font-size: 11cqw;
+          font-size: 12cqw;
+          white-space: nowrap;
           line-height: 1;
           color: var(--blue);
           text-transform: uppercase;
           text-shadow: 0 0.25cqw 0 #1d8fc4, 0 0.6cqw 1cqw rgba(29, 143, 196, 0.25);
         }
         .cdc-price__each {
-          font-size: 4.2cqw;
+          font-size: 3.6cqw;
           color: #4d4d4d;
           text-shadow: none;
         }
@@ -330,7 +331,7 @@ export default function ConsoleDealCard() {
           .cdc-fine { grid-area: fine; justify-self: end; }
           .cdc-tag { font-size: 3.3cqw; }
           .cdc-title { font-size: 8cqw; margin: 0; }
-          .cdc-price { font-size: 10cqw; }
+          .cdc-price { font-size: 12cqw; }
           .cdc-price__each { font-size: 4.6cqw; }
           .cdc-fine { font-size: 3.6cqw; margin-top: 1cqh; }
           .cdc-bar { flex-basis: 18cqh; }

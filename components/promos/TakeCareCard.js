@@ -212,7 +212,7 @@ export default function TakeCareCard() {
         .tc-items {
           margin: 0 0 3cqh;
           white-space: pre-line;
-          font-size: 2.9cqw;
+          font-size: 3.8cqw;
           font-weight: var(--w-regular);
           line-height: 1.35;
           letter-spacing: 0.02em;
@@ -287,7 +287,7 @@ export default function TakeCareCard() {
             width: 30cqw;
             text-align: right;
           }
-          .tc-items { font-size: 1.2cqw; margin-bottom: 8cqh; }
+          .tc-items { font-size: 1.5cqw; margin-bottom: 8cqh; }
           .tc-buy { justify-content: flex-end; gap: 1.8cqw; }
           .tc-price { font-size: 3cqw; }
           .tc :global(.tc-btn) { font-size: 1.5cqw; padding: 9cqh 2.4cqw 7.5cqh; }
