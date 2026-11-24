@@ -1118,9 +1118,9 @@ export default function CartPage() {
             font-size: 1.1rem;
             font-weight: 650;
           }
-          /* EDIT above REMOVE, in the spot REMOVE used to be in */
+          /* REMOVE above EDIT, in the spot REMOVE used to be in */
           .cart-box :global(.cart-line__actions) {
-            flex-direction: column;
+            flex-direction: column-reverse; /* REMOVE on top, EDIT under it */
             align-items: flex-end; /* right edges line up with the QTY pill */
             gap: 2px;
             margin-right: 0;
