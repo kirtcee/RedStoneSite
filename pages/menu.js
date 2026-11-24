@@ -712,14 +712,10 @@ function MenuBody() {
           {/* Entrées landing */}
           {tab === "entrees" && sub === "all" && (
             <>
-              <div className="menu-heroRow">
-                <img
-                  className="menu-heroRow__hero"
-                  src="/images/deal_title.jpg"
-                  alt="Deal"
-                  loading="eager"
-                />
-              </div>
+              {/* Deal banner spot (removed for now, see TODO.md "Menu page deal
+                  banner"). To bring it back, put a promo card here inside
+                  <div className="menu-heroRow">; .menu-heroRow /
+                  .menu-heroRow__hero in globals.css still hold its sizing. */}
 
               <div className="card eta-card">
                 <div className="eta-left">
