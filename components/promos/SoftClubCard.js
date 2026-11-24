@@ -217,7 +217,7 @@ export default function SoftClubCard() {
         .px-img--p2 { width: 42%; left: 40%; top: 26%; }
         .px-img--p3 { width: 46%; left: 4%; top: 36%; }
         .px-img--wings { width: 30%; right: 6%; bottom: 4%; }
-        .px-img--bread { width: 26%; left: 42%; bottom: 22%; }
+        .px-img--bread { width: 26%; left: 48%; bottom: 30%; }
         :global(.px-x) {
           position: absolute;
           width: 3.4cqw;
