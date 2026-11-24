@@ -1121,12 +1121,17 @@ export default function CartPage() {
           /* EDIT above REMOVE, in the spot REMOVE used to be in */
           .cart-box :global(.cart-line__actions) {
             flex-direction: column;
-            align-items: flex-end;
-            gap: 6px;
-            margin-right: -6px;
+            align-items: flex-end; /* right edges line up with the QTY pill */
+            gap: 2px;
+            margin-right: 0;
           }
           .cart-box :global(.cart-line__actions button) {
-            font-size: 1rem; /* plain number so it can be changed in Inspect */
+            font-size: 1.25rem;
+            /* the display font only comes in 950; the same Red Stone Face in
+               its adjustable version, at 900 */
+            font-family: var(--font-body);
+            font-weight: 900;
+            line-height: 1.1;
           }
           .cart-box__note {
             margin: 6px 12px 12px;
