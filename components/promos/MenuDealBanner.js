@@ -42,13 +42,19 @@ export default function MenuDealBanner() {
       </div>
 
       {/* white price tag */}
+      {/* drawn twice: the red outlines underneath, the white on top, so
+          the outlines never cut across the white numbers */}
       <div className="mdb-tag" aria-label={`$${dollars}.${cents} each`}>
-        <div className="mdb-tag__price" aria-hidden="true">
-          <span className="mdb-tag__sup">$</span>
-          <span className="mdb-tag__num">{dollars}</span>
-          <span className="mdb-tag__sup">.{cents}</span>
-        </div>
-        <div className="mdb-tag__each" aria-hidden="true">Each</div>
+        {["stroke", "fill"].map((layer) => (
+          <div key={layer} className={`mdb-tag__layer mdb-tag__layer--${layer}`} aria-hidden="true">
+            <span className="mdb-tag__dollar">$</span>
+            <span className="mdb-tag__num">{dollars}</span>
+            <span className="mdb-tag__side">
+              <span className="mdb-tag__cents">{cents}</span>
+              <span className="mdb-tag__each">Each</span>
+            </span>
+          </div>
+        ))}
       </div>
 
       <Link href={`/coupons?deal=${DEAL_ID}`} className="mdb-btn">
@@ -136,48 +142,60 @@ export default function MenuDealBanner() {
           opacity: 0.95;
         }
 
-        /* the white price tag: straight, rounded, with a red EACH band */
+        /* the price, straight on the food: white numbers with one thick red
+           outline that merges into a single shape, plus a soft shadow.
+           --stroke is the outline thickness (the same for every part, so the
+           outlines join up). */
         .mdb-tag {
+          --stroke: 2.2cqw;
           position: absolute;
           left: 29cqw;
           top: 50%;
           transform: translateY(-50%);
           z-index: 3;
-          display: flex;
-          flex-direction: column;
-          align-items: stretch;
-          overflow: hidden;
-          border-radius: 0.8cqw;
-          background: #fff;
-          box-shadow: 0 0.6cqw 1.6cqw rgba(0, 0, 0, 0.35);
           font-family: var(--font-display);
           text-transform: uppercase;
+          line-height: 0.8;
+          filter: drop-shadow(0 0.6cqw 1cqw rgba(0, 0, 0, 0.45));
         }
-        .mdb-tag__price {
+        .mdb-tag__layer {
           display: flex;
           align-items: flex-start;
-          justify-content: center;
-          padding: 1.2cqw 2.2cqw 0.6cqw;
+        }
+        .mdb-tag__layer--stroke {
           color: var(--red);
-          line-height: 0.82;
+        }
+        .mdb-tag__layer--stroke span {
+          -webkit-text-stroke: calc(var(--stroke) * 2) var(--red);
+        }
+        .mdb-tag__layer--fill {
+          position: absolute;
+          inset: 0;
+          color: #fff;
+        }
+        .mdb-tag__dollar {
+          font-size: 6.4cqw;
+          margin-top: 2cqw;
         }
         .mdb-tag__num {
-          font-size: 13cqw;
+          font-size: 17cqw;
+          letter-spacing: -0.02em;
+          margin: 0 0.6cqw 0 -0.4cqw;
+        }
+        .mdb-tag__side {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin-top: 1.2cqw;
+        }
+        .mdb-tag__cents {
+          font-size: 8.4cqw;
           letter-spacing: -0.02em;
         }
-        /* $ and .99 sit raised next to the big number, both the same size */
-        .mdb-tag__sup {
-          font-size: 5.2cqw;
-          margin-top: 0.5cqw;
-        }
         .mdb-tag__each {
-          padding: 0.7cqw 0 0.5cqw;
-          background: var(--red);
-          color: #fff;
-          font-size: 2.2cqw;
-          line-height: 1;
-          letter-spacing: 0.2em;
-          text-align: center;
+          margin-top: -0.2cqw;
+          font-size: 4.2cqw;
+          letter-spacing: 0.02em;
         }
 
         .mdb :global(.mdb-btn) {
