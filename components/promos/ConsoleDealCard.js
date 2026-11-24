@@ -61,10 +61,12 @@ export default function ConsoleDealCard() {
 
           <div className="cdc-text">
             <div className="cdc-tag">Carryout Special</div>
-            <h2 className="cdc-title">
-              {name}
-              <span className="cdc-title__mirror" aria-hidden="true">
-                {name}
+            <h2 className="cdc-title" aria-label={name}>
+              <span aria-hidden="true">Large</span>
+              <span aria-hidden="true">2-Topping</span>
+              <span className="cdc-title__last" aria-hidden="true">
+                Pizza
+                <span className="cdc-title__mirror">Pizza</span>
               </span>
             </h2>
             <div className="cdc-price">
@@ -94,7 +96,8 @@ export default function ConsoleDealCard() {
           inset: 0;
           display: flex;
           flex-direction: column;
-          background: #111;
+          background: transparent;
+          filter: drop-shadow(0 0.6cqw 1.2cqw rgba(0, 0, 0, 0.22));
           font-family: var(--font-body);
           font-weight: var(--w-medium);
           color: #4d4d4d;
@@ -106,7 +109,7 @@ export default function ConsoleDealCard() {
         .cdc-screen {
           position: relative;
           flex: 1 1 auto;
-          margin: 2.2cqw 2.2cqw 0;
+          margin: 0;
           border-radius: 9cqw 9cqw 0 0 / 8cqh 8cqh 0 0;
           background:
             radial-gradient(120% 90% at 50% 45%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 70%),
@@ -121,7 +124,7 @@ export default function ConsoleDealCard() {
         .cdc-bar {
           position: relative;
           flex: 0 0 19cqh;
-          margin: 0 2.2cqw 2.2cqw;
+          margin: 0;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -225,31 +228,41 @@ export default function ConsoleDealCard() {
         .cdc-text {
           flex: 1 1 auto;
           min-width: 0;
-          text-align: center;
+          height: 74cqh; /* same height as the pizzas, so the text lines up with them */
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: space-between;
+          text-align: left;
         }
         .cdc-tag {
           display: inline-block;
-          padding: 0.5cqh 2.6cqw 0.3cqh;
+          padding: 1cqh 3cqw 0.7cqh;
           border-radius: 999px;
           background: rgba(53, 189, 242, 0.16);
           color: #1d8fc4;
           font-family: var(--font-display);
-          font-size: 2.7cqw;
+          font-size: 3.4cqw;
           letter-spacing: 0.03em;
           text-transform: uppercase;
         }
         .cdc-title {
           position: relative;
-          margin: 2.2cqh 0 6.5cqh;
+          display: flex;
+          flex-direction: column;
+          margin: 0;
           font-family: var(--font-display);
-          font-size: 4.1cqw;
-          line-height: 1;
+          font-size: 8cqw;
+          line-height: 0.92;
           color: #4d4d4d;
           white-space: nowrap;
           text-transform: uppercase;
           letter-spacing: 0.01em;
         }
         /* the soft mirror under the title, like a glossy floor */
+        .cdc-title__last {
+          position: relative;
+        }
         .cdc-title__mirror {
           position: absolute;
           left: 0;
@@ -264,20 +277,20 @@ export default function ConsoleDealCard() {
         }
         .cdc-price {
           font-family: var(--font-display);
-          font-size: 9cqw;
+          font-size: 11cqw;
           line-height: 1;
           color: var(--blue);
           text-transform: uppercase;
           text-shadow: 0 0.25cqw 0 #1d8fc4, 0 0.6cqw 1cqw rgba(29, 143, 196, 0.25);
         }
         .cdc-price__each {
-          font-size: 3.4cqw;
+          font-size: 4.2cqw;
           color: #4d4d4d;
           text-shadow: none;
         }
         .cdc-fine {
-          margin-top: 1.4cqh;
-          font-size: 2.9cqw;
+          margin-top: 0.6cqh;
+          font-size: 3.4cqw;
           font-weight: var(--w-semibold);
           color: #666;
         }
@@ -292,15 +305,32 @@ export default function ConsoleDealCard() {
           .cdc-pizzas {
             flex: 0 0 auto;
             width: 100%;
-            height: 32cqh;
-            margin-top: 3cqh;
+            height: 28cqh;
+            margin-top: 4cqh;
           }
           .cdc-pizza--back { right: 2%; top: -2%; width: 58%; }
           .cdc-pizza--front { left: 2%; bottom: -4%; width: 64%; }
-          .cdc-text { flex: 0 0 auto; margin-top: 2.5cqh; }
+          /* laptop: tag on top, the 3-line title on the left, price and
+             "2 pizza minimum" on the right, lined up with the title's bottom */
+          .cdc-text {
+            flex: 0 0 auto;
+            height: auto;
+            margin-top: 3cqh;
+            align-self: stretch;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            grid-template-areas: "tag tag" "title price" "title fine";
+            grid-template-rows: auto 1fr auto;
+            column-gap: 4cqw;
+            row-gap: 1.4cqh;
+          }
+          .cdc-tag { grid-area: tag; justify-self: start; }
+          .cdc-title { grid-area: title; }
+          .cdc-price { grid-area: price; align-self: end; justify-self: end; }
+          .cdc-fine { grid-area: fine; justify-self: end; }
           .cdc-tag { font-size: 3.3cqw; }
-          .cdc-title { font-size: 6cqw; margin: 1.4cqh 0 3.4cqh; }
-          .cdc-price { font-size: 10.5cqw; }
+          .cdc-title { font-size: 8cqw; margin: 0; }
+          .cdc-price { font-size: 10cqw; }
           .cdc-price__each { font-size: 4.6cqw; }
           .cdc-fine { font-size: 3.6cqw; margin-top: 1cqh; }
           .cdc-bar { flex-basis: 18cqh; }

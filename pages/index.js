@@ -35,7 +35,7 @@ export default function Home() {
         <section className="deals-wrap">
           {/* Row 1: 577x519 + (341x254 stacked) */}
           <div className="deals-grid-1">
-            <div className="tile tile-577x519 tile--promo">
+            <div className="tile tile-577x519 tile--promo tile--bare">
               <ConsoleDealCard />
             </div>
 
@@ -199,6 +199,9 @@ export default function Home() {
         }
         .tile img { display: block; width: 100%; height: 100%; object-fit: cover; }
         .tile--promo { border: 0; background: #111; }
+        /* the console card draws its own rounded shape and shadow */
+        .tile--bare { background: transparent; box-shadow: none; overflow: visible; }
+        .tile--bare:hover { box-shadow: none; }
 
         .tile-577x519 { aspect-ratio: 577 / 519; }
         .tile-341x254 { aspect-ratio: 341 / 254; }
