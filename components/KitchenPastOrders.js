@@ -41,7 +41,7 @@ export default function KitchenPastOrders({ open, onClose, describeItem, onPrint
         setError(null);
       },
       (err) => {
-        console.error("Past orders failed", err);
+        console.warn("Past orders failed", err?.code);
         setError(err.message || "Couldn't load past orders.");
         setLoading(false);
       }

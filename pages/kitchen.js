@@ -247,7 +247,15 @@ export default function KitchenDashboard() {
     return onSnapshot(
       doc(db, "settings", "waitTimes"),
       (snap) => setWaitTimes(readWaitTimes(snap.exists() ? snap.data() : null)),
-      (err) => console.error("waitTimes listener", err)
+      // Usually "permission denied" until the Firestore rules with
+      // settings/waitTimes are published (see TODO.md). Shown in the wait
+      // bar instead of console.error (which Next.js shows as a red overlay).
+      (err) =>
+        setWaitError(
+          err?.code === "permission-denied"
+            ? "Wait times can't be saved yet: publish the updated Firestore rules (see TODO.md)."
+            : "Couldn't load the wait times. Check the connection."
+        )
     );
   }, [isStaff]);
 
@@ -263,7 +271,7 @@ export default function KitchenDashboard() {
         updatedAt: serverTimestamp(),
       });
     } catch (err) {
-      console.error("Could not save wait times", err);
+      console.warn("Could not save wait times", err?.code);
       setWaitError("Couldn't save. Check the connection (or the Firestore rules).");
     }
   };
