@@ -1,5 +1,12 @@
 // pages/checkout.js
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+
+// The checkout details (name, phone, email, payment choice) are kept in
+// sessionStorage, so going back to the cart or menu and returning doesn't
+// erase them. sessionStorage is only for this browser tab and is cleared
+// when the tab is closed. Card numbers are never stored (Stripe holds them).
+const SAVED_FORM_KEY = "rs_checkout_form";
+const EMPTY_FORM = { firstName: "", lastName: "", email: "", phone: "", payment: "" };
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useCart } from "../components/CartSystem";
@@ -170,7 +177,31 @@ export default function CheckoutPage() {
   const totals = useOrderTotals();
 
   const [summaryOpen, setSummaryOpen] = useState(false);
-  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "", payment: "" });
+  const [form, setForm] = useState(EMPTY_FORM);
+  // Read the saved details once the page has loaded (not during the server
+  // render, so the page doesn't flash), then save every change.
+  const formLoaded = useRef(false);
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(SAVED_FORM_KEY) || "null");
+      if (saved && typeof saved === "object") {
+        const clean = {};
+        for (const k of Object.keys(EMPTY_FORM)) if (typeof saved[k] === "string") clean[k] = saved[k];
+        setForm((f) => ({ ...f, ...clean }));
+      }
+    } catch {
+      // private browsing or storage blocked: the form just starts empty
+    }
+    formLoaded.current = true;
+  }, []);
+  useEffect(() => {
+    if (!formLoaded.current) return;
+    try {
+      sessionStorage.setItem(SAVED_FORM_KEY, JSON.stringify(form));
+    } catch {
+      // storage blocked: nothing to do
+    }
+  }, [form]);
   const [errors, setErrors] = useState({});
   const [placing, setPlacing] = useState(false);
   const [submitError, setSubmitError] = useState(null);

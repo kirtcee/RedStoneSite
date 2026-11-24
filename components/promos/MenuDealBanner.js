@@ -174,11 +174,11 @@ export default function MenuDealBanner() {
           color: #fff;
         }
         .mdb-tag__dollar {
-          font-size: 6.4cqw;
-          margin-top: 2cqw;
+          font-size: 7.5cqw;
+          margin-top: 2.4cqw;
         }
         .mdb-tag__num {
-          font-size: 17cqw;
+          font-size: 20cqw;
           letter-spacing: -0.02em;
           margin: 0 0.6cqw 0 -0.4cqw;
         }
@@ -186,15 +186,15 @@ export default function MenuDealBanner() {
           display: flex;
           flex-direction: column;
           align-items: center;
-          margin-top: 1.2cqw;
+          margin-top: 1.4cqw;
         }
         .mdb-tag__cents {
-          font-size: 8.4cqw;
+          font-size: 9.9cqw;
           letter-spacing: -0.02em;
         }
         .mdb-tag__each {
           margin-top: -0.2cqw;
-          font-size: 4.2cqw;
+          font-size: 4.9cqw;
           letter-spacing: 0.02em;
         }
 
