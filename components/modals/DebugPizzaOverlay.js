@@ -171,11 +171,25 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
   useBodyLock(open);
 
   // close on outside click (but not on scrollbar)
+  // Phones: a tap (not a scroll or drag, so "click" rather than
+  // "mousedown") on the empty space ABOVE the popup closes it. The thin side
+  // margins still don't, since they're easy to hit while scrolling.
+  const onViewportClick = useCallback(
+    (e) => {
+      if (!isPhoneWidth()) return;
+      if (e.target && e.target.closest?.("[data-modal-panel]")) return;
+      const panel = scrollerRef.current?.querySelector("[data-modal-panel]");
+      if (!panel) return;
+      if (e.clientY < panel.getBoundingClientRect().top) onClose?.();
+    },
+    [onClose]
+  );
+
   const onViewportMouseDown = useCallback(
     (e) => {
-      // Phones: tapping outside the popup does NOT close it — the margin is
-      // a thin strip that's easy to hit by accident while scrolling, which
-      // would throw away a half-built order. Use the ✕ to close.
+      // Phones: handled by onViewportClick instead (only taps above the
+      // popup close it; the thin side margins are easy to hit while
+      // scrolling, which would throw away a half-built order).
       if (isPhoneWidth()) return;
       const el = scrollerRef.current;
       if (!el) return;
@@ -260,6 +274,7 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
         className="rs-modal-viewport"
         style={viewportStyle}
         onMouseDown={onViewportMouseDown}
+        onClick={onViewportClick}
       >
         <div
           data-modal-panel
