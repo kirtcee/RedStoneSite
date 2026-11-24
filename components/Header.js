@@ -1,4 +1,5 @@
 // components/Header.js
+import useBackToClose from "../hooks/useBackToClose";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -229,6 +230,8 @@ export default function Header() {
   useEffect(() => {
     setMobileNavOpen(false);
   }, [router.pathname, tab, sub]);
+  // the phone's Back button closes the menu drawer
+  useBackToClose(mobileNavOpen, () => setMobileNavOpen(false));
 
   const carryoutAddressFull = "576 Concession Street";
   const carryoutAddress = carryoutAddressFull;

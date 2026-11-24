@@ -300,7 +300,7 @@ export default function CheckoutPage() {
       }
       const status = await finalizeCardPayment(result.orderId);
       cart?.clearCart?.();
-      router.push(`/order-confirmation?orderId=${result.orderId}&card=1${status === "paid" ? "" : "&check=1"}`);
+      router.replace(`/order-confirmation?orderId=${result.orderId}&card=1${status === "paid" ? "" : "&check=1"}`);
       return;
     }
 
@@ -313,7 +313,7 @@ export default function CheckoutPage() {
       return;
     }
     cart?.clearCart?.();
-    router.push(`/order-confirmation?orderId=${id}`);
+    router.replace(`/order-confirmation?orderId=${id}`);
   };
 
   return (

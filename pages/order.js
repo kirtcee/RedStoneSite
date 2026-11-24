@@ -12,7 +12,7 @@ export default function OrderPage() {
   return (
     <ServiceSelector
       initialChoice={method === "delivery" || method === "carryout" ? method : null}
-      onConfirmed={() => router.push(next)}
+      onConfirmed={() => router.replace(next)} // replace: Back skips the service screen
     />
   );
 }

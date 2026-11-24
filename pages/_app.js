@@ -1,5 +1,6 @@
 // pages/_app.js
-import React, { useState } from "react";
+import { installBackToClose } from "../hooks/useBackToClose";
+import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Script from "next/script";
 import { useRouter } from "next/router";
@@ -14,6 +15,10 @@ import DealBuilder from "../components/DealBuilder";
 
 function RootApp({ Component, pageProps }) {
   const router = useRouter();
+  // Back closes the open popup first (hooks/useBackToClose.js)
+  useEffect(() => {
+    installBackToClose(router);
+  }, [router]);
   const isStaffPage = router.pathname.startsWith("/kitchen");
   const [editingItem, setEditingItem] = useState(null);
 
