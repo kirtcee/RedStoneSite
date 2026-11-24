@@ -1118,9 +1118,15 @@ export default function CartPage() {
             font-size: 1.1rem;
             font-weight: 650;
           }
-          /* EDIT / REMOVE centred under the quantity pill */
+          /* EDIT above REMOVE, in the spot REMOVE used to be in */
           .cart-box :global(.cart-line__actions) {
-            justify-content: center;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            margin-right: -6px;
+          }
+          .cart-box :global(.cart-line__actions button) {
+            font-size: 1rem; /* plain number so it can be changed in Inspect */
           }
           .cart-box__note {
             margin: 6px 12px 12px;
