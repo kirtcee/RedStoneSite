@@ -43,12 +43,12 @@ export default function MenuDealBanner() {
 
       {/* white price tag */}
       <div className="mdb-tag" aria-label={`$${dollars}.${cents} each`}>
-        <span className="mdb-tag__dollar" aria-hidden="true">$</span>
-        <span className="mdb-tag__num" aria-hidden="true">{dollars}</span>
-        <span className="mdb-tag__side" aria-hidden="true">
-          <span className="mdb-tag__cents">.{cents}</span>
-          <span className="mdb-tag__each">Each</span>
-        </span>
+        <div className="mdb-tag__price" aria-hidden="true">
+          <span className="mdb-tag__sup">$</span>
+          <span className="mdb-tag__num">{dollars}</span>
+          <span className="mdb-tag__sup">.{cents}</span>
+        </div>
+        <div className="mdb-tag__each" aria-hidden="true">Each</div>
       </div>
 
       <Link href={`/coupons?deal=${DEAL_ID}`} className="mdb-btn">
@@ -136,47 +136,48 @@ export default function MenuDealBanner() {
           opacity: 0.95;
         }
 
-        /* the white price tag: a card with a notched right edge, tilted */
+        /* the white price tag: straight, rounded, with a red EACH band */
         .mdb-tag {
           position: absolute;
           left: 29cqw;
-          top: 12cqh;
+          top: 50%;
+          transform: translateY(-50%);
           z-index: 3;
           display: flex;
-          align-items: flex-start;
-          padding: 1.4cqw 3cqw 1.2cqw 1.6cqw;
+          flex-direction: column;
+          align-items: stretch;
+          overflow: hidden;
+          border-radius: 0.8cqw;
           background: #fff;
-          color: var(--red);
+          box-shadow: 0 0.6cqw 1.6cqw rgba(0, 0, 0, 0.35);
           font-family: var(--font-display);
           text-transform: uppercase;
-          line-height: 0.8;
-          clip-path: polygon(0 0, 100% 0, 92% 50%, 100% 100%, 0 100%);
-          transform: rotate(-3deg);
-          filter: drop-shadow(0.4cqw 0.6cqw 0.6cqw rgba(0, 0, 0, 0.35));
         }
-        .mdb-tag__dollar {
-          font-size: 4.4cqw;
-          margin-top: 0.6cqw;
+        .mdb-tag__price {
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
+          padding: 1.2cqw 2.2cqw 0.6cqw;
+          color: var(--red);
+          line-height: 0.82;
         }
         .mdb-tag__num {
-          font-size: 15cqw;
-          letter-spacing: -0.03em;
+          font-size: 13cqw;
+          letter-spacing: -0.02em;
         }
-        .mdb-tag__side {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          margin-left: 0.4cqw;
-          gap: 0.8cqw;
-        }
-        .mdb-tag__cents {
-          font-size: 6.4cqw;
-          margin-top: 0.4cqw;
+        /* $ and .99 sit raised next to the big number, both the same size */
+        .mdb-tag__sup {
+          font-size: 5.2cqw;
+          margin-top: 0.5cqw;
         }
         .mdb-tag__each {
+          padding: 0.7cqw 0 0.5cqw;
+          background: var(--red);
+          color: #fff;
           font-size: 2.2cqw;
-          color: #222;
-          letter-spacing: 0.06em;
+          line-height: 1;
+          letter-spacing: 0.2em;
+          text-align: center;
         }
 
         .mdb :global(.mdb-btn) {
@@ -209,7 +210,7 @@ export default function MenuDealBanner() {
         @container (max-width: 560px) {
           .mdb-fine { display: none; }
           .mdb-title { font-size: 7.6cqw; }
-          .mdb-tag { left: 33cqw; top: 14cqh; }
+          .mdb-tag { left: 33cqw; }
           .mdb :global(.mdb-btn) { font-size: 3.4cqw; padding: 1.8cqw 3.6cqw 1.5cqw; }
         }
       `}</style>
