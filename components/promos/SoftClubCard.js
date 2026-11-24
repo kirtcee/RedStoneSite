@@ -102,7 +102,7 @@ export default function SoftClubCard() {
       {/* ---- catalogue text, barcode, button ---- */}
       <div className="px-side">
         <div className="px-cat" aria-hidden="true">
-          Selected Works 03{"\n"}Contemporary Pizza Club
+          Best In and Out the 06{"\n"}Red Stone Pizza Club
         </div>
         <div className="px-barcode" aria-hidden="true" />
         <Link href={`/coupons?deal=${DEAL_ID}`} className="px-btn">
@@ -212,10 +212,10 @@ export default function SoftClubCard() {
           filter: saturate(0.85) contrast(1.05) brightness(1.02) hue-rotate(-8deg) drop-shadow(0 0.8cqw 0.9cqw rgba(0, 0, 0, 0.45));
           user-select: none;
         }
-        .px-img--bottle { height: 54%; width: auto; right: 3%; top: 0; }
-        .px-img--p1 { width: 42%; left: 16%; top: 14%; }
-        .px-img--p2 { width: 42%; left: 40%; top: 26%; }
-        .px-img--p3 { width: 46%; left: 4%; top: 36%; }
+        .px-img--bottle { height: 54%; width: auto; right: 3%; top: 12%; }
+        .px-img--p1 { width: 42%; left: 16%; top: 24%; }
+        .px-img--p2 { width: 42%; left: 40%; top: 36%; }
+        .px-img--p3 { width: 46%; left: 4%; top: 46%; }
         .px-img--wings { width: 30%; right: 6%; bottom: 4%; }
         .px-img--bread { width: 26%; left: 10%; bottom: 3%; }
         :global(.px-x) {
@@ -387,10 +387,10 @@ export default function SoftClubCard() {
           to { transform: translateX(-100%); }
         }
         .px-items {
-          margin: 1.4cqh 0 0;
+          margin: 1.6cqh 0 0.4cqh;
           white-space: pre-line;
-          font-size: 2.2cqw;
-          font-weight: var(--w-semibold);
+          font-size: 2.9cqw;
+          font-weight: var(--w-bold);
           line-height: 1.35;
           color: #22324f;
         }
@@ -408,11 +408,11 @@ export default function SoftClubCard() {
           gap: 2cqw;
         }
         .px-cat {
-          white-space: pre-line;
+          white-space: pre; /* keep each line whole */
           font-family: var(--font-display);
           font-size: 1.5cqw;
           line-height: 1.4;
-          letter-spacing: 0.14em;
+          letter-spacing: 0.06em;
           text-transform: uppercase;
           color: var(--mint);
         }
@@ -434,14 +434,15 @@ export default function SoftClubCard() {
           background: linear-gradient(180deg, #c9f1ff 0%, #5ad1ff 50%, #1f9be6 51%, #6fd8ff 100%);
           border: 1px solid #e9fbff;
           box-shadow: 0 0.8cqw 1.6cqw rgba(0, 0, 0, 0.4), 0 0 2cqw rgba(90, 209, 255, 0.6);
-          color: #fff;
+          color: #062a5c;
           font-family: "Promo Michroma", var(--font-display);
+          font-weight: 700;
           font-size: 2cqw;
           line-height: 1;
           letter-spacing: 0.1em;
           text-transform: uppercase;
           text-decoration: none;
-          text-shadow: 0 0.2cqw 0.4cqw rgba(0, 60, 130, 0.5);
+          text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
           white-space: nowrap;
           overflow: hidden;
           transition: transform 0.15s ease;
@@ -451,10 +452,10 @@ export default function SoftClubCard() {
           position: absolute;
           left: 7%;
           right: 7%;
-          top: 7%;
-          height: 42%;
+          top: 5%;
+          height: 30%;
           border-radius: 999px;
-          background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.15));
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
           pointer-events: none;
         }
         .px :global(.px-btn span) { position: relative; }
@@ -489,7 +490,7 @@ export default function SoftClubCard() {
           .px-eq { height: 3.2cqw; padding-bottom: 0.3cqw; }
           .px-eq span { width: 0.4cqw; height: calc(var(--h) * 0.24cqw); }
           .px-scroll { font-size: 0.8cqw; margin-top: 1.6cqh; }
-          .px-items { font-size: 1.05cqw; margin-top: 2.6cqh; }
+          .px-items { font-size: 1.35cqw; margin-top: 2.6cqh; }
           .px-side {
             left: auto;
             right: 3cqw;
