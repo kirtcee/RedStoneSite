@@ -229,9 +229,9 @@ export default function DreamDealCard() {
         .dr-title {
           position: absolute;
           left: 5cqw;
-          top: 34cqh;
+          top: 16cqh;
           z-index: 3;
-          width: 40cqw;
+          width: 44cqw;
         }
         .dr-name {
           margin: 0;
@@ -247,8 +247,8 @@ export default function DreamDealCard() {
           white-space: pre-line;
           font-family: var(--font-body);
           font-weight: var(--w-semibold);
-          font-size: 2.8cqw;
-          line-height: 1.35;
+          font-size: 3.8cqw;
+          line-height: 1.3;
           text-transform: none;
           color: rgba(255, 255, 255, 0.92);
           text-shadow: 0 0.2cqw 1cqw rgba(30, 40, 90, 0.6);
