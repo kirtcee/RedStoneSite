@@ -20,7 +20,9 @@ const DEAL_ID = "takecare";
 const LOGO_SRC = "/images/promos/take-care-logo.png";
 
 // The 4 pops, front (lowest) to back, stepping up and to the right.
-const CANS = ["combo-can-pepsi", "combo-can-canada-dry", "combo-can-crush-orange", "combo-can-coke"];
+const CANS = ["can-pepsi", "can-canada-dry", "can-crush-orange", "can-coke"];
+// fanned out like a hand of cards: tilt (degrees) and sideways spread
+const FAN = [-38, -13, 13, 38];
 
 export default function TakeCareCard() {
   const deal = findDealById(DEAL_ID);
@@ -47,7 +49,7 @@ export default function TakeCareCard() {
               className="tc-img tc-can"
               src={`/images/drinks/${c}.webp`}
               alt=""
-              style={{ "--i": i, zIndex: CANS.length - i }}
+              style={{ "--tilt": `${FAN[i]}deg`, "--spread": i - (CANS.length - 1) / 2 }}
             />
           ))}
         </div>
@@ -108,9 +110,10 @@ export default function TakeCareCard() {
           position: absolute;
           inset: 2.2cqh 1.6cqw;
           border: 1px solid rgba(196, 140, 86, 0.75);
-          box-shadow: inset 0 0 0 3px #050403, inset 0 0 0 4px rgba(196, 140, 86, 0.35);
+          box-shadow: inset 0 0 0 3px #050403, inset 0 0 0 4px rgba(196, 140, 86, 0.35),
+            0 0 0 60cqw #050403; /* blacks out everything outside the frame */
           pointer-events: none;
-          z-index: 3;
+          z-index: 5;
         }
 
         /* ---- the food: warm sepia, low light, a soft gold rim ---- */
@@ -128,22 +131,26 @@ export default function TakeCareCard() {
             drop-shadow(0 0 0.8cqw rgba(196, 140, 86, 0.35)) drop-shadow(0.6cqw 1cqw 1.2cqw rgba(0, 0, 0, 0.9));
           user-select: none;
         }
-        /* 4 small cans in a diagonal, each one up and to the right of the
-           one in front of it (like the Take Care combo picture) */
-        /* the 4 cans stand behind the pizzas, partly hidden by them */
+        /* 4 flat cans fanned out behind the pizzas: they all pivot from
+           the same point, the outer two tilt the most, the middle two less,
+           and the pizzas cover their bottom half */
+        /* the pivot (bottom centre of this box) sits just behind the top of
+           the pizzas; each can swings out from it */
         .tc-cans {
           position: absolute;
-          left: 16%;
+          left: 8%;
           top: -2%;
-          width: 46%;
-          height: 34%;
-          z-index: 0; /* the cans' own front-to-back order stays inside this group */
+          width: 74%;
+          height: 44%;
+          z-index: 0;
         }
         .tc-can {
-          height: 70%;
+          height: 92%;
           width: auto;
-          left: calc(var(--i) * 17%);
-          top: calc((3 - var(--i)) * 10%);
+          left: 50%;
+          bottom: 0;
+          transform-origin: 50% 100%;
+          transform: translateX(calc(-50% + var(--spread) * 18%)) rotate(var(--tilt));
         }
         .tc-img--back { width: 70%; right: 0; top: 14%; z-index: 1; }
         .tc-img--front { width: 74%; left: 0; top: 30%; z-index: 1; }
@@ -258,8 +265,7 @@ export default function TakeCareCard() {
               radial-gradient(120% 140% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.85) 100%);
           }
           .tc-food { left: 2.5cqw; right: auto; top: 10cqh; bottom: 10cqh; width: 30cqw; }
-          .tc-cans { left: 4%; top: -6%; bottom: auto; width: 24%; height: 56%; }
-          .tc-can { height: 68%; left: calc(var(--i) * 20%); top: calc((3 - var(--i)) * 11%); }
+          .tc-cans { left: 10%; top: -6%; width: 56%; height: 54%; }
           .tc-img--back { width: 44%; right: 18%; top: 4%; }
           .tc-img--front { width: 46%; left: 14%; top: 20%; }
           .tc-img--bread { width: 28%; right: 4%; top: 34%; bottom: auto; }
