@@ -14,6 +14,7 @@ import {
 import { formatMoney, describePizzaFull } from "../components/Pricing";
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { STAFF_EMAIL } from "../utils/kitchenAuth";
+import KitchenHealth from "../components/KitchenHealth";
 
 function describeItem(item) {
   if (!item) return "Item";
@@ -45,6 +46,10 @@ export default function KitchenDashboard() {
   const [isStaff, setIsStaff] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [ordersError, setOrdersError] = useState(null);
+  // When the order feed started running only from the device's own copy
+  // (not live from the server); null while it's live. KitchenHealth alerts
+  // if this lasts more than a few seconds.
+  const [fromCacheSince, setFromCacheSince] = useState(null);
 
   // New-order sound + visual alert. Browsers block audio until a real user
   // gesture unlocks it, so staff click "Enable Order Alerts" once per page
@@ -130,7 +135,10 @@ export default function KitchenDashboard() {
 
     const unsubscribe = onSnapshot(
       q,
+      { includeMetadataChanges: true }, // also tells us when the server connection drops
       (snapshot) => {
+        const cached = snapshot.metadata.fromCache;
+        setFromCacheSince((prev) => (cached ? prev || Date.now() : null));
         const liveOrders = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -206,6 +214,13 @@ export default function KitchenDashboard() {
       </header>
 
       <main className="kitchen-body">
+        <KitchenHealth
+          ordersError={ordersError}
+          fromCacheSince={fromCacheSince}
+          alertsEnabled={alertsEnabled}
+          audioCtxRef={audioCtxRef}
+          onEnableAlerts={enableAlerts}
+        />
         {ordersError && (
           <p className="kitchen-error">
             ⚠ Couldn't load live orders ({ordersError}). This dashboard needs a Firestore
