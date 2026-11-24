@@ -267,27 +267,23 @@ function ItemRow({ item, priceCents, couponName, onQty, onRemove, onEdit }) {
       </div>
 
       <div className="cart-line__qty">
-        <div className="cart-qty" role="group" aria-label={`Quantity for ${title}`}>
-          <button
-            type="button"
-            className="cart-qty__btn"
-            onClick={() => onQty?.(item?.id, Math.max(1, qty - 1))}
-            disabled={qty <= 1}
-            aria-label="Decrease quantity"
+        {/* quantity dropdown (1 to 20; more than 20 isn't allowed per line) */}
+        <label className="cart-qty">
+          <span className="cart-qty__label">Qty</span>
+          <select
+            className="cart-qty__select"
+            value={qty}
+            onChange={(e) => onQty?.(item?.id, Number(e.target.value))}
+            aria-label={`Quantity for ${title}`}
           >
-            −
-          </button>
-          <span className="cart-qty__num" aria-live="polite">{qty}</span>
-          <button
-            type="button"
-            className="cart-qty__btn"
-            onClick={() => onQty?.(item?.id, Math.min(20, qty + 1))}
-            disabled={qty >= 20}
-            aria-label="Increase quantity"
-          >
-            +
-          </button>
-        </div>
+            {Array.from({ length: Math.max(20, qty) }, (_, i) => i + 1).map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+          <span className="cart-qty__arrow" aria-hidden="true">▾</span>
+        </label>
         <div className="cart-line__actions">
           <button type="button" onClick={() => onEdit?.(item)}>Edit</button>
           <button type="button" onClick={() => onRemove?.(item?.id)}>Remove</button>
@@ -947,33 +943,50 @@ export default function CartPage() {
           gap: 6px;
         }
         .cart-box :global(.cart-qty) {
-          display: grid;
-          grid-template-columns: 30px 1fr 30px;
+          position: relative;
+          display: flex;
           align-items: center;
-          height: 32px;
+          height: 34px;
           border: 1px solid var(--menu-box-border);
           border-radius: 999px;
           background: #fff;
           overflow: hidden;
-        }
-        .cart-box :global(.cart-qty__btn) {
-          height: 100%;
-          padding: 0;
-          border: 0;
-          background: none;
-          font-size: 1.1rem;
-          font-weight: 700;
-          color: #000;
           cursor: pointer;
         }
-        .cart-box :global(.cart-qty__btn:disabled) {
-          opacity: 0.3;
-          cursor: default;
+        .cart-box :global(.cart-qty__label) {
+          padding-left: 10px;
+          font-family: var(--font-display);
+          font-size: var(--fs-xs);
+          text-transform: uppercase;
+          color: var(--text-brown);
+          pointer-events: none;
         }
-        .cart-box :global(.cart-qty__num) {
-          text-align: center;
-          font-weight: 700;
+        /* the real dropdown fills the pill; the phone shows its own picker */
+        .cart-box :global(.cart-qty__select) {
+          flex: 1 1 auto;
+          min-width: 0;
+          height: 100%;
+          padding: 0 22px 0 6px;
+          border: 0;
+          background: transparent;
+          -webkit-appearance: none;
+          appearance: none;
+          font-family: var(--font-body);
+          font-size: var(--fs-base);
+          font-weight: var(--w-bold);
           color: #000;
+          text-align: center;
+          text-align-last: center;
+          cursor: pointer;
+        }
+        .cart-box :global(.cart-qty__arrow) {
+          position: absolute;
+          right: 10px;
+          top: 50%;
+          transform: translateY(-52%);
+          font-size: 0.8rem;
+          color: #000;
+          pointer-events: none;
         }
         .cart-box :global(.cart-line__actions) {
           display: flex;
@@ -1085,17 +1098,29 @@ export default function CartPage() {
             --cart-gutter: 10px;
           }
           .cart-box__head {
-            font-size: 1.15rem;
+            font-size: 1.25rem;
           }
           .cart-box__intro {
             padding: 12px 12px 2px;
           }
           .cart-box__lead {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
+            max-width: 19ch; /* two lines */
           }
           .cart-box :global(.cart-box__more) {
-            padding: 0.5rem 1rem;
-            font-size: 1.05rem;
+            padding: 0.7rem 1.1rem;
+            font-size: 1.2rem;
+          }
+          .cart-box :global(.cart-line__name) {
+            font-size: 1.25rem;
+          }
+          .cart-box :global(.cart-line__opts) {
+            font-size: 1.1rem;
+            font-weight: 650;
+          }
+          /* EDIT / REMOVE centred under the quantity pill */
+          .cart-box :global(.cart-line__actions) {
+            justify-content: center;
           }
           .cart-box__note {
             margin: 6px 12px 12px;
