@@ -21,6 +21,10 @@ Running list of things to finish before `mac-handoff` is merged into `main`
 - [ ] **Google server key for delivery fees**: create a key with the
       **Routes API**, save it in Vercel (Production + Preview) and `.env.local`
       as `GOOGLE_MAPS_SERVER_KEY`. Without it delivery orders can't be priced.
+- [ ] **Publish the updated Firestore rules**: copy all of `firestore.rules` into
+      Firebase Console → Firestore Database → Rules → Publish. Needed for the
+      kitchen's wait-time buttons (settings/waitTimes); until then they show
+      "Couldn't save" and customers see 20 / 45 minutes.
 - [ ] **Merge `mac-handoff` → `main`** to go live.
 
 ## Should do
