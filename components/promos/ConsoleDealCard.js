@@ -251,6 +251,7 @@ export default function ConsoleDealCard() {
           display: flex;
           flex-direction: column;
           margin: 0;
+          padding-bottom: 0.6em; /* room for the reflection under "Pizza" */
           font-family: var(--font-display);
           font-size: 8cqw;
           line-height: 0.92;
@@ -279,6 +280,7 @@ export default function ConsoleDealCard() {
           font-family: var(--font-display);
           font-size: 12cqw;
           white-space: nowrap;
+          margin: auto 0; /* centred between the reflection and "2 pizza minimum" */
           line-height: 1;
           color: var(--blue);
           text-transform: uppercase;
@@ -327,10 +329,10 @@ export default function ConsoleDealCard() {
           }
           .cdc-tag { grid-area: tag; justify-self: start; }
           .cdc-title { grid-area: title; }
-          .cdc-price { grid-area: price; align-self: end; justify-self: end; }
+          .cdc-price { grid-area: price; align-self: end; justify-self: end; margin: 0; }
           .cdc-fine { grid-area: fine; justify-self: end; }
           .cdc-tag { font-size: 3.3cqw; }
-          .cdc-title { font-size: 8cqw; margin: 0; }
+          .cdc-title { font-size: 8cqw; margin: 0; padding-bottom: 0; }
           .cdc-price { font-size: 12cqw; }
           .cdc-price__each { font-size: 4.6cqw; }
           .cdc-fine { font-size: 3.6cqw; margin-top: 1cqh; }
