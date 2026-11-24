@@ -14,6 +14,7 @@ import { adminDb, adminSetupProblem } from "../../utils/firebaseAdmin";
 import { FieldValue } from "firebase-admin/firestore";
 import { buildOrder, isRateLimited, verifyUser } from "../../utils/orderBuilder";
 import { quoteDelivery } from "../../utils/deliveryQuote";
+import { getWaitTimes } from "../../utils/waitTimesServer";
 
 function reject(res, status, reason) {
   res.status(status).json({ ok: false, reason });
@@ -38,9 +39,11 @@ async function handle(req, res) {
   // Delivery fee: worked out here from the address, never taken from the browser.
   const deliveryQuote = body.serviceMethod === "Delivery" ? await quoteDelivery(body.deliveryAddress) : null;
 
+  const waitTimes = await getWaitTimes();
+
   let built;
   try {
-    built = buildOrder(body, { uid, paymentMethod: "store", deliveryQuote });
+    built = buildOrder(body, { uid, paymentMethod: "store", deliveryQuote, waitTimes });
   } catch (e) {
     console.error("placeOrder: checking the order failed", e);
     return reject(res, 500, `order_check_failed: ${String(e?.message || e).slice(0, 100)}`);

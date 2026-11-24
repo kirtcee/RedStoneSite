@@ -15,6 +15,7 @@ import SidesDessertsAll from "../components/SidesDessertsAll";
 import { DrinksCategoryPanel } from "../components/DrinksDipsBuilder";
 import { DRINK_CATEGORIES } from "../utils/drinkCatalog";
 import MenuDealBanner from "../components/promos/MenuDealBanner";
+import useWaitTimes from "../hooks/useWaitTimes";
 import { useCart } from "../components/CartSystem";
 import { priceLineItem } from "../components/Pricing";
 
@@ -609,6 +610,7 @@ function MenuBody() {
 
   // Cart/totals
   const { addItem, service } = useCart();
+  const waitTimes = useWaitTimes(); // the kitchen's current carryout / delivery times
 
   const tab = (router.query.tab || "entrees").toString();
   const sub = (router.query.sub || "all").toString();
@@ -722,14 +724,14 @@ function MenuBody() {
 
               <div className="card eta-card">
                 <div className="eta-left">
-                  <div className="eta-mins">{service === "delivery" ? "45 MINS" : "20 MINS"}</div>
+                  <div className="eta-mins">{service === "delivery" ? waitTimes.delivery : waitTimes.carryout} MINS</div>
                   <div className="eta-sub">
                     EST. {service === "delivery" ? "DELIVERY" : "CARRYOUT"} TIME
                   </div>
                 </div>
                 <div className="eta-right">
                   Your {service === "delivery" ? "Delivery" : "Carryout"} will be ready in about{" "}
-                  <strong>{service === "delivery" ? "45 minutes" : "20 minutes"}</strong> after you
+                  <strong>{service === "delivery" ? waitTimes.delivery : waitTimes.carryout} minutes</strong> after you
                   place your order.
                 </div>
               </div>

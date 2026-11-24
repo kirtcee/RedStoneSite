@@ -15,6 +15,7 @@ import { adminAuth } from "./firebaseAdmin";
 import { Timestamp } from "firebase-admin/firestore";
 
 import { TAX_RATE, DELIVERY_FEE_CENTS, DELIVERY_MINIMUM_CENTS, taxOn } from "./orderRules";
+import { MIN_WAIT, clampWait, waitKey } from "./waitTimes";
 export { TAX_RATE, DELIVERY_FEE_CENTS };
 const MAX_ITEMS = 100;
 const MAX_QTY_PER_ITEM = 50;
@@ -80,13 +81,14 @@ export async function verifyUser(idToken) {
 }
 
 // Fresh pickup/delivery time: the scheduled one for "later" orders,
-// otherwise 20 minutes from now.
-export function pickupTimeFor(orderTiming, schedule) {
+// otherwise the kitchen's current wait time from now (utils/waitTimes.js;
+// at least 20 min carryout, 45 min delivery).
+export function pickupTimeFor(orderTiming, schedule, waitMinutes = 20) {
   const isLater = orderTiming === "later";
   const { date, time } = schedule || {};
   const scheduled = isLater && date && time ? new Date(`${date}T${time}:00`) : null;
   return Timestamp.fromDate(
-    scheduled && !isNaN(scheduled.getTime()) ? scheduled : new Date(Date.now() + 20 * 60000)
+    scheduled && !isNaN(scheduled.getTime()) ? scheduled : new Date(Date.now() + waitMinutes * 60000)
   );
 }
 
@@ -94,7 +96,7 @@ export function pickupTimeFor(orderTiming, schedule) {
 // Firestore fields (minus createdAt), or { ok: false, status, reason }.
 // For delivery, `deliveryQuote` is the server's own quote for the address
 // (utils/deliveryQuote.js); the fee comes from it, never from the browser.
-export function buildOrder(body, { uid, paymentMethod, deliveryQuote = null }) {
+export function buildOrder(body, { uid, paymentMethod, deliveryQuote = null, waitTimes = null }) {
   const fail = (status, reason) => ({ ok: false, status, reason });
   const {
     items: rawItems,
@@ -207,7 +209,11 @@ export function buildOrder(body, { uid, paymentMethod, deliveryQuote = null }) {
       discountCents,
       totalCents,
       uid,
-      pickupTime: pickupTimeFor(orderTiming, schedule),
+      pickupTime: pickupTimeFor(
+        orderTiming,
+        schedule,
+        clampWait(serviceMethod, waitTimes?.[waitKey(serviceMethod)] ?? MIN_WAIT[waitKey(serviceMethod)])
+      ),
       completed: false,
     },
   };

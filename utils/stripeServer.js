@@ -19,6 +19,8 @@
 import { adminDb } from "./firebaseAdmin";
 import { FieldValue } from "firebase-admin/firestore";
 import { pickupTimeFor } from "./orderBuilder";
+import { getWaitTimes } from "./waitTimesServer";
+import { clampWait, waitKey } from "./waitTimes";
 
 // The Stripe library is loaded on first use (not at import), so if it ever
 // fails to load the route can say so instead of crashing with a bare 500.
@@ -55,6 +57,8 @@ export async function finalizeCardOrder(orderId) {
     return { ok: true, status: "unpaid" };
   }
 
+  const waitTimes = await getWaitTimes();
+
   // Create the real order exactly once, even if the browser and the
   // webhook both get here at the same moment.
   await adminDb.runTransaction(async (tx) => {
@@ -67,7 +71,11 @@ export async function finalizeCardOrder(orderId) {
       paymentMethod: "card",
       paymentIntentId: intent.id,
       // "Now" orders count from when they were paid, not when checkout began.
-      pickupTime: pickupTimeFor(order.orderTiming, order.schedule),
+      pickupTime: pickupTimeFor(
+        order.orderTiming,
+        order.schedule,
+        clampWait(order.serviceMethod, waitTimes[waitKey(order.serviceMethod)])
+      ),
       createdAt: FieldValue.serverTimestamp(),
     });
     tx.update(pendingRef, { status: "paid", paidAt: FieldValue.serverTimestamp() });

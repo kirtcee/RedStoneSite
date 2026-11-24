@@ -9,12 +9,21 @@ import {
   query,
   where,
   doc,
-  updateDoc
+  updateDoc,
+  setDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { formatMoney, describePizzaFull } from "../components/Pricing";
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { STAFF_EMAIL } from "../utils/kitchenAuth";
 import KitchenHealth from "../components/KitchenHealth";
+import { MIN_WAIT, MAX_WAIT, WAIT_STEP, readWaitTimes } from "../utils/waitTimes";
+
+const UNDO_MS = 8000; // how long "Undo" shows after Mark Completed
+const LATER_AFTER_MS = 30 * 60000; // scheduled orders due further out than this go in "Later"
+const RING_EVERY_MS = 5000; // repeat chime while an order hasn't been accepted
+
+const toMs = (ts) => (ts?.toDate ? ts.toDate().getTime() : null);
 
 function describeItem(item) {
   if (!item) return "Item";
@@ -50,6 +59,58 @@ export default function KitchenDashboard() {
   // (not live from the server); null while it's live. KitchenHealth alerts
   // if this lasts more than a few seconds.
   const [fromCacheSince, setFromCacheSince] = useState(null);
+
+  // A clock for the "due in / late" timers and the Later section
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 15000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Mark Completed waits UNDO_MS before saving, so a mis-tap can be undone.
+  // id -> { name } while waiting; the timers live in completeTimersRef.
+  const [completing, setCompleting] = useState({});
+  const completeTimersRef = useRef({});
+  const startComplete = (order) => {
+    const id = order.id;
+    setCompleting((c) => ({ ...c, [id]: { name: order.contact?.name || "this order" } }));
+    completeTimersRef.current[id] = setTimeout(async () => {
+      delete completeTimersRef.current[id];
+      try {
+        await updateDoc(doc(db, "orders", id), { completed: true });
+      } catch (err) {
+        console.error("Could not complete order", err);
+      }
+      setCompleting((c) => {
+        const next = { ...c };
+        delete next[id];
+        return next;
+      });
+    }, UNDO_MS);
+  };
+  const undoComplete = (id) => {
+    clearTimeout(completeTimersRef.current[id]);
+    delete completeTimersRef.current[id];
+    setCompleting((c) => {
+      const next = { ...c };
+      delete next[id];
+      return next;
+    });
+  };
+
+  const acceptOrder = async (id) => {
+    try {
+      await updateDoc(doc(db, "orders", id), { acceptedAt: serverTimestamp() });
+    } catch (err) {
+      console.error("Could not accept order", err);
+      alert("Couldn't accept the order. Check the connection and try again.");
+    }
+  };
+
+  // Carryout / delivery wait times (settings/waitTimes): the kitchen can
+  // raise them when busy, never below 20 / 45 minutes.
+  const [waitTimes, setWaitTimes] = useState({ ...MIN_WAIT });
+  const [waitError, setWaitError] = useState(null);
 
   // New-order sound + visual alert. Browsers block audio until a real user
   // gesture unlocks it, so staff click "Enable Order Alerts" once per page
@@ -179,67 +240,74 @@ export default function KitchenDashboard() {
     return () => unsubscribe();
   }, [isStaff]);
 
-  if (!authChecked || !isStaff) {
-    return (
-      <div className="kitchen">
-        <p style={{ padding: 24 }}>Checking staff login…</p>
-      </div>
+  useEffect(() => {
+    if (!isStaff) return undefined;
+    return onSnapshot(
+      doc(db, "settings", "waitTimes"),
+      (snap) => setWaitTimes(readWaitTimes(snap.exists() ? snap.data() : null)),
+      (err) => console.error("waitTimes listener", err)
     );
-  }
+  }, [isStaff]);
 
-  return (
-    <div className="kitchen">
-      <header className="kitchen-header">
-        <div className="kitchen-header__inner">
-          <h1>Kitchen Dashboard</h1>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <span className="kitchen-count">
-              {orders.length} order{orders.length === 1 ? "" : "s"} open
-            </span>
-            {alertsEnabled ? (
-              <span className="kitchen-alerts kitchen-alerts--on">🔔 Alerts On</span>
-            ) : (
-              <button className="kitchen-alerts kitchen-alerts--off" onClick={enableAlerts}>
-                🔔 Enable Order Alerts
-              </button>
-            )}
-            <button
-              className="kitchen-logout"
-              onClick={() => signOut(auth).then(() => router.push("/kitchen-login"))}
-            >
-              Log Out
-            </button>
-          </div>
-        </div>
-      </header>
+  const changeWait = async (key, delta) => {
+    const next = { ...waitTimes, [key]: Math.min(MAX_WAIT, Math.max(MIN_WAIT[key], waitTimes[key] + delta)) };
+    if (next[key] === waitTimes[key]) return;
+    setWaitTimes(next);
+    setWaitError(null);
+    try {
+      await setDoc(doc(db, "settings", "waitTimes"), {
+        carryoutMinutes: next.carryout,
+        deliveryMinutes: next.delivery,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (err) {
+      console.error("Could not save wait times", err);
+      setWaitError("Couldn't save. Check the connection (or the Firestore rules).");
+    }
+  };
 
-      <main className="kitchen-body">
-        <KitchenHealth
-          ordersError={ordersError}
-          fromCacheSince={fromCacheSince}
-          alertsEnabled={alertsEnabled}
-          audioCtxRef={audioCtxRef}
-          onEnableAlerts={enableAlerts}
-        />
-        {ordersError && (
-          <p className="kitchen-error">
-            ⚠ Couldn't load live orders ({ordersError}). This dashboard needs a Firestore
-            index on "orders" for completed + createdAt — check the Firebase console, or
-            reload once it's fixed.
-          </p>
-        )}
-        {!ordersError && orders.length === 0 && <p className="kitchen-empty">No orders yet.</p>}
+  // Keep chiming until every new order has been accepted.
+  const unacceptedCount = orders.filter((o) => !o.acceptedAt && !completing[o.id]).length;
+  useEffect(() => {
+    if (!unacceptedCount || !alertsEnabled) return undefined;
+    const id = setInterval(() => playNewOrderChime(), RING_EVERY_MS);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unacceptedCount, alertsEnabled]);
 
-        <div className="kitchen-grid">
-          {orders.map((order) => {
+  // Due time = the order's pickup / delivery time.
+  const dueMs = (o) => toMs(o.pickupTime) ?? (toMs(o.createdAt) || 0) + 20 * 60000;
+  const visible = orders.filter((o) => !completing[o.id]);
+  const isLater = (o) => o.orderTiming === "later" && dueMs(o) - now > LATER_AFTER_MS;
+  const byDue = (a, b) => dueMs(a) - dueMs(b);
+  const nowOrders = visible.filter((o) => !isLater(o)).sort(byDue);
+  const laterOrders = visible.filter(isLater).sort(byDue);
+
+  const renderCard = (order) => {
             const scheduledLabel = formatScheduled(order);
+            const accepted = !!order.acceptedAt;
+            // due-time timer: green, then amber in the last 5 min, red when late
+            const leftMin = Math.round((dueMs(order) - now) / 60000);
+            const placedMin = toMs(order.createdAt) ? Math.max(0, Math.round((now - toMs(order.createdAt)) / 60000)) : null;
+            const timerState = leftMin < 0 ? "late" : leftMin <= 5 ? "soon" : "ok";
+            const timerText =
+              leftMin < 0 ? `${-leftMin} min late` : leftMin === 0 ? "Due now" : `Due in ${leftMin} min`;
             return (
             <article
               key={order.id}
               className={`order-card ${scheduledLabel ? "order-card--scheduled" : ""} ${
                 newOrderIds.has(order.id) ? "order-card--new" : ""
-              }`}
+              } ${accepted ? "" : "order-card--unaccepted"}`}
             >
+              {!accepted && (
+                <button type="button" className="accept-btn" onClick={() => acceptOrder(order.id)}>
+                  New Order: Tap to Accept
+                </button>
+              )}
+              <div className={`order-timer order-timer--${timerState}`}>
+                <span className="order-timer__due">{timerText}</span>
+                {placedMin != null && <span className="order-timer__placed">Placed {placedMin} min ago</span>}
+              </div>
               <div className="order-card__top">
                 <div>
                   <div className="order-name">{order.contact?.name || "N/A"}</div>
@@ -306,22 +374,117 @@ export default function KitchenDashboard() {
                   <button className="print-btn" onClick={() => setPrintingOrder(order)}>
                     🖨️ Print Receipt
                   </button>
-                  <button
-                    className="complete-btn"
-                    onClick={async () => {
-                      const orderRef = doc(db, "orders", order.id);
-                      await updateDoc(orderRef, { completed: true });
-                    }}
-                  >
+                  <button className="complete-btn" onClick={() => startComplete(order)}>
                     Mark Completed
                   </button>
                 </div>
               </div>
             </article>
             );
-          })}
+  };
+
+  if (!authChecked || !isStaff) {
+    return (
+      <div className="kitchen">
+        <p style={{ padding: 24 }}>Checking staff login…</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="kitchen">
+      <header className="kitchen-header">
+        <div className="kitchen-header__inner">
+          <h1>Kitchen Dashboard</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <span className="kitchen-count">
+              {visible.length} order{visible.length === 1 ? "" : "s"} open
+            </span>
+            {alertsEnabled ? (
+              <span className="kitchen-alerts kitchen-alerts--on">🔔 Alerts On</span>
+            ) : (
+              <button className="kitchen-alerts kitchen-alerts--off" onClick={enableAlerts}>
+                🔔 Enable Order Alerts
+              </button>
+            )}
+            <button
+              className="kitchen-logout"
+              onClick={() => signOut(auth).then(() => router.push("/kitchen-login"))}
+            >
+              Log Out
+            </button>
+          </div>
         </div>
+      </header>
+
+      <main className="kitchen-body">
+        {/* Wait times customers see; can only go up from 20 / 45 min */}
+        <div className="wait-panel">
+          <span className="wait-panel__title">Wait times customers see:</span>
+          {[
+            ["carryout", "Carryout"],
+            ["delivery", "Delivery"],
+          ].map(([key, label]) => (
+            <div key={key} className="wait-ctl">
+              <span className="wait-ctl__label">{label}</span>
+              <button
+                type="button"
+                onClick={() => changeWait(key, -WAIT_STEP)}
+                disabled={waitTimes[key] <= MIN_WAIT[key]}
+                aria-label={`Shorter ${label} time`}
+              >
+                −
+              </button>
+              <span className="wait-ctl__value">{waitTimes[key]} min</span>
+              <button type="button" onClick={() => changeWait(key, WAIT_STEP)} aria-label={`Longer ${label} time`}>
+                +
+              </button>
+            </div>
+          ))}
+          {waitError && <span className="wait-panel__error">{waitError}</span>}
+        </div>
+        <KitchenHealth
+          ordersError={ordersError}
+          fromCacheSince={fromCacheSince}
+          alertsEnabled={alertsEnabled}
+          audioCtxRef={audioCtxRef}
+          onEnableAlerts={enableAlerts}
+        />
+        {ordersError && (
+          <p className="kitchen-error">
+            ⚠ Couldn't load live orders ({ordersError}). This dashboard needs a Firestore
+            index on "orders" for completed + createdAt — check the Firebase console, or
+            reload once it's fixed.
+          </p>
+        )}
+        {!ordersError && orders.length === 0 && <p className="kitchen-empty">No orders yet.</p>}
+
+        <div className="kitchen-grid">
+          {nowOrders.map((order) => renderCard(order))}
+        </div>
+
+        {laterOrders.length > 0 && (
+          <section className="kitchen-later">
+            <h2>Later ({laterOrders.length})</h2>
+            <p>Scheduled orders. Each one moves up to the main list 30 minutes before it's due.</p>
+            <div className="kitchen-grid">{laterOrders.map((order) => renderCard(order))}</div>
+          </section>
+        )}
       </main>
+
+      {/* "Undo" for Mark Completed (it only saves after UNDO_MS) */}
+      {Object.keys(completing).length > 0 && (
+        <div className="undo-stack">
+          {Object.entries(completing).map(([id, c]) => (
+            <div key={id} className="undo-bar">
+              <span>Order for {c.name} completed.</span>
+              <button type="button" onClick={() => undoComplete(id)}>
+                Undo
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Hidden on screen; shown (and isolated) only inside @media print
           below, for the one order the staff clicked "Print Receipt" on —
@@ -331,7 +494,7 @@ export default function KitchenDashboard() {
       {printingOrder && (
         <div className="print-receipt">
           <h2>Red Stone Pizza</h2>
-          <p>576 Concession Street · 905-385-9888</p>
+          <p>576 Concession Street, 905-385-9888</p>
           <hr />
           <p>
             Order: {printingOrder.id}
@@ -386,7 +549,115 @@ export default function KitchenDashboard() {
         </div>
       )}
 
-      <style jsx>{`
+      {/* global: the order cards are drawn by renderCard(), outside this
+          JSX, so scoped styles wouldn't reach them. All names are kitchen-only. */}
+      <style jsx global>{`
+        /* ---- wait times ---- */
+        .wait-panel {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 10px 18px;
+          margin: 0 0 12px;
+          padding: 10px 14px;
+          border-radius: 8px;
+          background: #fff;
+          border: 1px solid #ddd;
+          font-family: var(--font-plain);
+        }
+        .wait-panel__title { font-weight: 700; font-size: 16px; }
+        .wait-ctl { display: flex; align-items: center; gap: 8px; }
+        .wait-ctl__label { font-weight: 600; font-size: 16px; }
+        .wait-ctl button {
+          width: 40px; height: 40px; border-radius: 50%; border: 0;
+          background: #111; color: #fff; font-size: 22px; line-height: 1; cursor: pointer;
+        }
+        .wait-ctl button:disabled { background: #ccc; cursor: not-allowed; }
+        .wait-ctl__value { min-width: 64px; text-align: center; font-weight: 800; font-size: 18px; }
+        .wait-panel__error { color: #c62828; font-weight: 700; }
+
+        /* ---- accept ---- */
+        .order-card--unaccepted {
+          box-shadow: 0 0 0 4px #e31837, 0 6px 18px rgba(227, 24, 55, 0.35) !important;
+        }
+        .accept-btn {
+          display: block;
+          width: 100%;
+          margin: 0 0 10px;
+          padding: 14px;
+          border: 0;
+          border-radius: 8px;
+          background: #e31837;
+          color: #fff;
+          font-family: var(--font-plain);
+          font-size: 20px;
+          font-weight: 800;
+          cursor: pointer;
+          animation: accept-pulse 1.2s ease-in-out infinite;
+        }
+        @keyframes accept-pulse {
+          0%, 100% { filter: brightness(1); }
+          50% { filter: brightness(1.25); }
+        }
+
+        /* ---- due timer ---- */
+        .order-timer {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          gap: 10px;
+          margin: 0 0 10px;
+          padding: 8px 12px;
+          border-radius: 8px;
+          font-family: var(--font-plain);
+        }
+        .order-timer__due { font-size: 20px; font-weight: 800; }
+        .order-timer__placed { font-size: 15px; font-weight: 600; opacity: 0.85; }
+        .order-timer--ok { background: #e8f5e9; color: #1b5e20; }
+        .order-timer--soon { background: #ffe08a; color: #4a3200; }
+        .order-timer--late { background: #c62828; color: #fff; }
+
+        /* ---- later section ---- */
+        .kitchen-later { margin-top: 28px; padding-top: 16px; border-top: 3px dashed #bbb; }
+        .kitchen-later h2 { margin: 0 0 4px; font-family: var(--font-plain); font-size: 22px; }
+        .kitchen-later p { margin: 0 0 12px; color: #555; font-family: var(--font-plain); }
+
+        /* ---- undo ---- */
+        .undo-stack {
+          position: fixed;
+          left: 50%;
+          bottom: 18px;
+          transform: translateX(-50%);
+          z-index: 50;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          width: min(560px, calc(100% - 24px));
+        }
+        .undo-bar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 12px 14px;
+          border-radius: 10px;
+          background: #222;
+          color: #fff;
+          font-family: var(--font-plain);
+          font-size: 17px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        }
+        .undo-bar button {
+          padding: 8px 18px;
+          border: 0;
+          border-radius: 6px;
+          background: #ffd54f;
+          color: #222;
+          font-weight: 800;
+          font-size: 17px;
+          cursor: pointer;
+        }
+
         .kitchen {
           min-height: 100vh;
           background: #f1f2f4;
