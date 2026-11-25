@@ -6,45 +6,9 @@ import { db } from "../utils/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 import { useCart } from "../components/CartSystem";
 import { finalizeCardPayment } from "../utils/saveOrder";
-import { formatMoney, priceLineItem, describePizzaFull, describeByoPizzaTitle } from "../components/Pricing";
-import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
-
-function getNameAndSubtitle(item) {
-  if (item.type === "pizza-byo") {
-    const name = item.pizzaName || describeByoPizzaTitle(item);
-    return { name, subtitle: describePizzaFull(item) };
-  }
-  if (item.type === "pizza-specialty") {
-    const sizeLabel =
-      ({ "10": "Small", "12": "Medium", "14": "Large", "16": "X-Large" }[String(item.size)] ||
-        `${item.size}"`);
-    const name = item.name || "Specialty Pizza";
-    const subtitle = `${sizeLabel}${item.crust ? `, ${item.crust}` : ""}`;
-    return { name, subtitle };
-  }
-  if (item.type === "wings") {
-    const dipBits = Object.entries(item.dips || {})
-      .filter(([, q]) => Number(q) > 0)
-      .map(([k, v]) => `${k} × ${v}`);
-    const subtitle = [
-      [item.sauce, item.serveStyle].filter(Boolean).join(", "),
-      dipBits.length ? `Dips: ${dipBits.join(", ")}` : "",
-    ]
-      .filter(Boolean)
-      .join("\n");
-    return { name: `${item.count} Wings`, subtitle };
-  }
-  if (item.type === "side") {
-    // .name doubles as the priceSide() lookup key ("Onion Rings (Medium)",
-    // an internal pricing label) — build the customer-facing name from the
-    // raw .side/.size fields instead (see pages/cart.js's itemTitle).
-    const name = item.side ? `${item.side}${item.size ? ` (${item.size})` : ""}` : item.name || "Side";
-    return { name, subtitle: item.summary || "" };
-  }
-  if (item.type === "special") return { name: item.name || "Special", subtitle: item.summary || "" };
-  if (item.type === "combo") return { name: comboNameFor(item.comboId), subtitle: "" };
-  return { name: item.summary || "Item", subtitle: "" };
-}
+import { formatMoney, priceLineItem } from "../components/Pricing";
+import { comboItemLabel } from "../utils/comboCatalog";
+import { getNameAndSubtitle, orderRef, formatScheduleText } from "../utils/orderText";
 
 export default function OrderConfirmation() {
   const router = useRouter();
@@ -211,6 +175,16 @@ export default function OrderConfirmation() {
         <p style={{ color: "#289c52", fontWeight: 700, margin: "0 0 16px" }}>
           Thank you for ordering from Red Stone Pizza!
         </p>
+        <div style={{ marginBottom: 16, color: "var(--text-brown)" }}>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: "var(--fs-xl)", textTransform: "uppercase", color: "#8b1a1a" }}>
+            Order #{orderRef(orderId)}
+          </div>
+          {order.emailStatus === "sent" && order.contact?.email && (
+            <div style={{ marginTop: 4 }}>
+              We've emailed your confirmation and receipt to <strong>{order.contact.email}</strong>.
+            </div>
+          )}
+        </div>
 
         <div style={{ marginBottom: 16, padding: 0, overflow: "hidden", background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem" }}>
           {sectionHeader("Order Details")}
@@ -235,7 +209,7 @@ export default function OrderConfirmation() {
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                 <div style={{ color: "#666" }}>Scheduled For:</div>
                 <div style={{ fontWeight: 700 }}>
-                  {order.schedule.date} {order.schedule.time}
+                  {formatScheduleText(order.schedule.date, order.schedule.time) || `${order.schedule.date} ${order.schedule.time}`}
                 </div>
               </div>
             )}

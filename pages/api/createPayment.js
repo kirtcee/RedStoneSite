@@ -5,6 +5,7 @@
 // and creates a Stripe PaymentIntent for that exact amount. Returns the
 // PaymentIntent's client secret so the browser can confirm the card
 // payment with Stripe, plus the order id.
+import { emailConfigured } from "../../utils/orderEmail";
 import { adminDb, adminSetupProblem } from "../../utils/firebaseAdmin";
 import { FieldValue } from "firebase-admin/firestore";
 import { buildOrder, isRateLimited, verifyUser } from "../../utils/orderBuilder";
@@ -56,7 +57,8 @@ async function handle(req, res) {
         currency: "cad",
         automatic_payment_methods: { enabled: true },
         description: `Red Stone Pizza online order ${orderId}`,
-        receipt_email: order.contact.email || undefined,
+        // Stripe's own receipt only while our confirmation email is off (utils/orderEmail.js)
+        receipt_email: emailConfigured() ? undefined : order.contact.email || undefined,
         metadata: { pendingOrderId: orderId, serviceMethod: order.serviceMethod },
       },
       { idempotencyKey: `order-${orderId}` }

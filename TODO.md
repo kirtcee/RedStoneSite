@@ -14,6 +14,15 @@ Running list of things to finish before `mac-handoff` is merged into `main`
       no `#` in the URL) and put its new `whsec_` secret in
       `STRIPE_WEBHOOK_SECRET` (Production), then redeploy. Apple Pay: add the
       live domain in Stripe → Payment method domains.
+- [ ] **Order confirmation emails** (`utils/orderEmail.js`, uses Resend):
+      make a Resend account, add the domain `redstonepizza.net` in Resend →
+      Domains and copy the DNS records it shows into Squarespace → Domains →
+      DNS. Once Resend says Verified, create an API key (Sending access) and
+      add to Vercel (Production and Preview): `RESEND_API_KEY` (Sensitive),
+      `ORDER_EMAIL_FROM` = `Red Stone Pizza <orders@redstonepizza.net>`,
+      optional `ORDER_EMAIL_REPLY_TO` (the store's inbox) and `HST_NUMBER`.
+      Redeploy, place a test order with your own email. When it's on,
+      Stripe's own receipt is skipped automatically.
 - [ ] **PostHog analytics** (`utils/analytics.js`): add `NEXT_PUBLIC_POSTHOG_KEY`
       = the Project token (starts `phc_`, PostHog → Settings → Project →
       General; NEVER the `phs_` key) in Vercel (Production and Preview) and

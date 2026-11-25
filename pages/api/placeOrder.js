@@ -15,6 +15,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { buildOrder, isRateLimited, verifyUser } from "../../utils/orderBuilder";
 import { quoteDelivery } from "../../utils/deliveryQuote";
 import { getWaitTimes } from "../../utils/waitTimesServer";
+import { emailOrderAndRecord } from "../../utils/orderEmail";
 
 function reject(res, status, reason) {
   res.status(status).json({ ok: false, reason });
@@ -55,6 +56,9 @@ async function handle(req, res) {
       ...built.order,
       createdAt: FieldValue.serverTimestamp(),
     });
+    // Confirmation email (utils/orderEmail.js). Finished before replying so
+    // the confirmation page can say it was sent; it never fails the order.
+    await emailOrderAndRecord(ref, built.order, ref.id, FieldValue);
     res.status(200).json({ ok: true, id: ref.id });
   } catch (e) {
     console.error("placeOrder: Firestore write failed", e);

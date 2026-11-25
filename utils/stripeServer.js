@@ -16,6 +16,7 @@
 //      (pages/api/finalizePayment.js) AND by Stripe's webhook
 //      (pages/api/stripeWebhook.js), whichever comes first; running it twice
 //      is harmless.
+import { emailOrderAndRecord } from "./orderEmail";
 import { adminDb } from "./firebaseAdmin";
 import { FieldValue } from "firebase-admin/firestore";
 import { pickupTimeFor } from "./orderBuilder";
@@ -61,10 +62,17 @@ export async function finalizeCardOrder(orderId) {
 
   // Create the real order exactly once, even if the browser and the
   // webhook both get here at the same moment.
+  let created = null; // the order, if this call is the one that created it
   await adminDb.runTransaction(async (tx) => {
+    created = null; // (a transaction can be retried)
     const existing = await tx.get(orderRef);
     if (existing.exists) return;
     const order = pending.order;
+    created = {
+      ...order,
+      paid: true,
+      paymentMethod: "card",
+    };
     tx.set(orderRef, {
       ...order,
       paid: true,
@@ -80,6 +88,12 @@ export async function finalizeCardOrder(orderId) {
     });
     tx.update(pendingRef, { status: "paid", paidAt: FieldValue.serverTimestamp() });
   });
+
+  // Confirmation email, only from the call that created the order.
+  if (created) {
+    const saved = await orderRef.get();
+    await emailOrderAndRecord(orderRef, saved.exists ? saved.data() : created, orderId, FieldValue);
+  }
 
   return { ok: true, status: "paid" };
 }
