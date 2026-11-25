@@ -1572,7 +1572,8 @@ body::before {
    field sizes; desktop sizes are unaffected.
    =========================== */
 @media (max-width: 640px), (pointer: coarse) {
-  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  /* .co-input (checkout boxes) is 19px, already big enough not to zoom */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.co-input),
   select,
   textarea {
     font-size: 16px !important;

@@ -896,6 +896,10 @@ export default function CheckoutPage() {
           border-radius: 0.1875rem;
           background: #fff;
           color: #000;
+          /* what customers type */
+          font-family: var(--font-body);
+          font-size: 19px;
+          font-weight: 650;
         }
         .co-wrap :global(.co-input:focus) {
           outline: 2px solid var(--text-brown);

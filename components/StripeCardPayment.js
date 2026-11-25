@@ -53,6 +53,9 @@ const APPEARANCE = {
       border: `1px solid ${BORDER}`,
       boxShadow: "none",
       padding: "11px 12px",
+      // same as the checkout's other boxes (pages/checkout.js .co-input)
+      fontSize: "19px",
+      fontWeight: "650",
     },
     ".Input:focus": {
       border: `1px solid ${BORDER}`,
