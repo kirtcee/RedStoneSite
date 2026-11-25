@@ -118,6 +118,10 @@
   --fs-xl: 1.75rem;    /* 28px  big numbers, card titles */
   --fs-2xl: 2.125rem;  /* 34px  page titles (phone) */
   --fs-3xl: 2.625rem;  /* 42px  page titles (computer) */
+  /* What customers type into boxes (checkout, delivery address, coupon
+     codes, address search...). One place to change them all. */
+  --fs-input: 19px;
+  --w-input: 650;
 
   /* effects */
   --radius: 6px;
@@ -1565,17 +1569,29 @@ body::before {
 }
 
 /* ===========================
+   Typing boxes: every box customers type into uses the same size and
+   weight (--fs-input / --w-input in :root, 19px / 650). !important so it
+   beats the older per-component sizes. Staff screens (kitchen, kitchen
+   login, past orders) keep their own plain style.
+   =========================== */
+:is(
+    input:is([type="text"], [type="email"], [type="tel"], [type="search"], [type="url"], [type="password"], [type="number"], :not([type])),
+    textarea,
+    select.textInput
+  ):not(:is(.kitchen, .kitchen-login, .po) *) {
+  font-size: var(--fs-input) !important;
+  font-weight: var(--w-input) !important;
+}
+
+/* ===========================
    iPhone auto-zoom fix
    iOS Safari zooms the whole page into any form field whose text is
-   under 16px (and often stays zoomed). Keep every field at 16px on
-   phones / touch screens. !important so it wins over the per-component
-   field sizes; desktop sizes are unaffected.
+   under 16px (and often stays zoomed). The typing boxes above are 19px,
+   so this only has to cover dropdowns and the staff screens' boxes.
    =========================== */
 @media (max-width: 640px), (pointer: coarse) {
-  /* .co-input (checkout boxes) is 19px, already big enough not to zoom */
-  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.co-input),
-  select,
-  textarea {
+  select:not(.textInput),
+  :is(.kitchen, .kitchen-login, .po) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea) {
     font-size: 16px !important;
   }
 }

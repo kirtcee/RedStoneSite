@@ -799,7 +799,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           border: 0;
           background: none;
           font-family: var(--font-display);
-          font-size: var(--fs-sm);
+          font-size: 18px; /* "Use my location" */
           letter-spacing: 0.03em;
           text-transform: uppercase;
           text-decoration: underline;
@@ -814,7 +814,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
         }
         .locMsg {
           margin-top: 6px;
-          font-size: var(--fs-sm);
+          font-size: 17px; /* location messages */
           color: #b00020;
         }
         .row--fee .v {
@@ -826,17 +826,19 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           padding: 10px 12px;
           border-left: 5px solid #e31837;
           background: var(--menu-box-bg);
-          font-size: var(--fs-sm);
-          line-height: 1.35;
+          font-size: 18px; /* far-away disclaimer: try sizes here in Inspect */
+          line-height: 1.4;
           color: var(--text-brown);
         }
         .farNote a {
+          white-space: nowrap; /* keep the phone number on one line */
           color: #000;
           font-weight: var(--w-bold);
         }
         .farNote__carryout {
           display: block;
           margin-top: 8px;
+          font-size: 18px; /* "Order for carryout instead" */
         }
         .bigRedNarrow {
           background: #8b1a1a;
@@ -872,6 +874,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           margin-bottom: 8px;
         }
         .field__label {
+          font-size: 19px; /* "Enter Location" */
           font-weight: 700;
           color: var(--text-brown);
           margin-bottom: 6px;
@@ -908,6 +911,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
         .lab {
           width: 170px;
           text-align: right;
+          font-size: 19px; /* "Address Type:", "Street Address:"... */
           font-weight: 700;
           color: var(--text-brown);
         }
@@ -930,7 +934,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
 
         .note {
           color: var(--text-brown);
-          font-size: 0.9rem;
+          font-size: 17px; /* "Indicates required field." */
           margin: 6px 0 10px;
         }
         .btnRow {
@@ -972,10 +976,12 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
         }
         .k {
           width: 140px;
+          font-size: 18px; /* popup labels: "Street Address:"... */
           color: var(--text-brown);
         }
         .v {
           flex: 1;
+          font-size: 18px; /* popup values (the address you typed) */
           font-weight: 700;
         }
         .linkBtn {
@@ -985,6 +991,8 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           text-decoration: underline;
           padding: 0;
           cursor: pointer;
+          font-family: var(--font-body);
+          font-size: 18px; /* "Change Address" */
           font-weight: 700;
         }
 
@@ -1080,7 +1088,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           .k {
             width: auto;
             color: #888;
-            font-size: 0.8rem;
+            font-size: 16px;
           }
           .addrModal-root {
             --addr-top: 74px;

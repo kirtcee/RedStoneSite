@@ -54,7 +54,7 @@ const APPEARANCE = {
       boxShadow: "none",
       padding: "11px 12px",
       // same as the checkout's other boxes (pages/checkout.js .co-input)
-      fontSize: "19px",
+      fontSize: "19px", // keep in step with --fs-input in globals.css (the card box is an iframe, so it can't read the variable)
       fontWeight: "650",
     },
     ".Input:focus": {

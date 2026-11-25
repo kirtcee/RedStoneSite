@@ -923,8 +923,8 @@ export default function CheckoutPage() {
           color: #000;
           /* what customers type */
           font-family: var(--font-body);
-          font-size: 19px;
-          font-weight: 650;
+          font-size: var(--fs-input); /* 19px, set in globals.css :root */
+          font-weight: var(--w-input); /* 650 */
         }
         .co-wrap :global(.co-input:focus) {
           outline: 2px solid var(--text-brown);
