@@ -1,109 +1,114 @@
 // pages/terms.js
 //
-// Terms of Ordering (including cancellations and refunds). A plain-language
-// draft based on how the site actually works: store hours, delivery fees and
-// minimum, tax, payment options, coupons. The numbers come from the same
-// files the site uses (utils/storeHours.js, utils/orderRules.js), so they
-// stay in step if those change. Have it reviewed before launch.
+// Terms of Ordering, written in formal, general legal language on purpose:
+// no fee formulas, order minimums, scheduling limits, fraud checks or other
+// operating details that a competitor could copy (those are shown to the
+// customer in the cart and at checkout instead). Have it reviewed before
+// launch.
 import Head from "next/head";
 import LegalPage from "../components/LegalPage";
-import { hoursSummary, LAST_ORDER_BEFORE_CLOSE, MAX_SCHEDULE_DAYS } from "../utils/storeHours";
-import {
-  STORE_ADDRESS,
-  STORE_PHONE,
-  TAX_RATE,
-  DELIVERY_MINIMUM_CENTS,
-  DELIVERY_MAX_MINUTES,
-  deliveryFeeForMinutes,
-} from "../utils/orderRules";
+import { STORE_ADDRESS, STORE_PHONE } from "../utils/orderRules";
 
-const UPDATED = "November 24, 2026";
-const money = (c) => `$${(c / 100).toFixed(2)}`;
-const hours = hoursSummary()
-  .map((r) => `${r.days}: ${r.hours}`)
-  .join(". ");
+const UPDATED = "November 25, 2026";
+const PHONE = STORE_PHONE || "905-385-9888";
+const ADDRESS = STORE_ADDRESS || "576 Concession Street, Hamilton, Ontario";
 
 const sections = [
   {
-    heading: "About these terms",
+    heading: "1. Acceptance of Terms",
     body: [
-      `These terms apply when you order from Red Stone Pizza (${STORE_ADDRESS}) through this website. By placing an order you agree to them. If you have a question, call us at ${STORE_PHONE}.`,
+      `These Terms of Ordering (the "Terms") govern your access to and use of this website and the online ordering services offered by Red Stone Pizza ("Red Stone Pizza," "we," "us" or "our") (collectively, the "Services"). By accessing or using the Services or placing an order, you agree to be bound by these Terms. If you do not agree, you must not use the Services.`,
     ],
   },
   {
-    heading: "Placing an order",
+    heading: "2. Orders",
     body: [
-      "Your order is placed when you see the order confirmation page. Please check your items, contact details and (for delivery) your address before placing it. We use the phone number you give us if we need to reach you about your order, so please make sure it's correct.",
-      "We may refuse or cancel any order, for example if an item is unavailable, a price on the site is clearly wrong, we can't reach you to confirm, or we believe the order is fake, a prank, or fraudulent. If you've already paid online and we cancel, we'll refund you in full.",
+      "All orders are subject to acceptance by us. We reserve the right, in our sole discretion, to refuse, limit or cancel any order for any reason, including product availability, errors in pricing or product information, inability to verify order or customer information, or suspected fraudulent, unauthorized or improper activity. Where an order that has been paid is cancelled by us, the amount paid will be refunded.",
+      "You are responsible for ensuring that all information you provide is accurate and complete.",
     ],
   },
   {
-    heading: "Hours and timing",
+    heading: "3. Prices, Taxes and Fees",
     body: [
-      `Online ordering is open during store hours (${hours}). Orders for now close ${LAST_ORDER_BEFORE_CLOSE} minutes before closing. You can also schedule an order for a later time, up to ${MAX_SCHEDULE_DAYS} days ahead.`,
-      "Ready and delivery times shown on the site are estimates. Busy times, weather and traffic can cause delays, and we may lengthen the estimated time when we're busy. We'll do our best to have your order ready on time.",
+      "All prices are stated in Canadian dollars and are subject to change without notice. Applicable taxes and any applicable fees will be added to your order and displayed prior to order placement. Minimum order requirements and other conditions may apply to certain services. The total displayed at the time your order is placed is the amount payable.",
     ],
   },
   {
-    heading: "Prices, tax and fees",
+    heading: "4. Payment",
     body: [
-      `All prices are in Canadian dollars. HST of ${Math.round(TAX_RATE * 100)}% is added to the whole order, including the delivery fee. Some crusts, toppings, extra dips and other options cost extra, and the price you see in your cart and at checkout includes them.`,
-      `Delivery is based on the driving time from our store: ${money(deliveryFeeForMinutes(4))} for up to 4 minutes, then ${money(100)} more for each extra minute, up to ${DELIVERY_MAX_MINUTES} minutes. Delivery orders need at least ${money(DELIVERY_MINIMUM_CENTS)} of food and drinks before tax and the delivery fee. For addresses further away, please call us.`,
-      "Prices, menu items and deals can change without notice. The price shown when you place your order is the price you pay.",
+      "Payment may be made by the methods made available through the Services. Online payments are processed by a third-party payment processor. By submitting payment information, you represent that you are authorized to use the payment method provided. We reserve the right to require payment in advance for any order.",
     ],
   },
   {
-    heading: "Paying",
+    heading: "5. Promotions",
     body: [
-      "Pay Now: pay online by card when you order. Payments are processed securely by Stripe.",
-      "Pay at Store or Pay at Door: pay when you pick up or receive your order. Please have payment ready. If an order isn't picked up or paid for, we may ask you to pay online for future orders.",
+      "Promotional offers and coupon codes are subject to their stated conditions, have no cash value, may not be combined unless expressly stated, and may be modified, suspended or withdrawn at any time without notice. If an order does not satisfy the conditions of a promotion, regular pricing applies.",
     ],
   },
   {
-    heading: "Coupons and deals",
+    heading: "6. Order Timing, Pickup and Delivery",
     body: [
-      "Each deal has its own conditions shown on the deals page (for example a minimum number of items, or carryout only). Deals can't be exchanged for cash, can end or change at any time, and may not be combined unless the site says so. If an order doesn't meet a deal's conditions, the regular price applies.",
+      "Online ordering is available only during such hours as we may determine. Any preparation, pickup or delivery times provided are estimates only and are not guaranteed.",
+      "Delivery is available only within areas determined by us from time to time. You are responsible for providing a complete and accurate delivery address and for being available to receive your order. Where an order cannot be delivered or is not collected due to circumstances within your control, no refund will be issued.",
     ],
   },
   {
-    heading: "Pickup and delivery",
+    heading: "7. Cancellations and Refunds",
     body: [
-      `Carryout orders are picked up at ${STORE_ADDRESS}. Please bring the name on the order.`,
-      "For delivery, please give a complete address (including any unit number) and be available to receive your order. If our driver can't reach you or the address is wrong, we'll try to call you; if we still can't deliver, the order may be returned to the store and, where you've paid online, a refund may not be given for food that was already made.",
+      `Requests to cancel or modify an order must be made by contacting us at ${PHONE} and may not be possible once preparation has begun. Concerns regarding an order must be reported to us promptly. Any replacement, credit or refund is provided at our discretion, except as otherwise required by applicable law. Refunds of online payments are issued to the original method of payment.`,
     ],
   },
   {
-    heading: "Cancellations, problems and refunds",
+    heading: "8. Allergens",
     body: [
-      `To cancel or change an order, call us right away at ${STORE_PHONE}. Once we've started making your food we may not be able to cancel it.`,
-      "If something is missing or wrong with your order, please call us the same day, ideally within 24 hours, and we'll make it right with a replacement, a credit, or a refund.",
-      "Refunds for online payments go back to the card you paid with and usually appear within 5 to 10 business days, depending on your bank. Refunds for orders paid in person are given in store.",
+      "Our products are prepared in facilities that handle common allergens, including wheat (gluten), milk, eggs, soy and others. We cannot guarantee that any product is free from allergens or cross-contact. Customers with allergies or dietary restrictions should contact us before ordering. Special requests are accommodated where possible but are not guaranteed.",
     ],
   },
   {
-    heading: "Allergies and special requests",
+    heading: "9. Acceptable Use",
     body: [
-      "Our kitchen handles common allergens, including wheat (gluten), milk, eggs, soy, nuts and others. We can't guarantee any item is free from allergens or cross-contact. If you have an allergy, please call us before ordering. We do our best with special instructions but can't guarantee them.",
+      "You agree not to: (a) place false, fraudulent or unauthorized orders; (b) use another person's information or payment method without authorization; (c) interfere with or disrupt the operation or security of the Services; or (d) access, copy, scrape or otherwise use the Services or their content by automated means or for any commercial purpose without our prior written consent.",
     ],
   },
   {
-    heading: "Using the website",
+    heading: "10. Intellectual Property",
     body: [
-      "Please use the site only to place genuine orders. Don't place fake or prank orders, try to interfere with the site, or use someone else's details or payment card.",
-      "We work to keep the site accurate and running, but it may sometimes be unavailable or contain mistakes. If that happens, you can always call us to order.",
+      "The Services and all content made available through them, including names, logos, menu items, descriptions, images, graphics, designs, layout and software, are owned by or licensed to Red Stone Pizza and are protected by applicable intellectual property laws. No right or licence is granted to you except the limited right to use the Services for personal, non-commercial ordering purposes. Any reproduction, distribution, modification or other use without our prior written consent is prohibited.",
     ],
   },
   {
-    heading: "Our responsibility",
+    heading: "11. Disclaimer",
     body: [
-      "As far as the law allows, our responsibility for any problem with an order is limited to the amount you paid for that order. Nothing in these terms takes away rights you have under Ontario consumer protection law.",
+      "The Services are provided on an \"as is\" and \"as available\" basis. To the fullest extent permitted by law, we disclaim all warranties, express or implied, including any warranty that the Services will be uninterrupted, error free or free of harmful components.",
     ],
   },
   {
-    heading: "Changes and governing law",
+    heading: "12. Limitation of Liability",
     body: [
-      "We may update these terms; the \"last updated\" date shows when. The terms in place when you placed your order apply to that order. These terms are governed by the laws of Ontario and the federal laws of Canada that apply there.",
+      "To the fullest extent permitted by law, Red Stone Pizza shall not be liable for any indirect, incidental, special, consequential or punitive damages arising out of or relating to the Services or any order, and our total liability for any claim shall not exceed the amount paid by you for the order giving rise to the claim. Nothing in these Terms limits any rights you may have under applicable consumer protection legislation that cannot be waived.",
     ],
+  },
+  {
+    heading: "13. Indemnification",
+    body: [
+      "You agree to indemnify and hold harmless Red Stone Pizza and its owners, employees and agents from any claims, losses, liabilities and expenses arising out of your breach of these Terms or your misuse of the Services.",
+    ],
+  },
+  {
+    heading: "14. Governing Law",
+    body: [
+      "These Terms are governed by the laws of the Province of Ontario and the federal laws of Canada applicable therein. You agree to submit to the jurisdiction of the courts of the Province of Ontario.",
+    ],
+  },
+  {
+    heading: "15. Changes and Severability",
+    body: [
+      "We may amend these Terms at any time. Amendments are effective upon posting, as indicated by the \"Last updated\" date above, and apply to orders placed after that date. If any provision of these Terms is found to be unenforceable, the remaining provisions shall remain in full force and effect.",
+    ],
+  },
+  {
+    heading: "16. Contact",
+    body: [`Questions regarding these Terms may be directed to Red Stone Pizza at ${ADDRESS} or by telephone at ${PHONE}.`],
   },
 ];
 
@@ -113,12 +118,7 @@ export default function TermsPage() {
       <Head>
         <title>Red Stone Pizza | Terms of Ordering</title>
       </Head>
-      <LegalPage
-        title="Terms of Ordering"
-        updated={UPDATED}
-        intro="The rules for ordering online from Red Stone Pizza, including fees, cancellations and refunds."
-        sections={sections}
-      />
+      <LegalPage title="Terms of Ordering" updated={UPDATED} sections={sections} />
     </>
   );
 }
