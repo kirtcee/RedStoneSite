@@ -1,5 +1,6 @@
 // pages/_app.js
 import { installBackToClose } from "../hooks/useBackToClose";
+import { initAnalytics } from "../utils/analytics";
 import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Script from "next/script";
@@ -19,6 +20,10 @@ function RootApp({ Component, pageProps }) {
   useEffect(() => {
     installBackToClose(router);
   }, [router]);
+  // anonymous usage stats (utils/analytics.js); off until the key is set
+  useEffect(() => {
+    if (router.isReady) initAnalytics(router.pathname);
+  }, [router.isReady, router.pathname]);
   const isStaffPage = router.pathname.startsWith("/kitchen");
   const [editingItem, setEditingItem] = useState(null);
 

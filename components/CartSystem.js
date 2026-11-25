@@ -1,4 +1,5 @@
 // components/CartSystem.js
+import { track } from "../utils/analytics";
 import React, {
   createContext,
   useContext,
@@ -9,7 +10,7 @@ import React, {
   useRef,
 } from "react";
 import { useRouter } from "next/router";
-import { formatMoney, priceCart } from "./Pricing";
+import { formatMoney, priceCart, priceLineItem } from "./Pricing";
 import { loadCart, saveCart, subscribeCart } from "../utils/cartPersistence";
 import { auth } from "../utils/firebaseConfig";
 import { findDealById, dealUnitToCartItem } from "../utils/dealCatalog";
@@ -277,6 +278,16 @@ export function CartProvider({ children, onEditItem }) {
   // ---- Add/Update/Remove/clear ----
   const reallyAddItem = useCallback((raw) => {
     setItems((prev) => mergeIntoItems(prev, raw));
+    try {
+      track("add_to_cart", {
+        type: raw?.type,
+        name: raw?.pizzaName || raw?.name || raw?.side || raw?.categoryLabel || raw?.comboId || raw?.type,
+        qty: Number(raw?.qty) || 1,
+        price_cents: priceLineItem(raw),
+      });
+    } catch {
+      // analytics must never stop an item being added
+    }
   }, []);
 
   // Adds a coupon's items to the cart as their own lines, tagged with the
@@ -377,6 +388,7 @@ export function CartProvider({ children, onEditItem }) {
   const goToCheckout = useCallback(() => {
     if (deliveryShortCents > 0) {
       setMinGateOpen(true);
+      track("delivery_minimum_shown", { short_cents: deliveryShortCents });
       return;
     }
     router.push("/checkout");

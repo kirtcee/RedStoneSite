@@ -12,6 +12,7 @@ import { useCart } from "./CartSystem";
 import { formatMoney } from "./Pricing";
 import { DELIVERY_MINIMUM_CENTS, deliveryShortfallCents } from "../utils/orderRules";
 import { suggestQuickAdds } from "../utils/quickAddCatalog";
+import { track } from "../utils/analytics";
 
 const FALLBACK_IMG = { side: "/images/menu_sides.png", "drinks-dips": "/images/menu_drinks.png" };
 
@@ -44,6 +45,7 @@ export default function DeliveryMinimumOverlay() {
     router.push("/checkout");
   };
   const switchToCarryout = () => {
+    track("delivery_minimum_switched_to_carryout");
     confirmCarryout();
     goCheckout();
   };
@@ -91,7 +93,10 @@ export default function DeliveryMinimumOverlay() {
                     <QuickAddImg src={q.img} type={q.item.type} />
                     <div className="dm-tile__name">{q.label}</div>
                     <div className="dm-tile__price">{formatMoney(q.priceCents)}</div>
-                    <button type="button" className="rs-pill-btn dm-tile__add" onClick={() => addItem({ ...q.item })}>
+                    <button type="button" className="rs-pill-btn dm-tile__add" onClick={() => {
+                        track("delivery_minimum_quick_add", { item: q.label });
+                        addItem({ ...q.item });
+                      }}>
                       Add
                     </button>
                   </div>

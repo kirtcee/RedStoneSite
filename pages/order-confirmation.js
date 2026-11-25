@@ -148,7 +148,7 @@ export default function OrderConfirmation() {
 
   if (loading) {
     return (
-      <main className="container" style={{ paddingTop: "32px", paddingBottom: "32px" }}>
+      <main className="container ph-no-capture" style={{ paddingTop: "32px", paddingBottom: "32px" }}>
         <p>Loading your order...</p>
       </main>
     );
@@ -156,7 +156,7 @@ export default function OrderConfirmation() {
 
   if (!order && paymentState === "processing") {
     return (
-      <main className="container" style={{ paddingTop: "32px", paddingBottom: "32px" }}>
+      <main className="container ph-no-capture" style={{ paddingTop: "32px", paddingBottom: "32px" }}>
         <div style={{ background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "var(--text-brown)" }}>
           <p>Your payment is still being confirmed by your bank. This page will show your order once it goes through. You can refresh in a minute, or call the store if it doesn't appear.</p>
         </div>
@@ -166,7 +166,7 @@ export default function OrderConfirmation() {
 
   if (!order && paymentState === "failed") {
     return (
-      <main className="container" style={{ paddingTop: "32px", paddingBottom: "32px" }}>
+      <main className="container ph-no-capture" style={{ paddingTop: "32px", paddingBottom: "32px" }}>
         <div style={{ background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "var(--text-brown)" }}>
           <p>Your payment didn't go through, so your order wasn't placed and you haven't been charged.</p>
           <Link href="/checkout" className="rs-pill-btn" style={{ display: "inline-block", width: "auto", marginTop: 8 }}>
@@ -179,7 +179,7 @@ export default function OrderConfirmation() {
 
   if (!order) {
     return (
-      <main className="container" style={{ paddingTop: "32px", paddingBottom: "32px" }}>
+      <main className="container ph-no-capture" style={{ paddingTop: "32px", paddingBottom: "32px" }}>
         <div style={{ background: "var(--menu-box-bg)", border: "1px solid var(--menu-box-border)", borderRadius: ".1875rem", padding: 24, textAlign: "center", color: "var(--text-brown)" }}>
           <p>Order not found. Please call the store.</p>
           <Link href="/menu" style={{ color: "var(--text-brown)", fontWeight: 700, textDecoration: "underline" }}>

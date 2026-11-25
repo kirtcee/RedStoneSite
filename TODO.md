@@ -14,6 +14,14 @@ Running list of things to finish before `mac-handoff` is merged into `main`
       no `#` in the URL) and put its new `whsec_` secret in
       `STRIPE_WEBHOOK_SECRET` (Production), then redeploy. Apple Pay: add the
       live domain in Stripe → Payment method domains.
+- [ ] **PostHog analytics** (`utils/analytics.js`): add `NEXT_PUBLIC_POSTHOG_KEY`
+      = the Project token (starts `phc_`, PostHog → Settings → Project →
+      General; NEVER the `phs_` key) in Vercel (Production and Preview) and
+      `.env.local`, then redeploy. If PostHog's address bar says
+      eu.posthog.com also add `NEXT_PUBLIC_POSTHOG_HOST` =
+      `https://eu.i.posthog.com`. Then in PostHog make a funnel:
+      `$pageview` (/menu) → `add_to_cart` → `$pageview` (/checkout) →
+      `order_placed`. Off on the kitchen and stats pages.
 - [ ] **Vercel Deployment Protection** was turned off for previews so Stripe
       can reach them. Decide whether to turn it back on after launch (preview
       links are then public to anyone who has the address).

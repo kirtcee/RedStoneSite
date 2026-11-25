@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import useBodyLock from "../../hooks/useBodyLock";
 import useBackToClose from "../../hooks/useBackToClose";
+import { track } from "../../utils/analytics";
 
 /**
  * DebugPizzaOverlay
@@ -30,6 +31,10 @@ export default function DebugPizzaOverlay({
 }) {
   // the phone's Back button closes this popup instead of leaving the page
   useBackToClose(!!open, onClose);
+  useEffect(() => {
+    if (open) track("popup_opened", { title });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   // ---------- shared: blocker for anchors/submits ----------
   useEffect(() => {

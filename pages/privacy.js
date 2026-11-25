@@ -9,7 +9,7 @@ import Head from "next/head";
 import LegalPage from "../components/LegalPage";
 import { STORE_ADDRESS, STORE_PHONE } from "../utils/orderRules";
 
-const UPDATED = "November 24, 2026";
+const UPDATED = "November 25, 2026";
 const PHONE = STORE_PHONE || "905-385-9888";
 const ADDRESS = STORE_ADDRESS || "576 Concession Street, Hamilton, Ontario";
 
@@ -45,7 +45,7 @@ const sections = [
     heading: "Who we share it with",
     body: [
       "We only share what's needed to run the site and fill your order, with these service providers:",
-      "Google Firebase (stores orders and runs the anonymous ID), Stripe (online payments), Google Maps (address search and delivery distance), and Vercel (hosts the website).",
+      "Google Firebase (stores orders and runs the anonymous ID), Stripe (online payments), Google Maps (address search and delivery distance), Vercel (hosts the website), and PostHog (anonymous usage statistics).",
       "These companies may store and process information on servers outside Canada, including in the United States, where it may be subject to the laws of that country. They may only use it to provide their service to us.",
       "We may also share information if the law requires it, or to protect our rights, our staff or our customers.",
     ],
@@ -54,7 +54,8 @@ const sections = [
     heading: "Your browser",
     body: [
       "The site saves a few things in your browser so it remembers your choices: your cart, carryout or delivery, your delivery address, your chosen order time, and, for the current tab only, the details you typed at checkout. You can clear these at any time by clearing your browser's data for this site.",
-      "We don't use advertising or tracking cookies.",
+      "We use PostHog to collect anonymous usage statistics, such as which pages and deals people open and where they stop before ordering, so we can make the site easier to use. It doesn't use cookies (it keeps a random ID for the current tab only), it never receives your name, phone number, email or address, and anything you type into a box is hidden from it.",
+      "We don't use advertising cookies, and we don't sell or share your information for advertising.",
     ],
   },
   {

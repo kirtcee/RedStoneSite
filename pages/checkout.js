@@ -18,6 +18,7 @@ import { saveOrder, startCardPayment, finalizeCardPayment, friendlyOrderError } 
 import StripeCardPayment from "../components/StripeCardPayment";
 import { DELIVERY_MINIMUM_CENTS } from "../utils/orderRules";
 import useWaitTimes from "../hooks/useWaitTimes";
+import { track } from "../utils/analytics";
 import {
   canOrderNow,
   nextOpening,
@@ -220,7 +221,24 @@ export default function CheckoutPage() {
     const id = setInterval(check, 30000);
     return () => clearInterval(id);
   }, [orderTiming, scheduleDate, scheduleTime]);
+  // what an order looked like, for analytics (no personal details)
+  const orderStats = (payment) => ({
+    payment,
+    service,
+    timing: orderTiming,
+    total_cents: totals?.total ?? null,
+    items: items.length,
+  });
+  // the store-closed / bad-time notice was shown
+  useEffect(() => {
+    if (hoursCheck.closedNow) track("store_closed_shown");
+    if (hoursCheck.badSchedule) track("bad_schedule_shown");
+  }, [hoursCheck.closedNow, hoursCheck.badSchedule]);
+  useEffect(() => {
+    if (cart?.deliveryTooFar) track("delivery_too_far_shown");
+  }, [cart?.deliveryTooFar]);
   const scheduleNext = () => {
+    track("schedule_for_later_clicked");
     const slot = firstOpenSlot();
     if (!slot) return;
     cart?.setOrderTiming?.("later");
@@ -349,10 +367,12 @@ export default function CheckoutPage() {
         // Card problems show inside the card form too; keep the message here
         // so it's visible next to the button.
         setSubmitError(result.error);
+        track("order_failed", { payment: "card", reason: String(result.error).match(/Code: ([^)]+)/)?.[1] || "card_error" });
         if (result.field) fieldRefs.current.payment?.scrollIntoView({ behavior: "smooth", block: "center" });
         return;
       }
       const status = await finalizeCardPayment(result.orderId);
+      track("order_placed", orderStats("card"));
       cart?.clearCart?.();
       router.replace(`/order-confirmation?orderId=${result.orderId}&card=1${status === "paid" ? "" : "&check=1"}`);
       return;
@@ -364,9 +384,11 @@ export default function CheckoutPage() {
     if (!id) {
       // The short code in brackets tells us which step failed.
       setSubmitError(friendlyOrderError(saveOrder.lastError));
+      track("order_failed", { payment: "store", reason: String(saveOrder.lastError || "error").split(":")[0] });
       return;
     }
     cart?.clearCart?.();
+    track("order_placed", orderStats("store"));
     router.replace(`/order-confirmation?orderId=${id}`);
   };
 
@@ -550,7 +572,10 @@ export default function CheckoutPage() {
                         name="payment"
                         value={o.value}
                         checked={form.payment === o.value}
-                        onChange={() => update("payment", o.value)}
+                        onChange={() => {
+                          update("payment", o.value);
+                          track("payment_method_chosen", { method: o.value });
+                        }}
                       />
                       <span>{o.label}</span>
                     </label>
