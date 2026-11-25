@@ -88,6 +88,28 @@ Running list of things to finish before `mac-handoff` is merged into `main`
 
 - [ ] **Merge `mac-handoff` → `main`** to go live.
 
+## Overlooked launch items (Nov 25)
+Accounts (owner does these):
+- [ ] **Vercel Pro** ($20/mo): Hobby is non-commercial only. Then set Spend
+      Management limits. Check the preview/production URLs and Stripe webhook
+      URL still match if the team name changes.
+- [ ] **Stripe settings**: statement descriptor "RED STONE PIZZA", payout
+      bank account + identity verification, Radar rules, dispute email alerts.
+- [ ] **Google Cloud / Firebase**: restrict Maps keys to the site's domains
+      (add redstonepizza.net), billing budget alerts, Firestore backups.
+- [ ] **Error + uptime alerts**: Sentry (free) and UptimeRobot (free).
+Code (Claude builds):
+- [ ] Kitchen "stop taking orders" switch + holiday closed dates
+- [ ] Missed-order alert: email the owner if an order isn't accepted in 3 to 5 min
+- [ ] Cancel order button (reason, auto refund for card, email the customer)
+- [ ] Tips at checkout (owner to decide: delivery only or both, % or $)
+- [ ] Pay at Door: cash or card, "paying with $__" for change
+- [ ] Sold-out toggles per item from the kitchen
+- [ ] Link previews (Open Graph image), iPhone home-screen icon, robots.txt, sitemap
+- [ ] Branded 404 page
+- [ ] Allergen note on builders
+- [ ] Google Business Profile: add order + menu links (owner)
+
 ## Prank / fake order protection (pick which to build)
 Card orders are already safe; these are for Pay at Store / Pay at Door.
 - [ ] **Flag risky orders on the kitchen screen**: "First order from this
