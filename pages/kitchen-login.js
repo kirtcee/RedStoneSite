@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../utils/firebaseConfig";
 import { STAFF_EMAIL } from "../utils/kitchenAuth";
+import posthog from "posthog-js";
 
 export default function KitchenLogin() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function KitchenLogin() {
     setError(null);
     try {
       await signInWithEmailAndPassword(auth, STAFF_EMAIL, password);
+      posthog.capture("staff_signed_in");
       router.push("/kitchen");
     } catch (e) {
       setError("Incorrect password.");

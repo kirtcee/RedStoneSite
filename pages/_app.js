@@ -1,6 +1,7 @@
 // pages/_app.js
 import React, { useState } from "react";
 import Head from "next/head";
+import dynamic from "next/dynamic";
 import Script from "next/script";
 import { useRouter } from "next/router";
 import "../styles/globals.css";
@@ -10,6 +11,9 @@ import { CartProvider, CartSidebar } from "../components/CartSystem";
 import CartEditOverlay from "../components/CartEditOverlay";
 import ServiceGateOverlay from "../components/ServiceGateOverlay";
 import DealBuilder from "../components/DealBuilder";
+import ErrorBoundary from "../components/ErrorBoundary";
+
+const PostHogInit = dynamic(() => import("../components/PostHogInit"), { ssr: false });
 
 function RootApp({ Component, pageProps }) {
   const router = useRouter();
@@ -41,9 +45,12 @@ function RootApp({ Component, pageProps }) {
     return (
       <>
         {siteHead}
-        <main id="page" className="page-shell">
-          <Component {...pageProps} />
-        </main>
+        <PostHogInit />
+        <ErrorBoundary>
+          <main id="page" className="page-shell">
+            <Component {...pageProps} />
+          </main>
+        </ErrorBoundary>
       </>
     );
   }
@@ -51,6 +58,7 @@ function RootApp({ Component, pageProps }) {
   return (
     <>
       {siteHead}
+      <PostHogInit />
       {/* Load Google Maps JS + Places library once for the whole app */}
       <Script
         id="google-maps"
@@ -59,22 +67,24 @@ function RootApp({ Component, pageProps }) {
         onError={(e) => console.error("Google Maps JS failed to load", e)}
       />
 
-      <CartProvider onEditItem={setEditingItem}>
-        <Header />
-        {/* Content always starts below the header (and subheader when present). */}
-        <main id="page" className={`page-shell${hasOrderSettingsAside ? " page-shell--compact" : ""}`}>
-          <Component {...pageProps} />
-        </main>
-        <CartSidebar />
-        <CartEditOverlay editingItem={editingItem} onClose={() => setEditingItem(null)} />
-        <ServiceGateOverlay />
-        {/* Fresh-open instance — driven by CartProvider's openDealId, so a
-            code redeemed from anywhere (cart dropdown, /cart, checkout) or a
-            card clicked on /coupons opens the same builder. Editing an
-            existing "deal" cart item uses a separate instance inside
-            CartEditOverlay above. */}
-        <DealBuilder />
-      </CartProvider>
+      <ErrorBoundary>
+        <CartProvider onEditItem={setEditingItem}>
+          <Header />
+          {/* Content always starts below the header (and subheader when present). */}
+          <main id="page" className={`page-shell${hasOrderSettingsAside ? " page-shell--compact" : ""}`}>
+            <Component {...pageProps} />
+          </main>
+          <CartSidebar />
+          <CartEditOverlay editingItem={editingItem} onClose={() => setEditingItem(null)} />
+          <ServiceGateOverlay />
+          {/* Fresh-open instance — driven by CartProvider's openDealId, so a
+              code redeemed from anywhere (cart dropdown, /cart, checkout) or a
+              card clicked on /coupons opens the same builder. Editing an
+              existing "deal" cart item uses a separate instance inside
+              CartEditOverlay above. */}
+          <DealBuilder />
+        </CartProvider>
+      </ErrorBoundary>
     </>
   );
 }

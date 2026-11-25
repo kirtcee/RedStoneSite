@@ -16,6 +16,7 @@
 import { priceLineItem } from "../../components/Pricing";
 import { adminAuth, adminDb } from "../../utils/firebaseAdmin";
 import { Timestamp, FieldValue } from "firebase-admin/firestore";
+import { orderLogger, SeverityNumber } from "../../instrumentation";
 
 const TAX_RATE = 0.13;
 const DELIVERY_FEE_CENTS = 499;
@@ -107,6 +108,19 @@ export default async function handler(req, res) {
     scheduled && !isNaN(scheduled.getTime()) ? scheduled : new Date(Date.now() + 20 * 60000)
   );
 
+  const logAttributes = {
+    item_count: items.length,
+    order_timing: isLater ? "later" : "now",
+    service_method: serviceMethod.toLowerCase(),
+    total_cents: totalCents,
+  };
+
+  orderLogger?.emit({
+    body: "order_validated",
+    severityNumber: SeverityNumber.INFO,
+    attributes: logAttributes,
+  });
+
   try {
     const ref = await adminDb.collection("orders").add({
       items,
@@ -124,8 +138,18 @@ export default async function handler(req, res) {
       pickupTime,
       completed: false,
     });
+    orderLogger?.emit({
+      body: "order_created",
+      severityNumber: SeverityNumber.INFO,
+      attributes: logAttributes,
+    });
     res.status(200).json({ ok: true, id: ref.id });
   } catch (e) {
+    orderLogger?.emit({
+      body: "order_persistence_failed",
+      severityNumber: SeverityNumber.ERROR,
+      attributes: logAttributes,
+    });
     console.error("placeOrder: Firestore write failed", e);
     reject(res, 500, "save_failed");
   }
