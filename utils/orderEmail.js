@@ -172,7 +172,7 @@ export function buildOrderEmail(order, id) {
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
         <tr>
           <td style="padding:0 4px 24px;">
-            <img src="${esc(logo)}" width="94" height="41" alt="Red Stone Pizza" style="display:block;border:0;width:94px;height:auto;">
+            <img src="${esc(logo)}" width="120" height="57" alt="Red Stone Pizza" style="display:block;border:0;width:120px;height:auto;">
           </td>
         </tr>
         <tr>
