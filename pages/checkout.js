@@ -16,6 +16,7 @@ import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { findDealById } from "../utils/dealCatalog";
 import { saveOrder, startCardPayment, finalizeCardPayment, friendlyOrderError } from "../utils/saveOrder";
 import StripeCardPayment from "../components/StripeCardPayment";
+import SchedulePickerOverlay from "../components/SchedulePickerOverlay";
 import { DELIVERY_MINIMUM_CENTS } from "../utils/orderRules";
 import useWaitTimes from "../hooks/useWaitTimes";
 import { track } from "../utils/analytics";
@@ -23,23 +24,9 @@ import {
   canOrderNow,
   nextOpening,
   scheduleProblem,
-  timeSlotsFor,
-  torontoParts,
-  addDays,
-  MAX_SCHEDULE_DAYS,
   formatClock,
 } from "../utils/storeHours";
 
-// The first time an order can be scheduled for (today or a later day).
-function firstOpenSlot() {
-  const today = torontoParts().date;
-  for (let i = 0; i <= MAX_SCHEDULE_DAYS; i++) {
-    const date = addDays(today, i);
-    const slots = timeSlotsFor(date);
-    if (slots.length) return { date, time: slots[0].value };
-  }
-  return null;
-}
 
 // Shown under the page title (same numbers as the menu page estimate)
 const CARRYOUT_ADDRESS = "576 Concession Street";
@@ -237,13 +224,11 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (cart?.deliveryTooFar) track("delivery_too_far_shown");
   }, [cart?.deliveryTooFar]);
+  // "Pick a time" popup (closed now, or their scheduled time doesn't work)
+  const [pickerOpen, setPickerOpen] = useState(false);
   const scheduleNext = () => {
     track("schedule_for_later_clicked");
-    const slot = firstOpenSlot();
-    if (!slot) return;
-    cart?.setOrderTiming?.("later");
-    cart?.setScheduleDate?.(slot.date);
-    cart?.setScheduleTime?.(slot.time);
+    setPickerOpen(true);
   };
 
   const [summaryOpen, setSummaryOpen] = useState(false);
@@ -300,8 +285,11 @@ export default function CheckoutPage() {
     }
     // Address too far to price online: the notice above the button explains.
     if (cart?.deliveryTooFar) return;
-    // Closed, or the scheduled time isn't valid: the notice above explains.
-    if (hoursCheck.closedNow || hoursCheck.badSchedule) return;
+    // Closed, or the scheduled time isn't valid: ask them to pick a time.
+    if (hoursCheck.closedNow || hoursCheck.badSchedule) {
+      setPickerOpen(true);
+      return;
+    }
     // Delivery minimum (utils/orderRules.js): show what's missing instead.
     if (cart?.deliveryShortCents > 0) {
       cart.openMinGate?.();
@@ -612,10 +600,9 @@ export default function CheckoutPage() {
             )}
             {hoursCheck.badSchedule && (
               <div className="co-minNote">
-                We're not open at your scheduled time, or it's too soon. Please pick another time in Order
-                Settings.{" "}
+                We're not open at your scheduled time, or it's too soon. Please pick another time.{" "}
                 <button type="button" className="co-minNote__btn" onClick={scheduleNext}>
-                  Use the Next Open Time
+                  Pick Another Time
                 </button>
               </div>
             )}
@@ -1165,6 +1152,12 @@ export default function CheckoutPage() {
           }
         }
       `}</style>
+      <SchedulePickerOverlay
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        reason={hoursCheck.badSchedule ? "badTime" : "closed"}
+        opens={hoursCheck.opens}
+      />
     </main>
   );
 }

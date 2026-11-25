@@ -155,3 +155,14 @@ export function hoursSummary() {
   }
   return rows.map((r) => ({ days: r.from === r.to ? short[r.from] : `${short[r.from]} to ${short[r.to]}`, hours: r.hours }));
 }
+
+// The first time an order can be scheduled for (today or a later day).
+export function firstOpenSlot(ms = Date.now()) {
+  const today = torontoParts(ms).date;
+  for (let i = 0; i <= MAX_SCHEDULE_DAYS; i++) {
+    const date = addDays(today, i);
+    const slots = timeSlotsFor(date, ms);
+    if (slots.length) return { date, time: slots[0].value };
+  }
+  return null;
+}

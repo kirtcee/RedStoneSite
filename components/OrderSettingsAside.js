@@ -55,7 +55,7 @@ function CalendarIcon() {
 // Custom-styled time picker — a native <input type="time"> can't be themed
 // to match the site's font/colors, so this is a plain dropdown of 15-minute
 // slots across the store's open hours instead.
-function TimeDropdown({ value, onChange, options }) {
+export function TimeDropdown({ value, onChange, options }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
 
@@ -174,7 +174,7 @@ const WEEKDAY_LETTERS = ["S", "M", "T", "W", "T", "F", "S"];
 // which can't be forced to match the site's MM-DD-YYYY look via CSS. This is
 // a small calendar dropdown instead, still storing the same "YYYY-MM-DD"
 // value everywhere else already expects.
-function DateDropdown({ value, onChange }) {
+export function DateDropdown({ value, onChange }) {
   const [open, setOpen] = useState(false);
   const initial = value ? value.split("-").map(Number) : null;
   const now = new Date();
