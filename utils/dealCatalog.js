@@ -51,7 +51,7 @@ export const dealSections = [
         name: "Pick 2 or More",
         subtitle: "$8.99 each item, 2 minimum, no maximum",
         description:
-          "Get Any 2 or More: Medium 1-Topping Pizza, 6 Wings, Cheesy Garlic Bread, Large Fries, Large Poutine, Medium Shawarma Poutine, Medium Onion Rings. Price is per item.",
+          "Get Any 2 or More: Medium 1-Topping Pizza, 6 Wings, 2 Cheesy Garlic Breads, Large Fries, Large Poutine, Medium Shawarma Poutine, Medium Onion Rings. Price is per item.",
         price: 899,
         perItem: true, // the cart's coupon box adds "Price is per item." (or this text, if it's a string)
         serviceRestriction: null,
@@ -80,8 +80,8 @@ export const dealSections = [
             label: "2 Cheesy Garlic Breads",
             categoryLabel: "Bread",
             variants: [
-              { sideName: "Cheesy Garlic Bread", label: "Cheesy Garlic Bread" },
-              { sideName: "Garlic Bread", label: "Without Cheese" },
+              { sideName: "Cheesy Garlic Bread", label: "2 Cheesy Garlic Breads" },
+              { sideName: "Garlic Bread", label: "2 Garlic Breads (No Cheese)" },
             ],
             qtyFixed: 2,
           },

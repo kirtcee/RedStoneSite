@@ -1,19 +1,19 @@
 # Run from the project folder:  python3 scripts/byo-image.py
-# (needs Pillow: pip install pillow). Writes public/images/byo-deluxe.webp,
+# (needs Pillow: pip install pillow). Writes public/images/byo-pepperoni.webp,
 # the Build Your Own Pizza picture (menu card and cart thumbnail).
-# The angled Deluxe photo, shifted up and left so its top and left edges run
+# The angled Pepperoni photo, shifted up and left so its top and left edges run
 # slightly off the picture (like the old byo_thumb.png), with a soft shadow
 # down and to the right. Transparent background.
 import sys
 from PIL import Image, ImageFilter
 
 PUB = "/home/user/redstonesite/public/images"
-OUT = sys.argv[1] if len(sys.argv) > 1 else f"{PUB}/byo-deluxe.webp"
+OUT = sys.argv[1] if len(sys.argv) > 1 else f"{PUB}/byo-pepperoni.webp"
 W, H = 564, 284          # same shape as the old 282x142 picture, at 2x
 PIZZA_W = 560            # pizza width on the canvas
 X, Y = -60, -92          # how far it runs off the left / top edge
 
-im = Image.open(f"{PUB}/pizzas/angled/deluxe.webp").convert("RGBA")
+im = Image.open(f"{PUB}/pizzas/angled/pepperoni.webp").convert("RGBA")
 im = im.resize((PIZZA_W, round(im.height * PIZZA_W / im.width)), Image.LANCZOS)
 
 # shadow from the pizza's own outline

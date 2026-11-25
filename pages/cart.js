@@ -140,8 +140,8 @@ function itemImages(item) {
     case "pizza-byo":
       // a customized Signature/Specialty pizza keeps its own photo
       return item.pizzaName
-        ? [`/images/pizzas/overhead/${slugify(item.pizzaName)}.webp`, "/images/pizzas/overhead/deluxe.webp"]
-        : ["/images/pizzas/overhead/deluxe.webp"];
+        ? [`/images/pizzas/overhead/${slugify(item.pizzaName)}.webp`, "/images/pizzas/overhead/pepperoni.webp"]
+        : ["/images/pizzas/overhead/pepperoni.webp"];
     case "pizza-specialty":
       return [
         `/images/pizzas/overhead/${slugify(name)}.webp`,

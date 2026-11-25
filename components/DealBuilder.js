@@ -166,7 +166,7 @@ const SIDE_IMAGES = {
 function itemImage(item = {}) {
   switch (item.itemType) {
     case "pizza-byo":
-      return "/images/pizzas/overhead/deluxe.webp";
+      return "/images/pizzas/overhead/pepperoni.webp";
     case "wings":
       return "/images/wings.jpg";
     case "garlic-bread-choice":
@@ -313,7 +313,7 @@ export default function DealBuilder({ onClose: onCloseProp }) {
       itemType: "garlic-bread-choice",
       sideName: variant.sideName,
       qtyFixed,
-      summary: `${qtyFixed} × ${variant.sideName}`,
+      summary: qtyFixed > 1 ? `${qtyFixed} ${variant.sideName}s` : variant.sideName,
     };
     setBuilds((prev) => [...prev, unit]);
     setIsDirty(true);
