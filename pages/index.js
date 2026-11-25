@@ -159,7 +159,7 @@ export default function Home() {
         .order-or {
           font-family: var(--font-face);
           color: #a9a9a9;
-          font-size: 0.95rem;
+          font-size: var(--fs-min);
           line-height: 1;
           user-select: none;
         }
@@ -224,7 +224,7 @@ export default function Home() {
           align-items: center;
           gap: 12px;
         }
-        .disc { color: #888; font-size: 0.85rem; line-height: 1.35; }
+        .disc { color: #888; font-size: var(--fs-min); line-height: 1.35; }
         .legal-links {
           display: flex;
           justify-content: center;

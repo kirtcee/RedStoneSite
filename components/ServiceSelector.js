@@ -89,7 +89,7 @@ function createSharedMap(g, storeLatLng) {
   // button, instead of below it (which left an empty gap at the top).
   const infoHeader = document.createElement("div");
   infoHeader.style.cssText =
-    "font-family:'Red Stone Face',system-ui,sans-serif;font-weight:800;font-size:17px;line-height:1.2;padding-top:2px;";
+    "font-family:'Red Stone Face',system-ui,sans-serif;font-weight:800;font-size:var(--fs-min);line-height:1.2;padding-top:2px;";
   infoHeader.textContent = "Red Stone Pizza";
 
   // No fixed min-width, and the button uses border-box sizing so its
@@ -97,7 +97,7 @@ function createSharedMap(g, storeLatLng) {
   // sideways scrolling on phones). The address is split over two lines.
   const infoDiv = document.createElement("div");
   infoDiv.style.cssText =
-    "font-family:'Red Stone Face',system-ui,sans-serif;font-size:16px;line-height:1.35;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;";
+    "font-family:'Red Stone Face',system-ui,sans-serif;font-size:var(--fs-min);line-height:1.35;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;";
   infoDiv.innerHTML = `
       <div style="margin-bottom:4px;">576 Concession St<br />Hamilton, ON</div>
       <div style="margin-bottom:4px;">Phone: <a href="tel:+1-905-385-9888">905-385-9888</a></div>
@@ -814,7 +814,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
         }
         .locMsg {
           margin-top: 6px;
-          font-size: 17px; /* location messages */
+          font-size: var(--fs-min); /* location messages */
           color: #b00020;
         }
         .row--fee .v {
@@ -874,7 +874,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           margin-bottom: 8px;
         }
         .field__label {
-          font-size: 19px; /* "Enter Location" */
+          font-size: 21px; /* "Enter Location" */
           font-weight: 700;
           color: var(--text-brown);
           margin-bottom: 6px;
@@ -911,7 +911,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
         .lab {
           width: 170px;
           text-align: right;
-          font-size: 19px; /* "Address Type:", "Street Address:"... */
+          font-size: 21px; /* "Address Type:", "Street Address:"... */
           font-weight: 700;
           color: var(--text-brown);
         }
@@ -934,7 +934,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
 
         .note {
           color: var(--text-brown);
-          font-size: 17px; /* "Indicates required field." */
+          font-size: var(--fs-min); /* "Indicates required field." */
           margin: 6px 0 10px;
         }
         .btnRow {
@@ -1088,7 +1088,7 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
           .k {
             width: auto;
             color: #888;
-            font-size: 16px;
+            font-size: var(--fs-min);
           }
           .addrModal-root {
             --addr-top: 74px;

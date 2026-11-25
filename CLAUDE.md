@@ -23,7 +23,8 @@
 - **Weights** (globals.css `:root`): `--w-light` 300, `--w-regular` 400,
   `--w-medium` 500, `--w-semibold` 600, `--w-bold` 800, `--w-black` 950.
   **Never below 300.**
-- **Sizes:** `--fs-xs` 15px (smallest allowed), `--fs-sm` 16, `--fs-base` 18,
+- **Sizes:** `--fs-min` 18px is the smallest allowed (`--fs-xs` and `--fs-sm`
+  now equal it), `--fs-base` 18,
   `--fs-md` 20, `--fs-lg` 24, `--fs-xl` 28, `--fs-2xl` 34, `--fs-3xl` 42.
   Use these instead of one-off sizes when touching a section.
 - **Kitchen screen, kitchen login, printed receipts:** plain system font

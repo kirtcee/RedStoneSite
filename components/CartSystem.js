@@ -641,7 +641,7 @@ function DealCodeReveal({ code, setCode, status, error, onSubmit }) {
             background: none;
             border: 0;
             font-family: var(--font-display);
-            font-size: 0.95rem;
+            font-size: var(--fs-min);
             letter-spacing: 0.04em;
             text-transform: uppercase;
             text-decoration: underline;
@@ -680,7 +680,7 @@ function DealCodeReveal({ code, setCode, status, error, onSubmit }) {
           display: block;
           margin-bottom: 8px;
           font-family: var(--font-display);
-          font-size: 0.95rem;
+          font-size: var(--fs-min);
           line-height: 1.2;
           letter-spacing: 0.03em;
           text-transform: uppercase;
@@ -704,11 +704,11 @@ function DealCodeReveal({ code, setCode, status, error, onSubmit }) {
         .deal-reveal__btn {
           flex: 0 0 auto;
           padding: 0.45rem 1.2rem;
-          font-size: 1.05rem;
+          font-size: var(--fs-min);
         }
         .deal-reveal__error {
           margin-top: 6px;
-          font-size: 0.85rem;
+          font-size: var(--fs-min);
           color: #b00020;
         }
       `}</style>
@@ -776,7 +776,7 @@ export function DealCodeEntry({ compact = false, variant = null }) {
             font-family: var(--font-heading, Oswald, sans-serif);
             font-weight: 900;
             text-transform: uppercase;
-            font-size: 1.1rem;
+            font-size: var(--fs-min);
             padding: 0.85rem 1rem;
           }
           .deal-code-card__body {
@@ -797,7 +797,7 @@ export function DealCodeEntry({ compact = false, variant = null }) {
             border: 1.5px solid #a4855c;
             border-radius: 0;
             background: #fff;
-            font-size: 14px;
+            font-size: var(--fs-min);
           }
           .deal-code-card__btn {
             height: 42px;
@@ -808,7 +808,7 @@ export function DealCodeEntry({ compact = false, variant = null }) {
             color: #fff;
             border: none;
             font-weight: 900;
-            font-size: 13px;
+            font-size: var(--fs-min);
             text-transform: uppercase;
             cursor: pointer;
             font-family: var(--font-heading, Oswald, sans-serif);
@@ -819,7 +819,7 @@ export function DealCodeEntry({ compact = false, variant = null }) {
           }
           .deal-code-card__error {
             margin-top: 10px;
-            font-size: 12px;
+            font-size: var(--fs-min);
             color: #a71318;
             font-weight: 700;
           }
@@ -858,7 +858,7 @@ export function DealCodeEntry({ compact = false, variant = null }) {
           padding: 8px 10px;
           border: 1px solid #ccc;
           border-radius: 6px;
-          font-size: 13px;
+          font-size: var(--fs-min);
         }
         .deal-code-entry__btn {
           background: #8b1a1a;
@@ -868,7 +868,7 @@ export function DealCodeEntry({ compact = false, variant = null }) {
           padding: 0 14px;
           font-weight: 800;
           text-transform: uppercase;
-          font-size: 12px;
+          font-size: var(--fs-min);
           cursor: pointer;
           font-family: var(--font-heading, Oswald, sans-serif);
         }
@@ -878,7 +878,7 @@ export function DealCodeEntry({ compact = false, variant = null }) {
         }
         .deal-code-entry__error {
           margin-top: 6px;
-          font-size: 12px;
+          font-size: var(--fs-min);
           color: #a71318;
           font-weight: 600;
         }

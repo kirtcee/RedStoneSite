@@ -110,8 +110,11 @@
 
   /* ---- Type: size scale. Red Stone Face is narrow, so body text sits a
      step bigger than it did in Inter. ---- */
-  --fs-xs: 0.9375rem;  /* 15px  smallest allowed: fine print */
-  --fs-sm: 1rem;       /* 16px  notes, secondary text */
+  /* Smallest text on the site is 18px (--fs-min). Change it here and every
+     small text follows (fine print, notes, badges, prices...). */
+  --fs-min: 1.125rem;  /* 18px  smallest allowed */
+  --fs-xs: var(--fs-min);  /* fine print (was 15px) */
+  --fs-sm: var(--fs-min);  /* notes, secondary text (was 16px) */
   --fs-base: 1.125rem; /* 18px  body text, options */
   --fs-md: 1.25rem;    /* 20px  emphasized text, small headings */
   --fs-lg: 1.5rem;     /* 24px  section headers */
@@ -333,7 +336,7 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
   font-family: var(--font-heading);
   font-weight: 700;                 /* Oswald Bold */
   text-transform: uppercase; letter-spacing: .3px;
-  font-size: 1rem; line-height: 1.1; white-space: normal; word-break: keep-all;
+  font-size: var(--fs-min); line-height: 1.1; white-space: normal; word-break: keep-all;
 }
 
 /* Variable-width nav segments */
@@ -359,7 +362,7 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
 .header-cart__label {
   font-family: var(--font-heading);
   text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
-  font-size: 12px; font-weight: 700;
+  font-size: var(--fs-min); font-weight: 700;
 }
 
 /* Subheader: crisp seam + shadow ONLY below */
@@ -495,7 +498,7 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
 }
 
 .header-seg--mode .carryout-line--sm {
-  font-size: 16px;
+  font-size: var(--fs-min);
   font-weight: 400;                /* normal */
   letter-spacing: 0.04em;
   margin: 0;
@@ -505,7 +508,7 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
   white-space: nowrap;
 }
 .header-seg--mode .carryout-line--lg {
-  font-size: 16px;
+  font-size: var(--fs-min);
   font-weight: 700;                /* bold */
   letter-spacing: 0.03em;
   margin-top: 0;
@@ -593,7 +596,7 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
   font-weight: 800;
   letter-spacing: .4px;
   margin-top: 4px;
-  font-size: 1rem;  /* same as you already set */
+  font-size: var(--fs-min);  /* same as you already set */
   text-align: center;
 }
 
@@ -669,7 +672,7 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
 .cta-byo__sub {
   color: #5a5a5a;
   margin-top: 6px;
-  font-size: 1rem;
+  font-size: var(--fs-min);
 }
 
 /* Phones: just "BUILD YOUR PIZZA", centred top-to-bottom beside the image */
@@ -715,7 +718,7 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
   color: var(--brand-blue);
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 0.92rem;
+  font-size: var(--fs-min);
   letter-spacing: 0.3px;
   text-transform: uppercase;
   text-decoration: none;
@@ -795,7 +798,7 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
      image edge-to-edge, effectively as tall as the screen, which read as
      "stacked full-screen boxes" rather than a grid. */
   .cat-card__label {
-    font-size: 1rem;
+    font-size: var(--fs-min);
   }
 }
 
@@ -1143,7 +1146,7 @@ body.modal-open {
 .pb-h__inner{
   padding: var(--pb-h-pad-y) var(--pb-h-pad-x);
   line-height: 1;             /* keep it tight like your screenshot */
-  font-size: 0.95rem;         /* you can nudge this if you want slightly bigger text */
+  font-size: var(--fs-min);         /* you can nudge this if you want slightly bigger text */
 }
 
 /* Make headers span only their own column widths automatically */
@@ -1164,7 +1167,7 @@ body.modal-open {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.82rem;
+  font-size: var(--fs-min);
   line-height: 1.2;
   padding: 4px 10px 4px 9px;
   border-radius: 4px;
@@ -1199,7 +1202,7 @@ body.modal-open {
 
 /* check icon style if you want text instead of dot */
 .combo-item-status__check {
-  font-size: 0.85rem;
+  font-size: var(--fs-min);
   line-height: 1;
 }
 
@@ -1350,7 +1353,7 @@ body::before {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.3px;
-    font-size: 0.95rem;
+    font-size: var(--fs-min);
     color: #222;
     cursor: pointer;
   }
@@ -1425,7 +1428,7 @@ body::before {
     border: 0;
     color: #000;
     font-family: var(--font-heading);
-    font-size: 17px;
+    font-size: var(--fs-min);
     text-transform: uppercase;
     letter-spacing: 0.04em;
     cursor: pointer;
@@ -1513,7 +1516,7 @@ body::before {
   }
   .mobile-subbar .carryout-line--sm,
   .mobile-subbar .carryout-line--lg {
-    font-size: 14px;
+    font-size: var(--fs-min);
     letter-spacing: 0.04em;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1568,6 +1571,12 @@ body::before {
   }
 }
 
+/* Browsers draw buttons at 13px unless told otherwise; give the ones that
+   don't set their own size the site minimum. */
+button {
+  font-size: var(--fs-min);
+}
+
 /* ===========================
    Typing boxes: every box customers type into uses the same size and
    weight (--fs-input / --w-input in :root, 19px / 650). !important so it
@@ -1592,7 +1601,7 @@ body::before {
 @media (max-width: 640px), (pointer: coarse) {
   select:not(.textInput),
   :is(.kitchen, .kitchen-login, .po) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea) {
-    font-size: 16px !important;
+    font-size: var(--fs-min) !important;
   }
 }
 
@@ -1700,7 +1709,7 @@ body::before {
 /* very small phones (e.g. iPhone SE): keep "Add To Order" on one line */
 @media (max-width: 360px) {
   .rs-pill-row .rs-pill-btn {
-    font-size: 1.1rem;
+    font-size: var(--fs-min);
   }
 }
 

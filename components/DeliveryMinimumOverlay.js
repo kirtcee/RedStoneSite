@@ -210,7 +210,7 @@ export default function DeliveryMinimumOverlay() {
           background: #1b7a3a;
           color: #fff;
           font-family: var(--font-display);
-          font-size: 0.8rem;
+          font-size: var(--fs-min);
           text-transform: uppercase;
           letter-spacing: 0.03em;
         }

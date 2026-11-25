@@ -25,7 +25,7 @@ function ServiceGatePrompt() {
         <div style={{ fontWeight: 900, fontSize: "1.15rem", textTransform: "uppercase" }}>
           Start Your Order
         </div>
-        <div style={{ marginTop: 4, fontSize: 14, fontFamily: "var(--font-body, Inter, system-ui, sans-serif)" }}>
+        <div style={{ marginTop: 4, fontSize: "var(--fs-min)", fontFamily: "var(--font-body, Inter, system-ui, sans-serif)" }}>
           Choose carryout or delivery to see the coupons available to you.
         </div>
       </div>
@@ -97,7 +97,7 @@ function FeaturedDealBanner({ deal, onOrder }) {
           font-family: var(--heading, Oswald, sans-serif);
           font-weight: 900;
           text-transform: uppercase;
-          font-size: 0.7rem;
+          font-size: var(--fs-min);
           letter-spacing: 0.4px;
           padding: 4px 10px;
           margin-bottom: 4px;
@@ -119,7 +119,7 @@ function FeaturedDealBanner({ deal, onOrder }) {
           margin-top: 4px;
         }
         .featured-banner__code {
-          font-size: 0.75rem;
+          font-size: var(--fs-min);
           opacity: 0.85;
           margin-top: 6px;
         }
@@ -137,7 +137,7 @@ function FeaturedDealBanner({ deal, onOrder }) {
           cursor: pointer;
         }
         @media (max-width: 640px) {
-          .featured-banner__title { max-width: 100%; font-size: 1.1rem; }
+          .featured-banner__title { max-width: 100%; font-size: var(--fs-min); }
           .featured-banner__price { font-size: 2rem; }
           .featured-banner__cta { position: static; margin-top: 12px; }
           .featured-banner__content { padding: 1rem 1.2rem; }
@@ -201,7 +201,7 @@ function DealCard({ deal, onAdd }) {
           left: 0;
           background: #333;
           color: #fff;
-          font-size: 10px;
+          font-size: var(--fs-min);
           font-weight: 800;
           text-transform: uppercase;
           padding: 3px 8px;
@@ -219,7 +219,7 @@ function DealCard({ deal, onAdd }) {
           color: #fff;
           border: none;
           font-weight: 900;
-          font-size: 12px;
+          font-size: var(--fs-min);
           text-transform: uppercase;
           white-space: nowrap;
           cursor: pointer;
@@ -287,7 +287,7 @@ export default function CouponsPage() {
             <h1 className="menu-title" style={{ margin: "0 0 4px" }}>
               Coupons
             </h1>
-            <div style={{ marginBottom: 16, color: "#666", fontStyle: "italic", fontSize: 12 }}>
+            <div style={{ marginBottom: 16, color: "#666", fontStyle: "italic", fontSize: "var(--fs-min)" }}>
               Note: Some crust types, toppings, sauces, and premium items may come with an additional charge.
             </div>
 

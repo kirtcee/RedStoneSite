@@ -326,7 +326,7 @@ export default function ComboBuilder({
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <strong className="combo-item-label">{comboItemLabel(item)}</strong>
                         {isFixedItem ? (
-                          <span style={{ fontSize: "0.9rem", color: TEXT_BROWN }}>Included: Garlic Bread</span>
+                          <span style={{ fontSize: "var(--fs-min)", color: TEXT_BROWN }}>Included: Garlic Bread</span>
                         ) : (
                           <button
                             onClick={() =>
@@ -363,7 +363,7 @@ export default function ComboBuilder({
                         )}
                       </div>
 
-                      <div style={{ marginTop: "0.5rem", fontSize: "0.9rem", color: TEXT_BROWN }}>
+                      <div style={{ marginTop: "0.5rem", fontSize: "var(--fs-min)", color: TEXT_BROWN }}>
                         {isFixedItem ? (
                           <span className="combo-item-status combo-item-status--ok">
                             <span className="combo-item-status__check"><ItemCheck size={16} /></span>
@@ -436,7 +436,7 @@ export default function ComboBuilder({
 
               {/* ===== CTA ===== */}
               {!comboIsComplete && (
-                <p style={{ margin: "0 0 0.5rem", fontSize: "0.85rem", color: MAROON, fontWeight: 700 }}>
+                <p style={{ margin: "0 0 0.5rem", fontSize: "var(--fs-min)", color: MAROON, fontWeight: 700 }}>
                   Customize every item above before adding this combo to your cart.
                 </p>
               )}
@@ -637,7 +637,7 @@ export default function ComboBuilder({
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          font-size: 0.82rem;
+          font-size: var(--fs-min);
           line-height: 1.2;
           padding: 4px 10px 4px 9px;
           border-radius: 4px;
@@ -664,7 +664,7 @@ export default function ComboBuilder({
           flex: 0 0 auto;
         }
         .combo-item-status__check {
-          font-size: 0.85rem;
+          font-size: var(--fs-min);
           line-height: 1;
         }
         .rs-confirm {
@@ -694,7 +694,7 @@ export default function ComboBuilder({
           margin-bottom: 0.5rem;
         }
         .rs-confirm__body {
-          font-size: 1rem;
+          font-size: var(--fs-min);
           line-height: 1.4;
           color: #333;
           margin-bottom: 1.1rem;

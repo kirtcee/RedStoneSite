@@ -63,7 +63,7 @@ const linkBtn = {
   color: BROWN,
   fontWeight: 700,
   cursor: "pointer",
-  fontSize: 13,
+  fontSize: "var(--fs-min)",
 };
 
 function ctaPill(enabled) {
@@ -74,7 +74,7 @@ function ctaPill(enabled) {
     backgroundColor: enabled ? MAROON : "#ccc",
     color: "#fff",
     fontWeight: 900,
-    fontSize: "1.05rem",
+    fontSize: "var(--fs-min)",
     border: "none",
     cursor: enabled ? "pointer" : "not-allowed",
     textTransform: "uppercase",
@@ -95,7 +95,7 @@ const removeCouponLink = {
   textDecoration: "underline",
   marginTop: 10,
   cursor: "pointer",
-  fontSize: 13,
+  fontSize: "var(--fs-min)",
 };
 
 function ordinal(n) {
@@ -120,7 +120,7 @@ function StepCircle({ state, label, isCheck = false }) {
         background: bg,
         color,
         fontWeight: 800,
-        fontSize: 15,
+        fontSize: "var(--fs-min)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -357,7 +357,7 @@ export default function DealBuilder({ onClose: onCloseProp }) {
             </div>
 
             {openDealRef && existingUnits > 0 && (
-              <div style={{ marginTop: 8, fontSize: 13, color: BROWN }}>
+              <div style={{ marginTop: 8, fontSize: "var(--fs-min)", color: BROWN }}>
                 Already in your cart with this coupon: {existingUnits} item{existingUnits === 1 ? "" : "s"}.
               </div>
             )}
@@ -366,7 +366,7 @@ export default function DealBuilder({ onClose: onCloseProp }) {
               <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${BORDER}` }}>
                 <div style={{ fontWeight: 800, marginBottom: 6, color: "#000" }}>Items added to this coupon</div>
                 {builds.map((u, i) => (
-                  <div key={i} style={{ padding: "4px 0", fontSize: 13, whiteSpace: "pre-line" }}>
+                  <div key={i} style={{ padding: "4px 0", fontSize: "var(--fs-min)", whiteSpace: "pre-line" }}>
                     (1) {u.summary || "Item"} (
                     {u.itemType !== "garlic-bread-choice" && (
                       <>
@@ -418,18 +418,18 @@ export default function DealBuilder({ onClose: onCloseProp }) {
           {/* ===== Current-step label + down triangle ===== */}
           {!isBundle && !listAtMax && (
             <div style={{ textAlign: "center", marginBottom: "1.25rem" }}>
-              <div style={{ fontWeight: 900, textTransform: "uppercase", fontSize: "0.85rem", color: "#000" }}>
+              <div style={{ fontWeight: 900, textTransform: "uppercase", fontSize: "var(--fs-min)", color: "#000" }}>
                 {ordinal(unitCount + 1)} Item
               </div>
-              <div style={{ fontSize: 16, color: "#000", marginTop: 2 }}>▼</div>
+              <div style={{ fontSize: "var(--fs-min)", color: "#000", marginTop: 2 }}>▼</div>
             </div>
           )}
           {isBundle && currentBundleKey && (
             <div style={{ textAlign: "center", marginBottom: "1.25rem" }}>
-              <div style={{ fontWeight: 900, textTransform: "uppercase", fontSize: "0.85rem", color: "#000" }}>
+              <div style={{ fontWeight: 900, textTransform: "uppercase", fontSize: "var(--fs-min)", color: "#000" }}>
                 {deal.build[currentBundleKey].label || currentBundleKey}
               </div>
-              <div style={{ fontSize: 16, color: "#000", marginTop: 2 }}>▼</div>
+              <div style={{ fontSize: "var(--fs-min)", color: "#000", marginTop: 2 }}>▼</div>
             </div>
           )}
 
@@ -463,7 +463,7 @@ export default function DealBuilder({ onClose: onCloseProp }) {
                           </button>
                         )}
                       </div>
-                      <div style={{ marginTop: 6, marginLeft: 56, fontSize: "0.9rem", color: BROWN, whiteSpace: "pre-line" }}>
+                      <div style={{ marginTop: 6, marginLeft: 56, fontSize: "var(--fs-min)", color: BROWN, whiteSpace: "pre-line" }}>
                         {inCart
                           ? "Already in your cart"
                           : done
@@ -486,7 +486,7 @@ export default function DealBuilder({ onClose: onCloseProp }) {
                   fontWeight: 900,
                   textTransform: "uppercase",
                   color: "#000",
-                  fontSize: "1.05rem",
+                  fontSize: "var(--fs-min)",
                   fontFamily: "var(--font-heading, Oswald, sans-serif)",
                   marginBottom: "1rem",
                 }}
@@ -644,7 +644,7 @@ export default function DealBuilder({ onClose: onCloseProp }) {
           margin-bottom: 0.35rem;
         }
         .rs-confirm__body {
-          font-size: 0.9rem;
+          font-size: var(--fs-min);
           color: #333;
           margin-bottom: 0.9rem;
         }

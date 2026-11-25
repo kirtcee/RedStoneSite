@@ -42,7 +42,7 @@ export default function SideBuilder({
     fontFamily: "var(--font-heading, Oswald, sans-serif)",
     fontWeight: 900,
     textTransform: "uppercase",
-    fontSize: ".9rem",
+    fontSize: "var(--fs-min)",
   };
   const dividerInset = {
     borderTop: 0, // former divider: no line and no extra space

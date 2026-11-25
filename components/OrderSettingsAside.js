@@ -110,7 +110,7 @@ function TimeDropdown({ value, onChange, options }) {
           color: ${BROWN};
           font-family: var(--font-body, Inter, system-ui, sans-serif);
           font-weight: 700;
-          font-size: 0.88rem;
+          font-size: var(--fs-min);
           cursor: pointer;
         }
         .os-timeChevron {
@@ -143,7 +143,7 @@ function TimeDropdown({ value, onChange, options }) {
           border-bottom: 1px solid rgba(0, 0, 0, 0.06);
           color: ${BROWN};
           font-family: var(--font-body, Inter, system-ui, sans-serif);
-          font-size: 0.85rem;
+          font-size: var(--fs-min);
           cursor: pointer;
         }
         .os-timeOption:last-child {
@@ -286,7 +286,7 @@ function DateDropdown({ value, onChange }) {
           background: #fff;
           color: ${BROWN};
           font-family: var(--font-body, Inter, system-ui, sans-serif);
-          font-size: 0.85rem;
+          font-size: var(--fs-min);
           cursor: pointer;
           text-align: left;
         }
@@ -325,14 +325,14 @@ function DateDropdown({ value, onChange }) {
           font-weight: 800;
           color: ${BROWN};
           font-family: var(--font-heading, Oswald, sans-serif);
-          font-size: 0.85rem;
+          font-size: var(--fs-min);
           text-transform: uppercase;
         }
         .os-dateMenu__weekdays {
           display: grid;
           grid-template-columns: repeat(7, 1fr);
           text-align: center;
-          font-size: 0.68rem;
+          font-size: var(--fs-min);
           font-weight: 800;
           color: ${BROWN};
           opacity: 0.7;
@@ -352,7 +352,7 @@ function DateDropdown({ value, onChange }) {
           border: none;
           border-radius: 6px;
           color: ${BROWN};
-          font-size: 0.8rem;
+          font-size: var(--fs-min);
           cursor: pointer;
         }
         .os-dateMenu__day:hover {
@@ -669,7 +669,7 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
           text-transform: uppercase;
           font-family: var(--font-heading, Oswald, sans-serif);
           letter-spacing: 0.3px;
-          font-size: 0.95rem;
+          font-size: var(--fs-min);
           border-top-left-radius: .1875rem;
           border-top-right-radius: .1875rem;
         }
@@ -804,7 +804,7 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
           justify-content: space-between;
           margin-top: 8px;
           font-weight: 900;
-          font-size: 1.05rem;
+          font-size: var(--fs-min);
           color: #000;
           font-family: var(--font-heading, Oswald, sans-serif);
           text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */

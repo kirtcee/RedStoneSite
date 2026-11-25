@@ -664,7 +664,7 @@ export default function CartPage() {
           font-style: normal;
         }
         .cart-box__note strong {
-          font-size: 0.8rem; /* "Note:" label stays this size */
+          font-size: var(--fs-min); /* "Note:" label stays this size */
           font-family: var(--font-display);
           text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
           font-weight: 400;
@@ -691,7 +691,7 @@ export default function CartPage() {
           border: 2px solid #000;
           border-radius: 0.1875rem; /* same as the coupon box below */
           font-family: var(--font-display);
-          font-size: 1.1rem;
+          font-size: var(--fs-min);
           line-height: 1.05;
           letter-spacing: 0.03em;
           text-transform: uppercase;
@@ -728,12 +728,12 @@ export default function CartPage() {
           margin-top: 10px;
           font-family: var(--font-display-text);
           font-weight: 400;
-          font-size: 0.95rem;
+          font-size: var(--fs-min);
           line-height: 1.3;
         }
         .cart-box :global(.cart-coupon__msg) {
           margin-top: 6px;
-          font-size: 0.85rem;
+          font-size: var(--fs-min);
           color: #b00020;
         }
         .cart-box :global(.cart-coupon__actions) {
@@ -748,7 +748,7 @@ export default function CartPage() {
           background: none;
           border: 0;
           font-family: var(--font-display);
-          font-size: 0.85rem;
+          font-size: var(--fs-min);
           line-height: 1.15;
           letter-spacing: 0.03em;
           text-transform: uppercase;
@@ -764,7 +764,7 @@ export default function CartPage() {
         .cart-box :global(.cart-line__coupon) {
           margin-top: 4px;
           font-family: var(--font-display);
-          font-size: 0.8rem;
+          font-size: var(--fs-min);
           letter-spacing: 0.03em;
           text-transform: uppercase;
           color: #e31837;
@@ -914,7 +914,7 @@ export default function CartPage() {
           border: 0;
           text-align: left;
           font-family: var(--font-display);
-          font-size: 1.05rem;
+          font-size: var(--fs-min);
           line-height: 1.1;
           color: #000;
           text-transform: uppercase;
@@ -923,7 +923,7 @@ export default function CartPage() {
         .cart-box :global(.cart-line__opts) {
           font-family: var(--font-display-text); /* Red Stone Display Medium */
           font-weight: 400;
-          font-size: 0.85rem;
+          font-size: var(--fs-min);
           line-height: 1.35;
           white-space: pre-wrap;
           overflow-wrap: anywhere;
@@ -984,7 +984,7 @@ export default function CartPage() {
           right: 10px;
           top: 50%;
           transform: translateY(-52%);
-          font-size: 0.8rem;
+          font-size: var(--fs-min);
           color: #000;
           pointer-events: none;
         }
@@ -1048,7 +1048,7 @@ export default function CartPage() {
         }
         .cart-box :global(.cart-tile__name) {
           font-family: var(--font-display);
-          font-size: 0.95rem;
+          font-size: var(--fs-min);
           line-height: 1.1;
           color: #000;
           text-transform: uppercase;
@@ -1077,7 +1077,7 @@ export default function CartPage() {
           background: #e8f5e9;
           color: #1b5e20;
           font-weight: 700;
-          font-size: 0.8rem;
+          font-size: var(--fs-min);
           text-align: center;
           pointer-events: none;
         }
@@ -1115,7 +1115,7 @@ export default function CartPage() {
             font-size: 1.25rem;
           }
           .cart-box :global(.cart-line__opts) {
-            font-size: 1.1rem;
+            font-size: var(--fs-min);
             font-weight: 650;
           }
           /* REMOVE above EDIT, in the spot REMOVE used to be in */

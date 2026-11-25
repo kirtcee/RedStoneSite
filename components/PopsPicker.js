@@ -99,7 +99,7 @@ export default function PopsPicker({
           Choose Your {count} Pops
         </div>
         <div style={{ padding: "1rem", background: LIGHT_BG }}>
-          <p style={{ margin: "0 0 0.75rem", color: TEXT_BROWN, fontSize: ".9rem" }}>
+          <p style={{ margin: "0 0 0.75rem", color: TEXT_BROWN, fontSize: "var(--fs-min)" }}>
             Mix and match any {count} cans, or let us pick an assortment for you.
           </p>
 
@@ -198,7 +198,7 @@ export default function PopsPicker({
           border-radius: 30px;
           font-weight: 900;
           font-family: var(--font-heading), Oswald, sans-serif;
-          font-size: 1.05rem;
+          font-size: var(--fs-min);
           text-transform: uppercase;
           cursor: pointer;
         }
@@ -223,7 +223,7 @@ export default function PopsPicker({
           border-radius: 8px;
           background: #fff;
           color: #999;
-          font-size: 0.9rem;
+          font-size: var(--fs-min);
           font-weight: 700;
           text-align: center;
         }
@@ -245,7 +245,7 @@ export default function PopsPicker({
         }
         .pops-slot__x {
           flex: 0 0 auto;
-          font-size: 0.8rem;
+          font-size: var(--fs-min);
           opacity: 0.85;
         }
         .pops-grid {
@@ -274,7 +274,7 @@ export default function PopsPicker({
           background: #fff;
           color: #111;
           font-weight: 700;
-          font-size: 0.92rem;
+          font-size: var(--fs-min);
           line-height: 1.15;
           text-align: center;
           cursor: pointer;
@@ -302,7 +302,7 @@ export default function PopsPicker({
           border-radius: 12px;
           background: ${MAROON};
           color: #fff;
-          font-size: 0.8rem;
+          font-size: var(--fs-min);
           font-weight: 900;
           line-height: 24px;
         }

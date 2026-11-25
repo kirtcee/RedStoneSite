@@ -685,7 +685,7 @@ export default function CheckoutPage() {
           --sub-bold-weight: 600; /* the bold words */
           font-family: var(--font-face);
           font-weight: var(--sub-weight);
-          font-size: 1.1rem;
+          font-size: var(--fs-min);
           line-height: 1.35;
           /* spacing — tweak these two */
           --sub-letter-spacing: 0em; /* space between letters, e.g. 0.02em */
@@ -750,7 +750,7 @@ export default function CheckoutPage() {
           align-items: center;
           gap: 8px;
           font-family: var(--font-display);
-          font-size: 0.9rem;
+          font-size: var(--fs-min);
           line-height: 1.05;
           text-align: right;
           text-transform: uppercase;
@@ -786,7 +786,7 @@ export default function CheckoutPage() {
           background: #000;
           color: #fff;
           font-family: var(--font-heading);
-          font-size: 1.05rem;
+          font-size: var(--fs-min);
           line-height: 1;
           text-transform: uppercase;
         }
@@ -812,7 +812,7 @@ export default function CheckoutPage() {
         .co-items__title {
           font-family: var(--font-display);
           font-weight: 400;
-          font-size: 1.05rem;
+          font-size: var(--fs-min);
           line-height: 1.1;
           letter-spacing: 0.02em;
           text-transform: uppercase;
@@ -823,7 +823,7 @@ export default function CheckoutPage() {
           white-space: pre-line; /* item details can run over several lines */
           font-family: var(--font-display-text); /* Red Stone Display Medium */
           font-weight: 400;
-          font-size: 0.88rem;
+          font-size: var(--fs-min);
           line-height: 1.35;
           color: var(--text-brown);
           overflow-wrap: anywhere;
@@ -831,7 +831,7 @@ export default function CheckoutPage() {
         .co-items__coupon {
           margin-top: 4px;
           font-family: var(--font-display);
-          font-size: 0.8rem;
+          font-size: var(--fs-min);
           letter-spacing: 0.03em;
           text-transform: uppercase;
           color: #e31837;
@@ -868,7 +868,7 @@ export default function CheckoutPage() {
         .co-summary__foot :global(.co-change) {
           flex: 0 1 auto;
           padding: 0.55rem 1.1rem;
-          font-size: 1.05rem;
+          font-size: var(--fs-min);
         }
 
         /* ----- Numbered sections ----- */
@@ -904,7 +904,7 @@ export default function CheckoutPage() {
           margin-bottom: 6px;
           padding: 0;
           font-family: var(--font-display);
-          font-size: 1rem;
+          font-size: var(--fs-min);
           letter-spacing: 0.03em;
           text-transform: uppercase;
           color: var(--text-brown);
@@ -938,26 +938,26 @@ export default function CheckoutPage() {
         }
         .co-wrap :global(.co-error) {
           margin-top: 5px;
-          font-size: 0.85rem;
+          font-size: var(--fs-min);
           font-weight: 600;
           color: #d0021b;
         }
         .co-wrap :global(.co-hint) {
           margin: -6px 0 14px;
-          font-size: 0.75rem;
+          font-size: var(--fs-min);
           line-height: 1.35;
           color: var(--text-brown);
         }
         .co-wrap :global(.co-hint--note) {
           margin: 8px 0 0;
-          font-size: 0.85rem;
+          font-size: var(--fs-min);
         }
         .co-wrap :global(.co-hint--note strong) {
           color: #000;
         }
         .co-wrap :global(.co-reqnote) {
           margin: 4px 0 0;
-          font-size: 0.8rem;
+          font-size: var(--fs-min);
           color: var(--text-brown);
         }
 
@@ -971,7 +971,7 @@ export default function CheckoutPage() {
         }
         .co-balance__label {
           color: var(--text-brown);
-          font-size: 1rem;
+          font-size: var(--fs-min);
         }
         .co-balance__due {
           color: #000;
@@ -987,12 +987,12 @@ export default function CheckoutPage() {
           border: 1px solid var(--menu-box-border);
           border-radius: 0.1875rem;
           background: #fff;
-          font-size: 0.9rem;
+          font-size: var(--fs-min);
           color: var(--text-brown);
         }
         .co-wrap :global(.co-card__secure) {
           margin: 10px 0 0;
-          font-size: 0.8rem;
+          font-size: var(--fs-min);
           line-height: 1.35;
           color: var(--text-brown);
         }
@@ -1040,19 +1040,19 @@ export default function CheckoutPage() {
         /* ----- Readable sizes for Red Stone Face (narrower than the old
            Inter, so small text needs to be a step bigger; nothing under 15px) */
         .co-radio {
-          font-size: 1.1rem;
+          font-size: var(--fs-min);
         }
         .co-wrap :global(.co-error) {
-          font-size: 1rem;
+          font-size: var(--fs-min);
         }
         .co-wrap :global(.co-hint) {
-          font-size: 0.95rem;
+          font-size: var(--fs-min);
         }
         .co-wrap :global(.co-hint--note) {
-          font-size: 1rem;
+          font-size: var(--fs-min);
         }
         .co-wrap :global(.co-reqnote) {
-          font-size: 0.95rem;
+          font-size: var(--fs-min);
         }
         .co-wrap :global(.co-req) {
           font-weight: 700;
@@ -1067,13 +1067,13 @@ export default function CheckoutPage() {
         }
         .co-wrap :global(.co-card__secure),
         .co-wrap :global(.co-card__loading) {
-          font-size: 0.95rem;
+          font-size: var(--fs-min);
         }
         .co-items__opt {
-          font-size: 1rem;
+          font-size: var(--fs-min);
         }
         .co-items__coupon {
-          font-size: 0.95rem;
+          font-size: var(--fs-min);
         }
         .co-minNote {
           margin-bottom: 12px;
@@ -1107,7 +1107,7 @@ export default function CheckoutPage() {
           cursor: pointer;
         }
         .co-submitError {
-          font-size: 1rem;
+          font-size: var(--fs-min);
         }
 
         .co-submitError {
@@ -1129,11 +1129,11 @@ export default function CheckoutPage() {
             width: 196px;
           }
           .co-summary__foot :global(.order-totals .order-totals__row) {
-            font-size: 0.88rem;
+            font-size: var(--fs-min);
             padding: 7px 10px;
           }
           .co-summary__foot :global(.order-totals .order-totals__row--total) {
-            font-size: 1.05rem;
+            font-size: var(--fs-min);
           }
           .co-summary__total {
             font-size: 1.4rem;
@@ -1147,7 +1147,7 @@ export default function CheckoutPage() {
           /* two tidy lines ("Change your / order") so it fits beside the totals */
           .co-summary__foot :global(.co-change) {
             max-width: 132px;
-            font-size: 0.9rem;
+            font-size: var(--fs-min);
             line-height: 1.1;
             padding: 0.55rem 0.9rem;
             border-radius: 22px;

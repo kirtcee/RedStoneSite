@@ -74,7 +74,7 @@ export default function OrderTotals({ className = "" }) {
           text-align: right;
           padding: 8px 12px;
           border-bottom: 1px solid var(--menu-box-border);
-          font-size: 1rem;
+          font-size: var(--fs-min);
         }
         .order-totals__row--beforeTotal {
           border-bottom: 0;

@@ -258,7 +258,7 @@ export default function WingsBuilder({
             marginBottom: "0.35rem",
             color: TEXT_BROWN,
             fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
-            fontSize: "1rem"
+            fontSize: "var(--fs-min)"
           }}
         >
           Choose Sauce
@@ -289,7 +289,7 @@ export default function WingsBuilder({
                 textOverflow: "ellipsis",
                 fontWeight: 800,
                 fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
-                fontSize: ".9rem"
+                fontSize: "var(--fs-min)"
               }}
               title={sauce}
             >
@@ -307,7 +307,7 @@ export default function WingsBuilder({
             marginBottom: "0.35rem",
             color: TEXT_BROWN,
             fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
-            fontSize: "1rem"
+            fontSize: "var(--fs-min)"
           }}
         >
           Sauced &amp; Tossed or Sauce on Side?
@@ -335,7 +335,7 @@ export default function WingsBuilder({
                 cursor: "pointer",
                 fontWeight: 800,
                 fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
-                fontSize: ".9rem"
+                fontSize: "var(--fs-min)"
               }}
             >
               {style}
@@ -352,7 +352,7 @@ export default function WingsBuilder({
             marginBottom: "0.35rem",
             color: TEXT_BROWN,
             fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
-            fontSize: "1rem"
+            fontSize: "var(--fs-min)"
           }}
         >
           Choose Size
@@ -388,7 +388,7 @@ export default function WingsBuilder({
                   width: isNarrow ? "100%" : undefined,
                   minWidth: isNarrow ? 0 : "160px",
                   padding: isNarrow ? "0.8rem 1rem" : "0.6rem 0.8rem",
-                  fontSize: isNarrow ? "1rem" : undefined,
+                  fontSize: isNarrow ? "var(--fs-min)" : undefined,
                   backgroundColor: active ? MAROON : "#eee",
                   color: active ? "white" : "#333",
                   border: "none",
@@ -442,7 +442,7 @@ export default function WingsBuilder({
 
       {/* 2. Dips */}
       <Section index={2} title="Dips">
-        <p style={{ fontSize: ".95rem", margin: "0 0 .8rem 0", color: "#555" }}>
+        <p style={{ fontSize: "var(--fs-min)", margin: "0 0 .8rem 0", color: "#555" }}>
           {autoIncludeDips
             ? `Each ${selectedCount}-piece order includes ${includedPerOrder} dip(s) per order. Mix and match any flavor. Additional dips are charged.`
             : "Choose any dip quantities you like."}

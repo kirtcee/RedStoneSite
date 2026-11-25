@@ -41,9 +41,9 @@ export default function SpecialMenuBuilder({
     fontFamily: "var(--font-heading, Oswald, sans-serif)",
     fontWeight: 900,
     textTransform: "uppercase",
-    fontSize: ".9rem",
+    fontSize: "var(--fs-min)",
   };
-  const labelStyle = { fontSize: ".95rem", lineHeight: 1.25 };
+  const labelStyle = { fontSize: "var(--fs-min)", lineHeight: 1.25 };
 
   const dividerInset = {
     borderTop: 0, // former divider: no line and no extra space
@@ -231,7 +231,7 @@ export default function SpecialMenuBuilder({
           <h3 style={sectionBar}>{selectedItem}</h3>
 
           <div className="rs-bsec" style={{ padding: "1rem", background: LIGHTER_BG }}>
-            <div style={{ marginTop: 2, fontWeight: 800, fontSize: ".95rem" }}>
+            <div style={{ marginTop: 2, fontWeight: 800, fontSize: "var(--fs-min)" }}>
               Price: {unitPrice}
             </div>
 

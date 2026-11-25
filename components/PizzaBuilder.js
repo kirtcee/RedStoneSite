@@ -711,13 +711,13 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                     justifyContent: "center",
                     fontWeight: 900,
                     fontFamily: "var(--font-heading), Oswald, sans-serif",
-                    fontSize: 17,
+                    fontSize: "var(--fs-min)",
                     lineHeight: 1,
                   }}
                 >
                   13"
                 </div>
-                <span style={{ fontSize: ".9rem", color: "#555" }}>
+                <span style={{ fontSize: "var(--fs-min)", color: "#555" }}>
                   Gluten Free comes in one size: 13" 
                 </span>
               </div>
@@ -736,7 +736,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                 const isLocked = !!lockedSize;
                 const isDisabled = isLocked || !allowSizeChoice;
                 const isActive = selectedSize === size;
-                const fontPx = Math.round(px * 0.26); // smaller inside-circle text
+                const fontPx = Math.max(18, Math.round(px * 0.26)); // inside-circle text, never under the 18px minimum
 
                 if (isLocked && size !== lockedSize) {
                   return (
@@ -764,7 +764,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                       >
                         {size}"
                       </div>
-                      <span style={{ fontSize: ".9rem" }}>{label}</span>
+                      <span style={{ fontSize: "var(--fs-min)" }}>{label}</span>
                     </div>
                   );
                 }
@@ -802,7 +802,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                     >
                       {size}"
                     </div>
-                    <span style={{ fontSize: ".9rem" }}>{label}</span>
+                    <span style={{ fontSize: "var(--fs-min)" }}>{label}</span>
                   </div>
                 );
               })}
@@ -827,7 +827,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                     border: "none",
                     borderRadius: "6px",
                     cursor: "pointer",
-                    fontSize: ".9rem"
+                    fontSize: "var(--fs-min)"
                   }}
                 >
                   {crust}
@@ -909,7 +909,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                         border: "none",
                         borderRadius: "6px",
                         cursor: "pointer",
-                        fontSize: ".9rem"
+                        fontSize: "var(--fs-min)"
                       }}
                     >
                       {option}
@@ -947,7 +947,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                           border: "none",
                           borderRadius: "6px",
                           cursor: "pointer",
-                          fontSize: ".9rem"
+                          fontSize: "var(--fs-min)"
                         }}
                       >
                         {option}
@@ -1028,7 +1028,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                 marginBottom: "0.35rem",
                 color: TEXT_BROWN,
                 fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
-                fontSize: "1rem" // smaller subheader
+                fontSize: "var(--fs-min)" // smaller subheader
               }}
             >
               Choose Meats
@@ -1088,7 +1088,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                 marginTop: "0.35rem",
                 color: TEXT_BROWN,
                 fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
-                fontSize: "1rem"
+                fontSize: "var(--fs-min)"
               }}
             >
               Choose Veggies
@@ -1146,7 +1146,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                     marginTop: "0.5rem",
                     color: TEXT_BROWN,
                     fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
-                    fontSize: "1rem"
+                    fontSize: "var(--fs-min)"
                   }}
                 >
                   Choose Drizzles
@@ -1195,7 +1195,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                   color: MAROON,
                   fontWeight: 900,
                   fontFamily: "var(--font-heading), Oswald, sans-serif",
-                  fontSize: ".85rem",
+                  fontSize: "var(--fs-min)",
                   letterSpacing: ".3px",
                   textTransform: "uppercase",
                   cursor: "pointer"
@@ -1538,7 +1538,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                     fontWeight: 900,
                     border: "none",
                     borderRadius: BOX_RADIUS,
-                    fontSize: "1rem",
+                    fontSize: "var(--fs-min)",
                     cursor: "pointer",
                     textTransform: "uppercase",
                     fontFamily: "var(--font-heading), Oswald, sans-serif"
@@ -1732,7 +1732,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
           position: absolute;
           right: 8px;
           bottom: 8px;
-          font-size: 0.7rem;
+          font-size: var(--fs-min);
           font-weight: 700;
           color: var(--text-brown);
           background: rgba(255, 255, 255, 0.9);
@@ -1760,7 +1760,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
         }
         .pb-zoom__hint {
           color: #fff;
-          font-size: 0.85rem;
+          font-size: var(--fs-min);
           font-weight: 700;
           opacity: 0.85;
         }
@@ -1790,7 +1790,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
           flex: 0 0 auto;
         }
         .pb-mobile-bar__subtotal-label {
-          font-size: 0.7rem;
+          font-size: var(--fs-min);
           text-transform: uppercase;
           letter-spacing: 0.3px;
           color: var(--text-brown);
@@ -1798,7 +1798,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
         }
         .pb-mobile-bar__subtotal-value {
           font-weight: 900;
-          font-size: 1.05rem;
+          font-size: var(--fs-min);
           color: #000;
         }
         .pb-mobile-bar__btn {
@@ -1809,7 +1809,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
           font-weight: 900;
           border: none;
           border-radius: .1875rem;
-          font-size: 1rem;
+          font-size: var(--fs-min);
           cursor: pointer;
           text-transform: uppercase;
           font-family: var(--font-heading, Oswald, sans-serif);

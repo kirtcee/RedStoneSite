@@ -43,7 +43,7 @@ const APPEARANCE = {
     ".Label": {
       fontFamily: "'Red Stone Face Max', sans-serif",
       fontWeight: "400",
-      fontSize: "16px",
+      fontSize: "18px",
       textTransform: "uppercase",
       letterSpacing: "0.03em",
       color: BROWN,
@@ -68,7 +68,7 @@ const APPEARANCE = {
       color: "#000000",
     },
     ".Error": {
-      fontSize: "13.6px",
+      fontSize: "18px",
       fontWeight: "600",
       color: ERROR_RED,
     },
