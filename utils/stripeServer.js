@@ -50,7 +50,10 @@ export async function finalizeCardOrder(orderId) {
   if (!pending.paymentIntentId) return { ok: true, status: "unpaid" };
 
   // Ask Stripe — never trust the browser's word that it paid.
-  const intent = await (await getStripe()).paymentIntents.retrieve(pending.paymentIntentId);
+  // (latest_charge included so the receipt email can say which card paid)
+  const intent = await (await getStripe()).paymentIntents.retrieve(pending.paymentIntentId, {
+    expand: ["latest_charge"],
+  });
   if (intent.status === "processing") return { ok: true, status: "processing" };
   if (intent.status !== "succeeded") return { ok: true, status: "unpaid" };
   if (intent.amount_received < pending.order.totalCents || intent.currency !== "cad") {
@@ -92,7 +95,9 @@ export async function finalizeCardOrder(orderId) {
   // Confirmation email, only from the call that created the order.
   if (created) {
     const saved = await orderRef.get();
-    await emailOrderAndRecord(orderRef, saved.exists ? saved.data() : created, orderId, FieldValue);
+    const card = intent.latest_charge?.payment_method_details?.card;
+    const forEmail = { ...(saved.exists ? saved.data() : created), card: card ? { brand: card.brand, last4: card.last4 } : null };
+    await emailOrderAndRecord(orderRef, forEmail, orderId, FieldValue);
   }
 
   return { ok: true, status: "paid" };

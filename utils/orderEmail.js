@@ -26,14 +26,16 @@ import { getNameAndSubtitle, orderRef, formatScheduleText, clockText, addressTex
 const RESEND_URL = "https://api.resend.com/emails";
 const SEND_TIMEOUT_MS = 6000;
 
-// Email clients ignore most CSS and web fonts, so everything is inline and
-// the fonts are ones every phone and computer already has.
-const HEAD_FONT = "'Arial Black', 'Helvetica Neue', Arial, sans-serif";
-const BODY_FONT = "'Helvetica Neue', Helvetica, Arial, sans-serif";
-const RED = "#8b1a1a";
-const BROWN = "#7a5a3a";
-const CREAM = "#faf2e9";
-const BORDER = "#e3cdb5";
+// Look: a clean, modern receipt (light grey page, white rounded cards, one
+// big total, quiet grey labels). Email apps can't load the site's Red Stone
+// Face font reliably (Gmail ignores web fonts), so it uses each device's own
+// system font, the same approach big-company receipts use.
+const FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+const INK = "#1a1a1a"; // main text
+const MUTED = "#6b6b6b"; // labels and details
+const FAINT = "#8f8f8a"; // tax line, fine print
+const LINE = "#e6e5df"; // dividers and card borders
+const PAGE = "#f0efea"; // background behind the cards
 
 const esc = (s) =>
   String(s ?? "")
@@ -47,11 +49,27 @@ export function emailConfigured() {
   return !!(process.env.RESEND_API_KEY && process.env.ORDER_EMAIL_FROM);
 }
 
+// Where the email's logo is loaded from: this website. Production uses the
+// live domain; previews use their own address. EMAIL_ASSET_BASE_URL
+// (e.g. https://redstonepizza.net) overrides both.
+function assetBase() {
+  const explicit = String(process.env.EMAIL_ASSET_BASE_URL || "").trim();
+  if (explicit) return explicit.replace(/\/+$/, "");
+  const host =
+    process.env.VERCEL_ENV === "production"
+      ? process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL
+      : process.env.VERCEL_URL;
+  return host ? `https://${host}` : "https://redstonepizza.net";
+}
+
+const dateText = (d) =>
+  d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "America/Toronto" });
+
 // Everything the email says, worked out once for the HTML and plain text.
+// order.card (optional, card orders): { brand: "visa", last4: "4242" }
 function emailFacts(order, id) {
   const isDelivery = order.serviceMethod === "Delivery";
   const isLater = order.orderTiming === "later";
-  const first = order.contact?.firstName || String(order.contact?.name || "").split(" ")[0] || "";
   const fees = order.fees || {};
   const when = isLater
     ? formatScheduleText(order.schedule?.date, order.schedule?.time)
@@ -72,16 +90,20 @@ function emailFacts(order, id) {
     };
   });
   const paidOnline = order.paymentMethod === "card" && order.paid;
+  const brand = String(order.card?.brand || "").toUpperCase();
+  const last4 = String(order.card?.last4 || "");
+  const today = dateText(new Date());
   return {
     ref: orderRef(id),
-    first,
     isDelivery,
-    isLater,
-    whenLabel: isLater ? "Scheduled For" : isDelivery ? "Estimated Delivery" : "Estimated Ready Time",
-    when: when ? (isLater ? when : `Today at ${when}`) : "We'll have it ready as soon as possible",
-    placeLabel: isDelivery ? "Delivering To" : "Pick Up At",
+    service: isDelivery ? "Delivery" : "Carryout",
+    whenLabel: isLater ? "Scheduled for" : isDelivery ? "Estimated delivery" : "Estimated ready time",
+    when: when ? (isLater ? when : `Today at ${when}`) : "As soon as possible",
+    placeLabel: isDelivery ? "Delivering to" : "Pick up at",
     place: isDelivery ? addressText(order.deliveryAddress) || "Not provided" : STORE_ADDRESS,
-    payment: paidOnline ? "Paid online by card" : isDelivery ? "Pay at the door" : "Pay at the store",
+    payNote: paidOnline
+      ? `Paid on ${today}${brand && last4 ? ` with ${brand} ending ${last4}` : " by card"}`
+      : `Ordered on ${today}. ${isDelivery ? "Pay at the door." : "Pay at the store."}`,
     lines,
     subtotal: order.subtotalCents || 0,
     savings: order.discountCents || 0,
@@ -95,100 +117,102 @@ function emailFacts(order, id) {
 
 export function buildOrderEmail(order, id) {
   const f = emailFacts(order, id);
-  const subject = `Your Red Stone Pizza order #${f.ref} is confirmed`;
+  const subject = `Your Red Stone Pizza order #${f.ref}`;
   const taxLabel = `HST (${Math.round(TAX_RATE * 100)}%)`;
-  const totalLabel = f.paidOnline ? "Total Paid" : "Total Due";
+  const finalLabel = f.paidOnline ? "Amount paid" : "Amount due";
+  const logo = `${assetBase()}/images/email/logo.png`;
 
-  const row = (label, value, strong = false) => `
-      <tr>
-        <td style="padding:4px 0;font:16px/1.4 ${BODY_FONT};color:${BROWN};">${esc(label)}</td>
-        <td align="right" style="padding:4px 0;font:${strong ? "bold 20px" : "bold 16px"}/1.4 ${BODY_FONT};color:#000;">${esc(value)}</td>
-      </tr>`;
-  const fact = (label, value) => `
-      <tr>
-        <td style="padding:6px 0 0;font:bold 13px/1.3 ${BODY_FONT};color:${BROWN};text-transform:uppercase;letter-spacing:.5px;">${esc(label)}</td>
-      </tr>
-      <tr>
-        <td style="padding:0 0 8px;font:bold 18px/1.35 ${BODY_FONT};color:#000;">${br(value)}</td>
-      </tr>`;
-  const heading = (text) => `
-      <tr>
-        <td style="background:#000;padding:10px 16px;font:900 16px/1.2 ${HEAD_FONT};color:#fff;text-transform:uppercase;letter-spacing:.5px;">${esc(text)}</td>
-      </tr>`;
-
-  const itemRows = f.lines
+  const divider = `<tr><td colspan="2" style="padding:0;"><div style="height:1px;line-height:1px;font-size:1px;background:${LINE};">&nbsp;</div></td></tr>`;
+  const money = (label, value, { color = INK, weight = 500, pad = "14px 0" } = {}) => `
+          <tr>
+            <td style="padding:${pad};font-family:${FONT};font-size:16px;line-height:1.4;color:${color};font-weight:${weight};">${esc(label)}</td>
+            <td align="right" style="padding:${pad};font-family:${FONT};font-size:16px;line-height:1.4;color:${color};font-weight:${weight};white-space:nowrap;">${esc(value)}</td>
+          </tr>`;
+  const detail = (label, value) => `
+          <tr>
+            <td style="padding:6px 16px 6px 0;font-family:${FONT};font-size:15px;line-height:1.45;color:${MUTED};vertical-align:top;white-space:nowrap;">${esc(label)}</td>
+            <td align="right" style="padding:6px 0;font-family:${FONT};font-size:15px;line-height:1.45;color:${INK};vertical-align:top;">${br(value)}</td>
+          </tr>`;
+  const items = f.lines
     .map(
       (l) => `
           <tr>
-            <td style="padding:10px 0;border-bottom:1px solid ${BORDER};vertical-align:top;">
-              <div style="font:bold 17px/1.35 ${BODY_FONT};color:#000;">${esc(l.name)}${l.qty > 1 ? ` <span style="font-weight:normal;color:${BROWN};">x ${l.qty}</span>` : ""}</div>
-              ${l.details ? `<div style="font:15px/1.45 ${BODY_FONT};color:${BROWN};padding-top:2px;">${br(l.details)}</div>` : ""}
+            <td style="padding:12px 16px 12px 0;vertical-align:top;">
+              <div style="font-family:${FONT};font-size:16px;line-height:1.4;color:${INK};font-weight:500;">${esc(l.name)}</div>
+              ${l.details ? `<div style="font-family:${FONT};font-size:14px;line-height:1.5;color:${MUTED};padding-top:3px;">${br(l.details)}</div>` : ""}
+              <div style="font-family:${FONT};font-size:14px;line-height:1.5;color:${FAINT};padding-top:3px;">Qty ${l.qty}</div>
             </td>
-            <td align="right" style="padding:10px 0 10px 12px;border-bottom:1px solid ${BORDER};vertical-align:top;white-space:nowrap;font:bold 17px/1.35 ${BODY_FONT};color:#000;">${formatMoney(l.cents)}</td>
+            <td align="right" style="padding:12px 0;vertical-align:top;font-family:${FONT};font-size:16px;line-height:1.4;color:${INK};font-weight:500;white-space:nowrap;">${formatMoney(l.cents)}</td>
           </tr>`
     )
     .join("");
+  const card = (inner, pad = "32px") =>
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid ${LINE};border-radius:14px;border-collapse:separate;"><tr><td style="padding:${pad};">${inner}</td></tr></table>`;
 
   const html = `<!doctype html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light only">
+<meta name="supported-color-schemes" content="light only">
 <title>${esc(subject)}</title>
+<style>
+  @media (max-width: 520px) {
+    .rs-pad { padding: 24px 20px !important; }
+    .rs-total { font-size: 38px !important; }
+  }
+</style>
 </head>
-<body style="margin:0;padding:0;background:#f3ece4;">
-<div style="display:none;max-height:0;overflow:hidden;">Order #${esc(f.ref)}. ${esc(f.whenLabel)}: ${esc(f.when)}.</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3ece4;">
+<body style="margin:0;padding:0;background:${PAGE};-webkit-text-size-adjust:100%;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">Order #${esc(f.ref)}. ${esc(f.whenLabel)}: ${esc(f.when)}.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${PAGE};">
   <tr>
-    <td align="center" style="padding:20px 12px;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#fff;border:1px solid ${BORDER};">
+    <td align="center" style="padding:28px 12px 40px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
         <tr>
-          <td align="center" style="background:#000;padding:22px 16px;font:900 28px/1 ${HEAD_FONT};color:#fff;text-transform:uppercase;letter-spacing:1px;">Red Stone Pizza</td>
-        </tr>
-        <tr>
-          <td style="padding:24px 20px 8px;">
-            <div style="font:900 26px/1.15 ${HEAD_FONT};color:#000;text-transform:uppercase;">Order Confirmed</div>
-            <div style="font:17px/1.5 ${BODY_FONT};color:${BROWN};padding-top:8px;">Thanks${f.first ? `, ${esc(f.first)}` : ""}! We've got your order. This email is your receipt.</div>
+          <td style="padding:0 4px 24px;">
+            <img src="${esc(logo)}" width="94" height="41" alt="Red Stone Pizza" style="display:block;border:0;width:94px;height:auto;">
           </td>
         </tr>
         <tr>
-          <td style="padding:12px 20px;">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${CREAM};border:1px solid ${BORDER};">
-              <tr><td style="padding:12px 16px 4px;font:900 22px/1.2 ${HEAD_FONT};color:${RED};text-transform:uppercase;">Order #${esc(f.ref)}</td></tr>
-              <tr><td style="padding:0 16px 8px;">
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                  ${fact(f.isDelivery ? "Delivery" : "Carryout", f.whenLabel + ": " + f.when)}
-                  ${fact(f.placeLabel, f.place)}
-                  ${fact("Payment", f.payment)}
-                </table>
-              </td></tr>
-            </table>
+          <td style="padding-bottom:16px;">
+            ${card(`
+              <div style="font-family:${FONT};font-size:17px;line-height:1.4;color:${MUTED};">Receipt from Red Stone Pizza</div>
+              <div class="rs-total" style="font-family:${FONT};font-size:46px;line-height:1.15;color:${INK};font-weight:600;letter-spacing:-0.5px;padding:6px 0 8px;">${formatMoney(f.total)}</div>
+              <div style="font-family:${FONT};font-size:16px;line-height:1.45;color:${MUTED};">${esc(f.payNote)}</div>
+            `)}
           </td>
         </tr>
         <tr>
-          <td style="padding:12px 20px;">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BORDER};">
-              ${heading("Your Order")}
-              <tr><td style="padding:4px 16px 12px;">
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                  ${itemRows}
-                </table>
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
-                  ${row("Food & Beverage", formatMoney(f.subtotal))}
-                  ${f.savings > 0 ? row("Coupon Savings (included)", formatMoney(f.savings)) : ""}
-                  ${f.delivery != null ? row("Delivery", formatMoney(f.delivery)) : ""}
-                  ${row(taxLabel, formatMoney(f.tax))}
-                  <tr><td colspan="2" style="border-top:2px solid #000;font-size:0;line-height:0;padding-top:6px;">&nbsp;</td></tr>
-                  ${row(totalLabel, formatMoney(f.total), true)}
-                </table>
-              </td></tr>
-            </table>
+          <td style="padding-bottom:16px;">
+            ${card(`
+              <div style="font-family:${FONT};font-size:20px;line-height:1.3;color:${INK};font-weight:500;padding-bottom:14px;">Order #${esc(f.ref)}</div>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                ${detail("Service", f.service)}
+                ${detail(f.whenLabel, f.when)}
+                ${detail(f.placeLabel, f.place)}
+              </table>
+              <div style="height:1px;line-height:1px;font-size:1px;background:${LINE};margin:16px 0 4px;">&nbsp;</div>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                ${items}
+                ${divider}
+                ${money("Subtotal", formatMoney(f.subtotal))}
+                ${f.savings > 0 ? money("Coupon savings (included)", formatMoney(f.savings), { color: MUTED, weight: 400, pad: "0 0 14px" }) : ""}
+                ${divider}
+                ${f.delivery != null ? money("Delivery", formatMoney(f.delivery), { pad: "14px 0 0" }) : ""}
+                ${money(taxLabel, formatMoney(f.tax), { color: FAINT, weight: 400 })}
+                ${divider}
+                ${money("Total", formatMoney(f.total))}
+                ${divider}
+                ${money(finalLabel, formatMoney(f.total), { weight: 600, pad: "14px 0 0" })}
+              </table>
+            `, "32px 32px 24px")}
           </td>
         </tr>
         <tr>
-          <td style="padding:16px 20px 24px;font:15px/1.55 ${BODY_FONT};color:${BROWN};">
-            Questions or changes? Call us at <a href="tel:+1${STORE_PHONE.replace(/\D/g, "")}" style="color:${RED};font-weight:bold;white-space:nowrap;">${esc(STORE_PHONE)}</a> and mention order #${esc(f.ref)}.<br>
+          <td style="padding:8px 4px 0;font-family:${FONT};font-size:14px;line-height:1.6;color:${FAINT};">
+            Questions about your order? Call <a href="tel:+1${STORE_PHONE.replace(/\D/g, "")}" style="color:${MUTED};text-decoration:underline;white-space:nowrap;">${esc(STORE_PHONE)}</a> and mention order #${esc(f.ref)}.<br>
             Red Stone Pizza, ${esc(STORE_ADDRESS)}${f.hst ? `<br>HST Registration No. ${esc(f.hst)}` : ""}
           </td>
         </tr>
@@ -200,27 +224,27 @@ export function buildOrderEmail(order, id) {
 </html>`;
 
   const text = [
-    "RED STONE PIZZA",
+    "Receipt from Red Stone Pizza",
+    formatMoney(f.total),
+    f.payNote,
     "",
-    `Order Confirmed: #${f.ref}`,
-    `Thanks${f.first ? `, ${f.first}` : ""}! We've got your order. This email is your receipt.`,
-    "",
+    `Order #${f.ref}`,
+    `Service: ${f.service}`,
     `${f.whenLabel}: ${f.when}`,
     `${f.placeLabel}: ${f.place}`,
-    `Payment: ${f.payment}`,
     "",
-    "YOUR ORDER",
     ...f.lines.map(
-      (l) => `${l.name}${l.qty > 1 ? ` x ${l.qty}` : ""}: ${formatMoney(l.cents)}${l.details ? `\n  ${l.details.replace(/\n/g, "\n  ")}` : ""}`
+      (l) => `${l.name}, Qty ${l.qty}: ${formatMoney(l.cents)}${l.details ? `\n  ${l.details.replace(/\n/g, "\n  ")}` : ""}`
     ),
     "",
-    `Food & Beverage: ${formatMoney(f.subtotal)}`,
-    ...(f.savings > 0 ? [`Coupon Savings (included): ${formatMoney(f.savings)}`] : []),
+    `Subtotal: ${formatMoney(f.subtotal)}`,
+    ...(f.savings > 0 ? [`Coupon savings (included): ${formatMoney(f.savings)}`] : []),
     ...(f.delivery != null ? [`Delivery: ${formatMoney(f.delivery)}`] : []),
     `${taxLabel}: ${formatMoney(f.tax)}`,
-    `${totalLabel}: ${formatMoney(f.total)}`,
+    `Total: ${formatMoney(f.total)}`,
+    `${finalLabel}: ${formatMoney(f.total)}`,
     "",
-    `Questions or changes? Call us at ${STORE_PHONE} and mention order #${f.ref}.`,
+    `Questions about your order? Call ${STORE_PHONE} and mention order #${f.ref}.`,
     `Red Stone Pizza, ${STORE_ADDRESS}`,
     ...(f.hst ? [`HST Registration No. ${f.hst}`] : []),
   ].join("\n");

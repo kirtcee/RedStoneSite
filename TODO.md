@@ -14,7 +14,7 @@ Running list of things to finish before `mac-handoff` is merged into `main`
       no `#` in the URL) and put its new `whsec_` secret in
       `STRIPE_WEBHOOK_SECRET` (Production), then redeploy. Apple Pay: add the
       live domain in Stripe → Payment method domains.
-- [ ] **Order confirmation emails** (`utils/orderEmail.js`, uses Resend):
+- [x] **Order confirmation emails** (working on previews) (`utils/orderEmail.js`, uses Resend):
       make a Resend account, add the domain `redstonepizza.net` in Resend →
       Domains and copy the DNS records it shows into Squarespace → Domains →
       DNS. Once Resend says Verified, create an API key (Sending access) and
