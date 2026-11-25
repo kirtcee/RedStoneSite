@@ -455,6 +455,9 @@ export default function KitchenDashboard() {
             <button className="kitchen-logout" onClick={() => setShowPast(true)}>
               Past Orders
             </button>
+            <button className="kitchen-logout" onClick={() => window.open("/stats", "_blank")}>
+              Stats
+            </button>
             <button
               className="kitchen-logout"
               onClick={() => signOut(auth).then(() => router.push("/kitchen-login"))}
