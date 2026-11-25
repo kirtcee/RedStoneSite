@@ -6,13 +6,17 @@ Running list of things to finish before `mac-handoff` is merged into `main`
 ## Must do (launch blockers)
 
 ### Accounts, keys and settings
-- [ ] **Stripe "Pay Now"** is built (see `utils/stripeServer.js`). Left to do:
-      - test it on the preview link with Stripe's test card 4242 4242 4242 4242
-      - add the webhook in Stripe (Developers → Webhooks →
-        `https://<domain>/api/stripeWebhook`, event `payment_intent.succeeded`)
-        and put its signing secret in Vercel as `STRIPE_WEBHOOK_SECRET`
-      - at launch: swap the test keys for live ones (and a live webhook)
-      - Apple Pay: add the live domain in Stripe → Payment method domains
+- [x] **Stripe test payments + webhook on the preview link**: working (test
+      card order reaches the kitchen, webhook returns 200).
+- [ ] **Stripe at launch**: swap the test keys for the live ones in Vercel
+      (Production only), create a live-mode webhook destination for
+      `https://<domain>/api/stripeWebhook` (event `payment_intent.succeeded`,
+      no `#` in the URL) and put its new `whsec_` secret in
+      `STRIPE_WEBHOOK_SECRET` (Production), then redeploy. Apple Pay: add the
+      live domain in Stripe → Payment method domains.
+- [ ] **Vercel Deployment Protection** was turned off for previews so Stripe
+      can reach them. Decide whether to turn it back on after launch (preview
+      links are then public to anyone who has the address).
 - [ ] **Google server key for delivery fees**: create a key with the
       **Routes API**, save it in Vercel (Production + Preview) and `.env.local`
       as `GOOGLE_MAPS_SERVER_KEY`. Without it delivery orders can't be priced.
