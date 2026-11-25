@@ -2,6 +2,16 @@ const path = require("path");
 
 const nextConfig = {
   outputFileTracingRoot: path.join(__dirname),
+  // "Coming Soon" pages hidden for launch: their addresses go to the menu
+  // (temporary redirects, so they can come back later). Remove a line here,
+  // and put its link back in components/Header.js, when a page is finished.
+  async redirects() {
+    return [
+      { source: "/rewards", destination: "/menu", permanent: false },
+      { source: "/tracker", destination: "/menu", permanent: false },
+      { source: "/pizza-calculator", destination: "/menu", permanent: false },
+    ];
+  },
   async headers() {
     return [
       {

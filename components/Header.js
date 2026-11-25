@@ -63,11 +63,7 @@ export default function Header() {
     { key: "order", label: "ORDER\nONLINE", onClick: () => router.push("/order") },
     { key: "menu", label: "MENU", onClick: () => router.push("/menu") },
     { key: "deals", label: "DEALS", onClick: () => router.push("/coupons") },
-    {
-      key: "calculator",
-      label: "PIZZA\nCALCULATOR",
-      onClick: () => router.push("/pizza-calculator"),
-    },
+    // Pizza Calculator is hidden for launch (see redirects in next.config.js)
     { key: "contact", label: "CONTACT", onClick: () => router.push("/contact") },
   ];
 

@@ -24,8 +24,28 @@ Running list of things to finish before `mac-handoff` is merged into `main`
       Firebase Console → Firestore Database → Rules → Publish. Needed for the
       kitchen's wait-time buttons (settings/waitTimes); until then they show
       "Couldn't save" and customers see 20 / 45 minutes.
-- [ ] **Real domain**: connect it in Vercel, then add it to the Google Maps
-      browser key's website list (and remove `*.vercel.app` after launch).
+- [ ] **Domain: launch on `redstonepizza.net`** (it currently runs the
+      Squarespace site; `.ca` is taken, `.com` is $1,900, so skipped).
+      Optional: buy `redstonepizzahamilton.ca` and point it at the `.net` site.
+      **Before launch day**
+      - In Vercel: Settings → Domains → add `redstonepizza.net` and
+        `www.redstonepizza.net` (they show "invalid configuration" until the
+        switch; note the DNS records Vercel shows).
+      - In Squarespace: Domains → DNS settings. Check for email records (MX,
+        and any TXT for email). **Never change or delete those.**
+      **Launch day**
+      - In Squarespace DNS, replace only the website records for `@` and
+        `www` with the ones Vercel showed (usually an A record and a CNAME).
+      - Wait for Vercel to show the domains as valid (minutes, sometimes a
+        couple of hours) and check the site loads on the domain.
+      - Add `https://redstonepizza.net/*` and `https://www.redstonepizza.net/*`
+        to the Google Maps browser key's website list; add the domain in
+        Firebase → Authentication → Settings → Authorized domains.
+      - Stripe live webhook + Apple Pay domain (see the Stripe item above).
+      - Point the Google Business listing at the new site.
+      - Only then cancel the Squarespace **website** plan (keep the domain).
+      Optional, no downtime: launch first at `order.redstonepizza.net` (one
+      CNAME record) while Squarespace keeps the main address.
 - [ ] **Check every Vercel environment variable is set for Production**
       (Firebase, Firebase Admin, Stripe, both Google keys), not just Preview.
 - [ ] **Kitchen login**: make sure the staff account has a strong password.
@@ -35,9 +55,9 @@ Running list of things to finish before `mac-handoff` is merged into `main`
       `/terms`; text in `pages/privacy.js` and `pages/terms.js`). Check the
       details match how you actually run things (refunds, paying at the door,
       how long you keep records), and ideally have a lawyer look them over.
-- [ ] **"Coming Soon" pages in the menu**: Rewards, Order Tracker and Pizza
-      Calculator are placeholders. Hide them from the navigation for launch,
-      or finish them.
+- [x] "Coming Soon" pages (Rewards, Order Tracker, Pizza Calculator) hidden
+      for launch: removed from the menu bar and redirected to /menu
+      (`next.config.js`). Bring each back when it's built.
 
 ### Testing
 - [ ] **Test "use my location" on delivery** on a real iPhone (Vercel preview
