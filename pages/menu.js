@@ -742,7 +742,7 @@ function MenuBody() {
                   onClick={() => openBuilder()}
                   aria-label="Build Your Own Pizza"
                 >
-                  <img className="cta-byo__img" src="/images/byo_thumb.png" alt="" />
+                  <img className="cta-byo__img" src="/images/byo-deluxe.webp" alt="" />
                   <div className="cta-byo__text">
                     {/* phones show just "Build Your Pizza" (no "Own", no
                         description) — see .cta-byo__own in globals.css */}

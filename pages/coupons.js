@@ -1,4 +1,5 @@
 // pages/coupons.js
+import MenuDealBanner from "../components/promos/MenuDealBanner";
 import React, { useEffect, useState } from "react";
 import ComboBuilder from "../components/ComboBuilder";
 import { useRouter } from "next/router";
@@ -41,112 +42,6 @@ function ServiceGatePrompt() {
 // Real photo background with the price/CTA laid on top as live HTML/CSS
 // (not baked into the image) — placeholder art borrowed from the homepage
 // collage until this deal gets its own real photography.
-function FeaturedDealBanner({ deal, onOrder }) {
-  return (
-    <div className="featured-banner">
-      <img className="featured-banner__img" src="/images/home/deal-928x250.jpg" alt="" />
-      <div className="featured-banner__scrim" />
-      <div className="featured-banner__content">
-        <span className="featured-banner__tag">
-          {deal.serviceRestriction === "carryout" ? "Carryout" : "Featured Deal"}
-        </span>
-        <div className="featured-banner__title">{deal.name}</div>
-        <div className="featured-banner__price">{formatMoney(deal.price)}</div>
-        {deal.code && <div className="featured-banner__code">Code: {deal.code}</div>}
-      </div>
-      <button type="button" className="featured-banner__cta" onClick={onOrder}>
-        Order Now
-      </button>
-
-      <style jsx>{`
-        .featured-banner {
-          position: relative;
-          width: 100%;
-          aspect-ratio: 928 / 250;
-          overflow: hidden;
-          border-radius: .1875rem;
-          margin-bottom: 28px;
-        }
-        .featured-banner__img {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-        .featured-banner__scrim {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.55) 40%, rgba(0, 0, 0, 0.05) 75%);
-        }
-        .featured-banner__content {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          gap: 4px;
-          padding: 1.5rem 2rem;
-          color: #fff;
-        }
-        .featured-banner__tag {
-          align-self: flex-start;
-          background: ${MAROON};
-          color: #fff;
-          font-family: var(--heading, Oswald, sans-serif);
-          font-weight: 900;
-          text-transform: uppercase;
-          font-size: var(--fs-min);
-          letter-spacing: 0.4px;
-          padding: 4px 10px;
-          margin-bottom: 4px;
-        }
-        .featured-banner__title {
-          font-family: var(--heading, Oswald, sans-serif);
-          font-weight: 900;
-          text-transform: uppercase;
-          font-size: 1.4rem;
-          line-height: 1.1;
-          max-width: 60%;
-        }
-        .featured-banner__price {
-          font-family: var(--heading, Oswald, sans-serif);
-          text-transform: uppercase; /* Red Stone Face has lowercase; headings stay caps */
-          font-weight: 900;
-          font-size: 3rem;
-          line-height: 1;
-          margin-top: 4px;
-        }
-        .featured-banner__code {
-          font-size: var(--fs-min);
-          opacity: 0.85;
-          margin-top: 6px;
-        }
-        .featured-banner__cta {
-          position: absolute;
-          right: 24px;
-          bottom: 24px;
-          background: ${MAROON};
-          color: #fff;
-          border: none;
-          padding: 0.8rem 1.6rem;
-          font-weight: 900;
-          text-transform: uppercase;
-          font-family: var(--heading, Oswald, sans-serif);
-          cursor: pointer;
-        }
-        @media (max-width: 640px) {
-          .featured-banner__title { max-width: 100%; font-size: var(--fs-min); }
-          .featured-banner__price { font-size: 2rem; }
-          .featured-banner__cta { position: static; margin-top: 12px; }
-          .featured-banner__content { padding: 1rem 1.2rem; }
-        }
-      `}</style>
-    </div>
-  );
-}
-
 function DealCard({ deal, onAdd }) {
   const comingSoon = !!deal.comingSoon;
   return (
@@ -276,8 +171,6 @@ export default function CouponsPage() {
     router.replace("/coupons", undefined, { shallow: true });
   }, [router.query.deal, isServiceConfirmed, service, openDeal, router]);
 
-  const allDeals = dealSections.flatMap((sec) => sec.deals);
-  const featured = allDeals.find((d) => !d.comingSoon && dealAllowsService(d, service));
 
   return (
     <main className="page page--coupons">
@@ -297,7 +190,12 @@ export default function CouponsPage() {
               <>
                 <DealCodeEntry variant="card" />
 
-                {featured && <FeaturedDealBanner deal={featured} onOrder={() => startDeal(featured.id)} />}
+                {/* same deal banner as the Menu page (components/promos/MenuDealBanner.js) */}
+                <div className="menu-heroRow">
+                  <div className="menu-heroRow__hero menu-heroRow__hero--card">
+                    <MenuDealBanner />
+                  </div>
+                </div>
 
                 {dealSections.map((sec, i) => {
                   const visible = sec.deals.filter((d) => d.comingSoon || dealAllowsService(d, service));

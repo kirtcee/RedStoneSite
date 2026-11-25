@@ -722,7 +722,12 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
   letter-spacing: 0.3px;
   text-transform: uppercase;
   text-decoration: none;
+  white-space: nowrap; /* "X-Large" stays on one line */
   padding: 6px 12px;
+}
+@media (max-width: 640px) {
+  .size-links { padding: 12px 8px; gap: 4px; }
+  .size-link.size-link--anchor { padding: 6px 2px; }
 }
 
 .size-link--anchor:hover {

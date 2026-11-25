@@ -154,11 +154,28 @@ function StepConnector({ done }) {
   return <div style={{ width: 28, height: 2, background: done ? "#2e7d32" : "#ccc", flex: "0 0 auto" }} />;
 }
 
-function itemTypeImage(itemType) {
-  if (itemType === "pizza-byo") return "/pizza_layers/Crust.png";
-  if (itemType === "wings") return "/images/wings.jpg";
-  if (itemType === "side" || itemType === "garlic-bread-choice") return "/images/side.jpg";
-  return "/images/placeholder.jpg";
+// Picture for a deal item: the same photos the menu and cart use.
+const SIDE_IMAGES = {
+  "French Fries": "/images/sides/fries.jpg",
+  Poutine: "/images/sides/poutine.jpg",
+  "Shawarma Poutine": "/images/sides/shawarma-poutine.jpg",
+  "Onion Rings": "/images/sides/onion-rings.jpg",
+  "Cheesy Garlic Bread": "/images/sides/cheesy-garlic-bread.jpg",
+  "Garlic Bread": "/images/sides/garlic-bread.jpg",
+};
+function itemImage(item = {}) {
+  switch (item.itemType) {
+    case "pizza-byo":
+      return "/images/pizzas/overhead/deluxe.webp";
+    case "wings":
+      return "/images/wings.jpg";
+    case "garlic-bread-choice":
+      return SIDE_IMAGES["Cheesy Garlic Bread"];
+    case "side":
+      return SIDE_IMAGES[item.sideName] || "/images/sides/sides-cover.jpg";
+    default:
+      return "/images/menu_combos.png";
+  }
 }
 
 function ItemThumb({ src, size = 44 }) {
@@ -454,7 +471,7 @@ export default function DealBuilder({ onClose: onCloseProp }) {
                     >
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
-                          <ItemThumb src={itemTypeImage(config.itemType)} />
+                          <ItemThumb src={itemImage(config)} />
                           <strong>{config.label || key}</strong>
                         </div>
                         {!inCart && (
@@ -535,7 +552,7 @@ export default function DealBuilder({ onClose: onCloseProp }) {
 
                       {expanded && (
                         <div style={{ padding: "1rem", background: BG, border: `1.5px solid ${BORDER}`, borderTop: "none", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-                          <ItemThumb src={itemTypeImage(it.itemType)} size={56} />
+                          <ItemThumb src={itemImage(it)} size={56} />
                           {it.itemType === "garlic-bread-choice" ? (
                             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                               {it.variants.map((v) => (
