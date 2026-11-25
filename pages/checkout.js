@@ -7,6 +7,7 @@ import { priceLineItem, formatMoney, describePizzaFull, describeByoPizzaTitle } 
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { dealNameFor, dealSlotLabel, findDealById } from "../utils/dealCatalog";
 import { saveOrder } from "../utils/saveOrder";
+import posthog from "posthog-js";
 
 const TAX_RATE = 0.13;
 const DELIVERY_FEE_CENTS = 499;
@@ -134,6 +135,12 @@ export default function CheckoutPage() {
       return;
     }
 
+    posthog.capture("order_placed", {
+      item_count: items.reduce((count, item) => count + (Number(item.qty) || 1), 0),
+      service_method: serviceMethod.toLowerCase(),
+      order_timing: orderTiming,
+      total_cents: totalCents,
+    });
     cart?.clearCart?.();
     router.push(`/order-confirmation?orderId=${id}`);
   };

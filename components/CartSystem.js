@@ -13,6 +13,7 @@ import { loadCart, saveCart, subscribeCart } from "../utils/cartPersistence";
 import { auth } from "../utils/firebaseConfig";
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { dealNameFor, dealSlotLabel, findDealById } from "../utils/dealCatalog";
+import posthog from "posthog-js";
 
 const CartContext = createContext(null);
 
@@ -163,6 +164,10 @@ export function CartProvider({ children, onEditItem }) {
           return { ok: false, reason: data?.reason || "not_found" };
         }
         setOpenDealId(data.deal.id);
+        posthog.capture("coupon_redeemed", {
+          deal_id: data.deal.id,
+          service_method: service || "not_selected",
+        });
         return { ok: true, deal: data.deal };
       } catch (e) {
         console.error("redeemDealCode error:", e);
@@ -193,6 +198,10 @@ export function CartProvider({ children, onEditItem }) {
       return [...prev, { ...item, _key: itemKey, id: cryptoRandomId() }];
     });
     setIsOpen(true);
+    posthog.capture("cart_item_added", {
+      item_type: item.type || "unknown",
+      quantity: item.qty,
+    });
   }, []);
 
   const addItem = useCallback(

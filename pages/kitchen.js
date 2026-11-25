@@ -14,6 +14,7 @@ import {
 import { formatMoney, describePizzaFull } from "../components/Pricing";
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { STAFF_EMAIL } from "../utils/kitchenAuth";
+import posthog from "posthog-js";
 
 function describeItem(item) {
   if (!item) return "Item";
@@ -171,6 +172,15 @@ export default function KitchenDashboard() {
                   onClick={async () => {
                     const orderRef = doc(db, "orders", order.id);
                     await updateDoc(orderRef, { completed: true });
+                    posthog.capture("kitchen_order_completed", {
+                      item_count: (order.items || []).reduce(
+                        (count, item) => count + (Number(item.qty) || 1),
+                        0
+                      ),
+                      service_method: (order.serviceMethod || "unknown").toLowerCase(),
+                      order_timing: order.orderTiming || "now",
+                      total_cents: order.totalCents ?? null,
+                    });
                   }}
                 >
                   Mark Completed

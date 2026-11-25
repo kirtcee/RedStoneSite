@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { useCart } from "./CartSystem";
+import posthog from "posthog-js";
 
 const GOOGLE_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
@@ -340,11 +341,13 @@ export default function ServiceSelector({ onConfirmed, initialChoice = null }) {
       postal,
     };
     confirmDelivery(payload);
+    posthog.capture("service_method_selected", { service_method: "delivery" });
     onConfirmed?.();
   };
 
   const goCarryout = () => {
     confirmCarryout();
+    posthog.capture("service_method_selected", { service_method: "carryout" });
     onConfirmed?.();
   };
 
