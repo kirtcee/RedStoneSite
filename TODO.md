@@ -106,7 +106,7 @@ Code (Claude builds):
 - [x] Missed-order alert (`pages/api/cron/missedOrders.js`, runs every minute on
       Production only): add in Vercel (Production) `CRON_SECRET` (long random
       text, Sensitive) and `ALERT_EMAILS` (owner's email, commas for more).
-- [ ] Cancel order button (reason, auto refund for card, email the customer)
+- [x] Cancel order button (reason, auto refund for card, email the customer)
 - [x] Tips at checkout (delivery + Pay Now only: 10/15/20%, Other, No Tip)
 - [x] Pay at Door: cash or card, "paying with $__" for change
 - [ ] Sold-out toggles per item from the kitchen

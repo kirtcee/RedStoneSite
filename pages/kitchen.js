@@ -20,6 +20,7 @@ import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { STAFF_EMAIL } from "../utils/kitchenAuth";
 import KitchenHealth from "../components/KitchenHealth";
 import KitchenPastOrders from "../components/KitchenPastOrders";
+import KitchenCancelOrder from "../components/KitchenCancelOrder";
 import { MIN_WAIT, MAX_WAIT, WAIT_STEP, readWaitTimes } from "../utils/waitTimes";
 
 const UNDO_MS = 8000; // how long "Undo" shows after Mark Completed
@@ -436,6 +437,7 @@ export default function KitchenDashboard() {
                   <button className="complete-btn" onClick={() => startComplete(order)}>
                     Mark Completed
                   </button>
+                  <KitchenCancelOrder order={order} />
                 </div>
               </div>
             </article>
@@ -1015,6 +1017,8 @@ export default function KitchenDashboard() {
         }
         .order-card__footer {
           display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
           align-items: center;
           justify-content: space-between;
           border-top: 1px solid #eee;
@@ -1049,6 +1053,9 @@ export default function KitchenDashboard() {
         }
         .order-card__actions {
           display: flex;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+          flex: 1 1 auto;
           gap: 8px;
         }
         .print-btn {
