@@ -1,4 +1,5 @@
 // pages/cart.js
+import { soldOutIn } from "../utils/availability";
 import { DRINK_CATEGORIES, THUMB_MAX, drinkImage, findDrink } from "../utils/drinkCatalog";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
@@ -248,6 +249,7 @@ function ItemOptions({ item }) {
 
 function ItemRow({ item, priceCents, couponName, onQty, onRemove, onEdit }) {
   const qty = Math.max(1, Number(item?.qty) || 1);
+  const soldOutNames = soldOutIn(item, useCart()?.soldOut);
   const title = itemTitle(item);
   return (
     <div className="cart-line">
@@ -263,6 +265,9 @@ function ItemRow({ item, priceCents, couponName, onQty, onRemove, onEdit }) {
           </button>
           <ItemOptions item={item} />
           {couponName && <div className="cart-line__coupon">Coupon: {couponName}</div>}
+          {soldOutNames.length > 0 && (
+            <div className="cart-line__soldout">Sold out: {soldOutNames.join(", ")}. Please remove it to continue.</div>
+          )}
         </div>
       </div>
 
@@ -905,6 +910,12 @@ export default function CartPage() {
         }
         .cart-box :global(.cart-line__text) {
           min-width: 0;
+        }
+        .cart-box :global(.cart-line__soldout) {
+          margin-top: 4px;
+          color: #d0021b;
+          font-weight: var(--w-bold);
+          font-size: var(--fs-min);
         }
         .cart-box :global(.cart-line__name) {
           display: block;

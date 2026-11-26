@@ -28,6 +28,7 @@ import {
   closedNowText,
 } from "../utils/storeHours";
 import useOrderingStatus from "../hooks/useOrderingStatus";
+import { soldOutIn } from "../utils/availability";
 
 
 // Shown under the page title (same numbers as the menu page estimate)
@@ -321,6 +322,11 @@ export default function CheckoutPage() {
     // Closed, or the scheduled time isn't valid: ask them to pick a time.
     if (hoursCheck.closedNow || hoursCheck.badSchedule) {
       setPickerOpen(true);
+      return;
+    }
+    // Something sold out since it was added: same popup as the cart
+    if (items.some((it) => soldOutIn(it, cart?.soldOut).length)) {
+      cart.goToCheckout?.(); // shows the sold-out popup
       return;
     }
     // Delivery minimum (utils/orderRules.js): show what's missing instead.

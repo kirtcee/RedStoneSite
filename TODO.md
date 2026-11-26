@@ -109,7 +109,8 @@ Code (Claude builds):
 - [x] Cancel order button (reason, auto refund for card, email the customer)
 - [x] Tips at checkout (delivery + Pay Now only: 10/15/20%, Other, No Tip)
 - [x] Pay at Door: cash or card, "paying with $__" for change
-- [ ] Sold-out toggles per item from the kitchen
+- [x] Sold-out toggles per item from the kitchen (publish the new `settings/menu`
+      rule from firestore.rules)
 - [ ] Link previews (Open Graph image), iPhone home-screen icon, robots.txt, sitemap
 - [ ] Branded 404 page
 - [ ] Allergen note on builders

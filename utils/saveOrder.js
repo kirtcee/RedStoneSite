@@ -78,6 +78,8 @@ export function friendlyOrderError(code, { card = false } = {}) {
   else if (c === "delivery_quote_failed")
     msg = "We couldn't work out the delivery fee for this address. Please check the address, or call us at 905-385-9888.";
   else if (c === "delivery_minimum") msg = "Delivery orders need at least $20.00 of food and drinks. Please add more items or switch to carryout.";
+  else if (c === "item_sold_out")
+    msg = "Sorry, something in your cart just sold out. It's marked in your cart. Please remove it and try again.";
   else if (c === "bad_cash_amount") msg = "The cash amount you're paying with is less than the total. Please check it.";
   else if (c === "ordering_paused")
     msg = "We've paused online orders for a little while. Please schedule your order for later, or call us at 905-385-9888.";

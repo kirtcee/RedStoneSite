@@ -1,4 +1,6 @@
 // components/CartSystem.js
+import useSoldOut, { currentSoldOut } from "../hooks/useSoldOut";
+import { soldOutIn } from "../utils/availability";
 import { track } from "../utils/analytics";
 import React, {
   createContext,
@@ -276,7 +278,21 @@ export function CartProvider({ children, onEditItem }) {
   );
 
   // ---- Add/Update/Remove/clear ----
+  // Sold out on the kitchen screen (utils/availability.js): the item isn't
+  // added and a popup says what's sold out (components/SoldOutNotice.js).
+  const soldOut = useSoldOut();
+  const [soldOutNotice, setSoldOutNotice] = useState(null); // { names: ["Poutine"], inCart } or null
+  const closeSoldOutNotice = useCallback(() => setSoldOutNotice(null), []);
+  const blockIfSoldOut = (raw) => {
+    const names = soldOutIn(raw, currentSoldOut());
+    if (!names.length) return false;
+    setSoldOutNotice({ names, inCart: false });
+    track("sold_out_blocked", { items: names.join(", ") });
+    return true;
+  };
+
   const reallyAddItem = useCallback((raw) => {
+    if (blockIfSoldOut(raw)) return;
     setItems((prev) => mergeIntoItems(prev, raw));
     try {
       track("add_to_cart", {
@@ -297,6 +313,7 @@ export function CartProvider({ children, onEditItem }) {
   const reallyApplyDealItems = useCallback(({ dealId, ref = null, units = [] }) => {
     const deal = findDealById(dealId);
     if (!deal || !units.length) return;
+    if (units.some(({ unit }) => blockIfSoldOut(unit))) return;
     const dealRef = ref || cryptoRandomId();
     setAppliedDeals((prev) => (prev.some((d) => d.id === dealRef) ? prev : [...prev, { id: dealRef, dealId }]));
     setItems((prev) =>
@@ -357,6 +374,7 @@ export function CartProvider({ children, onEditItem }) {
   // unlike addItem, this never combines with another matching line even if
   // the edited item now happens to match one.
   const updateItem = useCallback((id, raw) => {
+    if (blockIfSoldOut(raw)) return;
     setItems((prev) =>
       prev.map((it) => {
         if (it.id !== id) return it;
@@ -386,13 +404,19 @@ export function CartProvider({ children, onEditItem }) {
   const closeMinGate = useCallback(() => setMinGateOpen(false), []);
   const deliveryShortCents = service === "delivery" ? deliveryShortfallCents(subtotalCents) : 0;
   const goToCheckout = useCallback(() => {
+    // something in the cart sold out since it was added
+    const names = [...new Set(items.flatMap((it) => soldOutIn(it, soldOut)))];
+    if (names.length) {
+      setSoldOutNotice({ names, inCart: true });
+      return;
+    }
     if (deliveryShortCents > 0) {
       setMinGateOpen(true);
       track("delivery_minimum_shown", { short_cents: deliveryShortCents });
       return;
     }
     router.push("/checkout");
-  }, [deliveryShortCents, router]);
+  }, [deliveryShortCents, router, items, soldOut]);
   const openMinGate = useCallback(() => setMinGateOpen(true), []);
 
   // ---- Persistence: Firestore load + realtime subscribe ----
@@ -470,6 +494,9 @@ export function CartProvider({ children, onEditItem }) {
     () => ({
       items,
       isLoaded,
+      soldOut,
+      soldOutNotice,
+      closeSoldOutNotice,
       addItem,
       updateQty,
       updateItem,
@@ -515,6 +542,9 @@ export function CartProvider({ children, onEditItem }) {
     [
       items,
       isLoaded,
+      soldOut,
+      soldOutNotice,
+      closeSoldOutNotice,
       addItem,
       updateQty,
       updateItem,

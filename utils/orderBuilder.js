@@ -9,6 +9,7 @@
 // timing, contact info) — never a total. Every price is recomputed here
 // with components/Pricing.js, the same pricing the UI shows, so a tampered
 // browser can't change what an order costs.
+import { soldOutIn } from "./availability";
 import { priceLineItem, priceCart } from "../components/Pricing";
 import { findDealById } from "./dealCatalog";
 import { adminAuth } from "./firebaseAdmin";
@@ -98,7 +99,7 @@ export function pickupTimeFor(orderTiming, schedule, waitMinutes = 20) {
 // Firestore fields (minus createdAt), or { ok: false, status, reason }.
 // For delivery, `deliveryQuote` is the server's own quote for the address
 // (utils/deliveryQuote.js); the fee comes from it, never from the browser.
-export function buildOrder(body, { uid, paymentMethod, deliveryQuote = null, waitTimes = null }) {
+export function buildOrder(body, { uid, paymentMethod, deliveryQuote = null, waitTimes = null, soldOut = null }) {
   const fail = (status, reason) => ({ ok: false, status, reason });
   const {
     items: rawItems,
@@ -157,6 +158,13 @@ export function buildOrder(body, { uid, paymentMethod, deliveryQuote = null, wai
   const email = String(contact?.email || "").trim().slice(0, 120);
   if (!name || !phone) return fail(400, "missing_contact");
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail(400, "bad_email");
+
+  // Sold out on the kitchen screen (utils/availability.js)
+  if (soldOut && soldOut.size) {
+    for (const item of items) {
+      if (soldOutIn(item, soldOut).length) return fail(400, "item_sold_out");
+    }
+  }
 
   // ---- Authoritative pricing. priceLineItem() returns 0 for anything it
   // doesn't recognize, and no real menu item costs $0 — so 0 means the item

@@ -5,9 +5,12 @@
 // Not priced here: the drink is already in the combo's price.
 import React, { useState } from "react";
 import { DRINK_CATEGORIES, findDrink } from "../utils/drinkCatalog";
+import useSoldOut from "../hooks/useSoldOut";
+import { drinkKey } from "../utils/availability";
 
 export default function TwoLiterPicker({ initialData = {}, onClose = () => {}, onSave = () => {} }) {
   const options = DRINK_CATEGORIES.twoLiters.options;
+  const soldOut = useSoldOut(); // kitchen's sold-out list (utils/availability.js)
   const [picked, setPicked] = useState(findDrink("twoLiters", initialData.label)?.label || null);
 
   const save = () => {
@@ -21,6 +24,7 @@ export default function TwoLiterPicker({ initialData = {}, onClose = () => {}, o
         <div className="tl-grid" role="radiogroup" aria-label="2L drink">
           {options.map((o) => {
             const on = picked === o.label;
+            const out = soldOut.has(drinkKey("twoLiters", o.label));
             return (
               <button
                 key={o.label}
@@ -28,7 +32,10 @@ export default function TwoLiterPicker({ initialData = {}, onClose = () => {}, o
                 role="radio"
                 aria-checked={on}
                 className={`tl-tile${on ? " is-on" : ""}`}
-                onClick={() => setPicked(o.label)}
+                onClick={() => !out && setPicked(o.label)}
+                disabled={out}
+                style={out ? { opacity: 0.4 } : undefined}
+                title={out ? "Sold out" : undefined}
               >
                 <span className="tl-pic">
                   <img src={o.img} alt="" />

@@ -2,6 +2,7 @@
 import { installBackToClose } from "../hooks/useBackToClose";
 import { initAnalytics } from "../utils/analytics";
 import OrderingNotice from "../components/OrderingNotice";
+import SoldOutNotice from "../components/SoldOutNotice";
 import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Script from "next/script";
@@ -107,6 +108,7 @@ function RootApp({ Component, pageProps }) {
         <CartEditOverlay editingItem={editingItem} onClose={() => setEditingItem(null)} />
         <ServiceGateOverlay />
         <DeliveryMinimumOverlay />
+        <SoldOutNotice />
         {/* The coupon builder — driven by CartProvider's openDealId, so a code
             redeemed anywhere (/cart, checkout), a card clicked on /coupons, or
             "Add another item to this coupon" all open this same builder. */}

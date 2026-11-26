@@ -8,6 +8,8 @@
 // Photos and prices come from utils/drinkCatalog.js. Drinks are drawn at
 // their real heights relative to each other (a Red Bull is taller than a
 // can, a 2L bottle fills the box).
+import useSoldOut from "../hooks/useSoldOut";
+import { drinkKey, dipKey } from "../utils/availability";
 import React, { useMemo, useState } from "react";
 import { priceDrinkItem, priceDrinksDips, formatMoney } from "./Pricing";
 import { useCart } from "./CartSystem";
@@ -23,6 +25,8 @@ export function DrinksCategoryPanel({
   onSave = null, // editing a cart line: called with the new line instead of adding one
 }) {
   const { addItem } = useCart();
+  const soldOut = useSoldOut(); // kitchen's sold-out list (utils/availability.js)
+  const keyFor = (label) => (categoryId === "dips" ? dipKey(label) : drinkKey(categoryId, label));
   const cat = DRINK_CATEGORIES[categoryId] || { options: [] };
   const options = cat.options;
   const tallest = Math.max(1, ...options.map((o) => o.mm || 1));
@@ -79,9 +83,16 @@ export function DrinksCategoryPanel({
         <div className={`dd-grid${cat.photos ? " dd-grid--photos" : ""}`}>
           {options.map((o) => {
             const n = counts[o.label] || 0;
+            const out = soldOut.has(keyFor(o.label));
             return (
-              <div key={o.label} className={`dd-tile${n ? " is-on" : ""}`}>
-                <button type="button" className="dd-pic" onClick={() => change(o.label, +1)} aria-label={`Add one ${o.label}`}>
+              <div key={o.label} className={`dd-tile${n ? " is-on" : ""}${out ? " is-out" : ""}`}>
+                <button
+                  type="button"
+                  className="dd-pic"
+                  onClick={() => !out && change(o.label, +1)}
+                  aria-label={out ? `${o.label} is sold out` : `Add one ${o.label}`}
+                  disabled={out}
+                >
                   <img
                     src={o.img}
                     alt=""
@@ -92,7 +103,9 @@ export function DrinksCategoryPanel({
                 </button>
                 <div className="dd-name">{o.label}</div>
                 <div className="dd-price">{formatMoney(priceDrinkItem(categoryId, o.label))}</div>
-                {n === 0 ? (
+                {out ? (
+                  <div className="dd-out">Sold Out</div>
+                ) : n === 0 ? (
                   <button type="button" className="dd-add" onClick={() => change(o.label, +1)}>
                     Add
                   </button>
@@ -309,7 +322,19 @@ export function DrinksCategoryPanel({
           opacity: 0.45;
           cursor: not-allowed;
         }
-      `}</style>
+              .dd-tile.is-out img {
+          filter: grayscale(1);
+          opacity: 0.45;
+        }
+        .dd-out {
+          margin-top: auto;
+          padding: 6px 0;
+          font-family: var(--font-display);
+          font-size: var(--fs-min);
+          text-transform: uppercase;
+          color: #000;
+        }
+`}</style>
     </div>
   );
 }

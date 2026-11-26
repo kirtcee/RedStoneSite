@@ -21,6 +21,7 @@ import { STAFF_EMAIL } from "../utils/kitchenAuth";
 import KitchenHealth from "../components/KitchenHealth";
 import KitchenPastOrders from "../components/KitchenPastOrders";
 import KitchenCancelOrder from "../components/KitchenCancelOrder";
+import KitchenSoldOut from "../components/KitchenSoldOut";
 import { MIN_WAIT, MAX_WAIT, WAIT_STEP, readWaitTimes } from "../utils/waitTimes";
 
 const UNDO_MS = 8000; // how long "Undo" shows after Mark Completed
@@ -487,6 +488,8 @@ export default function KitchenDashboard() {
       <main className="kitchen-body">
         {/* Online ordering on/off (pause) and closed days */}
         <KitchenOrderingControl />
+        {/* Sold-out items */}
+        <KitchenSoldOut />
         {/* Wait times customers see; can only go up from 20 / 45 min */}
         <div className="wait-panel">
           <span className="wait-panel__title">Wait times customers see:</span>
