@@ -253,6 +253,13 @@ export function describeByoPizzaTitle(data = {}) {
   return [sizeWord, "Cheese Pizza"].filter(Boolean).join(" ");
 }
 
+// Every pizza comes with one dip free; dips after the first are charged.
+// (Combos have their own included dips: see priceComboDipOverage.)
+export const FREE_DIPS_PER_PIZZA = 1;
+function pizzaDipCents(dipsObj) {
+  return Math.max(0, sumDipUnits(dipsObj) - FREE_DIPS_PER_PIZZA) * PRICES.dips.each;
+}
+
 function sumDipUnits(dipsObj) {
   if (!dipsObj || typeof dipsObj !== "object") return 0;
   return Object.values(dipsObj).reduce((sum, n) => sum + (Number(n) || 0), 0);
@@ -464,7 +471,7 @@ export function priceLineItem(item) {
         }
         pizzaCents = priceByoPizza(sizeKey, w);
       }
-      const dipCents = sumDipUnits(item.dips) * PRICES.dips.each;
+      const dipCents = pizzaDipCents(item.dips); // first dip free
       const dairyFreeCents = item.dairyFreeCheese ? PRICES.dairyFreeCheese : 0;
       return (pizzaCents + dipCents + dairyFreeCents) * qty;
     }
@@ -769,7 +776,7 @@ function dealLineExtras(config, item) {
   const qty = Math.max(1, Number(item?.qty) || 1);
   switch (item?.type) {
     case "pizza-byo": {
-      const dips = sumDipUnits(item.dips) * PRICES.dips.each;
+      const dips = pizzaDipCents(item.dips); // first dip free, same as a regular pizza
       const dairyFree = item.dairyFreeCheese ? PRICES.dairyFreeCheese : 0;
       return (priceDealPizzaOverage(config, item) + dips + dairyFree) * qty;
     }

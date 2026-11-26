@@ -78,7 +78,7 @@ export default function Home() {
             </p>
 
             <div className="footer-logo">
-              <img src="/images/storelogo.svg" alt="Red Stone Pizza" />
+              <img src="/images/email/logo.png" alt="Red Stone Pizza" />
             </div>
 
             <p className="disc disc-right">
@@ -238,6 +238,7 @@ export default function Home() {
           text-decoration: underline;
           text-underline-offset: 3px;
         }
+        .footer-logo { display: flex; justify-content: center; }
         .footer-logo img {
           width: 42px; height: 42px; object-fit: contain; display: block;
           filter: drop-shadow(0 1px 2px rgba(0,0,0,0.08));
