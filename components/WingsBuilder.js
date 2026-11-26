@@ -284,9 +284,10 @@ export default function WingsBuilder({
                 border: "none",
                 borderRadius: "6px",
                 cursor: "pointer",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
+                // long names ("Honey Garlic", "Sweet Chilli") wrap on small phones instead of being cut off
+                whiteSpace: "normal",
+                lineHeight: 1.1,
+                overflowWrap: "anywhere",
                 fontWeight: 800,
                 fontFamily: "var(--font-heading), Oswald, sans-serif", textTransform: "uppercase",
                 fontSize: "var(--fs-min)"

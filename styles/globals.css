@@ -608,6 +608,21 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
 .eta-right strong {
   font-weight: var(--w-bold);
 }
+/* Phones: the fixed 240px left half left the sentence one word per line,
+   so the two halves stack instead. */
+@media (max-width: 520px) {
+  .eta-card {
+    grid-template-columns: 1fr;
+  }
+  .eta-left {
+    padding: 14px 16px 10px;
+    border-right: 0;
+    border-bottom: 1px solid var(--menu-box-border);
+  }
+  .eta-right {
+    text-align: center;
+  }
+}
 
 /* BYO box – cream card wrapping the CTA button + the size row beneath it,
    so the two read as one connected unit (matches Order Settings aside). */
@@ -1331,7 +1346,7 @@ body::before {
     top: var(--header-h);
     left: 0;
     bottom: 0;
-    width: 50%;
+    width: max(50%, 220px); /* not too narrow on small phones (iPhone SE) */
     z-index: 2500;
     background: #fff;
     box-shadow: 4px 0 18px -6px rgba(0, 0, 0, 0.35);
@@ -1883,4 +1898,12 @@ button {
   font-size: var(--fs-min);
   text-transform: uppercase;
   letter-spacing: 0.03em;
+}
+
+/* Pizza builder toppings: one column on the smallest phones (iPhone SE),
+   so each topping's Light/Normal/Extra box fits inside the card. */
+@media (max-width: 360px) {
+  .pb-topgrid {
+    grid-template-columns: 1fr !important;
+  }
 }

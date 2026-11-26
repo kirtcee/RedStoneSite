@@ -692,8 +692,10 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
         }
         .os-label {
           display: flex;
+          flex-wrap: wrap; /* (CHANGE) drops to its own line when there's no room (small phones) */
           align-items: baseline;
-          white-space: nowrap; /* "MY LOCATION" stays on one line beside (CHANGE) */
+          column-gap: 6px;
+          white-space: nowrap; /* "MY LOCATION" itself stays on one line */
           font-weight: 800;
           color: #000;
           font-family: var(--font-heading, Oswald, sans-serif);
@@ -705,7 +707,6 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
           background: none;
           border: none;
           padding: 0;
-          margin-left: 6px;
           color: #000;
           font-weight: 800;
           text-transform: uppercase;

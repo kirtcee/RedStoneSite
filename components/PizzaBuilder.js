@@ -1033,7 +1033,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
             >
               Choose Meats
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+            <div className="pb-topgrid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
               {meats.map((topping) => (
                 <div key={topping} style={{ marginBottom: "0.45rem" }}>
                   <label style={{ display: "flex", alignItems: "center" }}>
@@ -1093,7 +1093,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
             >
               Choose Veggies
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+            <div className="pb-topgrid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
               {veggies.map((topping) => (
                 <div key={topping} style={{ marginBottom: "0.45rem" }}>
                   <label style={{ display: "flex", alignItems: "center" }}>
@@ -1151,7 +1151,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
                 >
                   Choose Drizzles
                 </p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+                <div className="pb-topgrid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
                   {drizzles.map((topping) => (
                     <div key={topping} style={{ marginBottom: "0.45rem" }}>
                       <label style={{ display: "flex", alignItems: "center" }}>
