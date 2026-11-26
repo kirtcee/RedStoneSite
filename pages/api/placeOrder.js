@@ -16,6 +16,7 @@ import { buildOrder, isRateLimited, verifyUser } from "../../utils/orderBuilder"
 import { quoteDelivery } from "../../utils/deliveryQuote";
 import { getWaitTimes } from "../../utils/waitTimesServer";
 import { getOrderingStatus } from "../../utils/orderingStatusServer";
+import { getSoldOut } from "../../utils/availabilityServer";
 import { emailOrderAndRecord } from "../../utils/orderEmail";
 
 function reject(res, status, reason) {
@@ -43,10 +44,11 @@ async function handle(req, res) {
 
   const waitTimes = await getWaitTimes();
   await getOrderingStatus(); // kitchen pause / closed days, applied to the store hours
+  const soldOut = await getSoldOut();
 
   let built;
   try {
-    built = buildOrder(body, { uid, paymentMethod: "store", deliveryQuote, waitTimes });
+    built = buildOrder(body, { uid, paymentMethod: "store", deliveryQuote, waitTimes, soldOut });
   } catch (e) {
     console.error("placeOrder: checking the order failed", e);
     return reject(res, 500, `order_check_failed: ${String(e?.message || e).slice(0, 100)}`);

@@ -7,6 +7,7 @@
 //
 // Loads the latest 100 completed orders; "Load More" fetches 100 more.
 // Uses the same Firestore index as the live board (completed + createdAt).
+import { cancelReasonLabel } from "../utils/cancelReasons";
 import { useEffect, useMemo, useState } from "react";
 import { collection, onSnapshot, orderBy, query, where, limit, doc, updateDoc } from "firebase/firestore";
 import { db } from "../utils/firebaseConfig";
@@ -106,13 +107,25 @@ export default function KitchenPastOrders({ open, onClose, describeItem, onPrint
                   <span className="po-row__phone">{o.contact?.phone || "N/A"}</span>
                   <span className="po-row__when">{when(o.createdAt)}</span>
                   <span className="po-row__svc">{o.serviceMethod || "N/A"}</span>
-                  <span className={`po-row__pay${o.paid ? " is-paid" : ""}`}>{o.paid ? "Paid Online" : "Paid in Person"}</span>
+                  <span className={`po-row__pay${o.paid ? " is-paid" : ""}`}>
+                    {o.cancelled
+                      ? `CANCELLED${o.refundId ? ", refunded" : ""}`
+                      : o.paid
+                      ? "Paid Online"
+                      : "Paid in Person"}
+                  </span>
                   <span className="po-row__total">{o.totalCents != null ? formatMoney(o.totalCents) : "N/A"}</span>
                   <span className="po-row__toggle" aria-hidden="true">{isOpen ? "▴" : "▾"}</span>
                 </button>
                 {isOpen && (
                   <div className="po-row__more">
                     <div className="po-row__id">Order number: {o.id}</div>
+                    {o.cancelled && (
+                      <div className="po-row__addr">
+                        Cancelled: {cancelReasonLabel(o.cancelReason)}
+                        {o.refundCents ? `, ${formatMoney(o.refundCents)} refunded to their card` : ""}
+                      </div>
+                    )}
                     {o.deliveryAddress && (
                       <div className="po-row__addr">
                         Deliver to:{" "}
@@ -135,7 +148,9 @@ export default function KitchenPastOrders({ open, onClose, describeItem, onPrint
                     </ul>
                     <div className="po-row__btns">
                       <button type="button" onClick={() => onPrint(o)}>🖨️ Print Receipt</button>
-                      <button type="button" onClick={() => reopen(o)}>Reopen</button>
+                      {!o.cancelled && (
+                        <button type="button" onClick={() => reopen(o)}>Reopen</button>
+                      )}
                     </div>
                   </div>
                 )}

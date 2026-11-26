@@ -170,11 +170,19 @@ export default function OrderConfirmation() {
     <main className="container" style={{ paddingTop: "16px", paddingBottom: "32px" }}>
       <div style={{ maxWidth: 640, margin: "0 auto" }}>
         <h1 className="page-title" style={{ margin: "0 0 4px", textTransform: "uppercase" }}>
-          Order Confirmed
+          {order.cancelled ? "Order Cancelled" : "Order Confirmed"}
         </h1>
-        <p style={{ color: "#289c52", fontWeight: 700, margin: "0 0 16px" }}>
-          Thank you for ordering from Red Stone Pizza!
-        </p>
+        {order.cancelled && (
+          <p style={{ fontWeight: 700, margin: "0 0 12px", color: "var(--text-brown)" }}>
+            This order was cancelled.{" "}
+            {order.refundCents ? `${formatMoney(order.refundCents)} was refunded to your card.` : "You haven't been charged."}
+          </p>
+        )}
+        {!order.cancelled && (
+          <p style={{ color: "#289c52", fontWeight: 700, margin: "0 0 16px" }}>
+            Thank you for ordering from Red Stone Pizza!
+          </p>
+        )}
         <div style={{ marginBottom: 16, color: "var(--text-brown)" }}>
           <div style={{ fontFamily: "var(--font-display)", fontSize: "var(--fs-xl)", textTransform: "uppercase", color: "#8b1a1a" }}>
             Order #{orderRef(orderId)}

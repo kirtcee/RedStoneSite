@@ -58,6 +58,7 @@ export default function DeliveryMinimumOverlay() {
       blockRogue
       freezeChild={false}
       title="Delivery Minimum"
+      allergenNote={false}
     >
       {minGateOpen && (
         <div className="dm">

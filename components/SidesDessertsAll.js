@@ -1,4 +1,6 @@
 // components/SidesDessertsAll.jsx
+import useSoldOut from "../hooks/useSoldOut";
+import { sideKey, WINGS_KEY } from "../utils/availability";
 import React, { useState } from "react";
 import { useCart } from "./CartSystem";
 import { priceLineItem } from "./Pricing";
@@ -28,6 +30,7 @@ export default function SidesDessertsAll({
   onOpenWings,            // () => void
 }) {
   const { addItem } = useCart();
+  const soldOut = useSoldOut(); // kitchen's sold-out list (utils/availability.js)
   const [sizePickerFor, setSizePickerFor] = useState(null);
 
   const addSideAtSize = (side, size) => {
@@ -70,8 +73,9 @@ export default function SidesDessertsAll({
         <div className="feast feast--edge">
           <section className="feast__grid feast__grid--four">
             {SIDES.map((it) => (
-              <article key={it.key} className="feastCard">
+              <article key={it.key} className={`feastCard${soldOut.has(sideKey(it.name)) ? " is-soldout" : ""}`}>
                 <div className="feastCard__imgWrap">
+                  {soldOut.has(sideKey(it.name)) && <span className="soldout-badge">Sold Out</span>}
                   <img className="feastCard__img" src={it.img} alt={it.name} loading="lazy" />
                 </div>
 
@@ -130,8 +134,9 @@ export default function SidesDessertsAll({
 
         <div className="feast feast--edge">
           <section className="feast__grid feast__grid--four">
-            <article className="feastCard">
+            <article className={`feastCard${soldOut.has(WINGS_KEY) ? " is-soldout" : ""}`}>
               <div className="feastCard__imgWrap">
+                {soldOut.has(WINGS_KEY) && <span className="soldout-badge">Sold Out</span>}
                 <img className="feastCard__img" src={IMG_WINGS_VIEWALL} alt="Wings" loading="lazy" />
               </div>
 

@@ -1,4 +1,6 @@
 // pages/menu.js
+import useSoldOut from "../hooks/useSoldOut";
+import { sideKey, specialKey } from "../utils/availability";
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
@@ -39,6 +41,7 @@ function EntreesView({
   setSelectedSpecialItem,
   onAddToCart,
 }) {
+  const soldOut = useSoldOut(); // kitchen's sold-out list (utils/availability.js)
   useEffect(() => {
     if (sub === "build") {
       onOpenBuilder();
@@ -214,8 +217,9 @@ function EntreesView({
         <div className="feast feast--edge">
           <section className="feast__grid feast__grid--three">
             {cards.map((it) => (
-              <article key={it.key} className="feastCard">
+              <article key={it.key} className={`feastCard${soldOut.has(specialKey(it.name)) ? " is-soldout" : ""}`}>
                 <div className="feastCard__imgWrap">
+                  {soldOut.has(specialKey(it.name)) && <span className="soldout-badge">Sold Out</span>}
                   <img
                     className="feastCard__img"
                     src={it.img}
@@ -361,6 +365,7 @@ const sideSizeToPricingLabel = (size) => (size === "Regular" ? "Medium" : size);
 
 function SidesView({ selectedSide, setSelectedSide }) {
   const { addItem } = useCart();
+  const soldOut = useSoldOut(); // kitchen's sold-out list (utils/availability.js)
   const [sizePickerFor, setSizePickerFor] = useState(null);
   const items = [
     { name: "French Fries",        img: "/images/sides/fries.jpg",             desc: "Crispy golden fries." },
@@ -392,8 +397,9 @@ function SidesView({ selectedSide, setSelectedSide }) {
       <div className="feast feast--edge">
         <section className="feast__grid feast__grid--four">
           {items.map((it) => (
-            <article key={it.name} className="feastCard">
+            <article key={it.name} className={`feastCard${soldOut.has(sideKey(it.name)) ? " is-soldout" : ""}`}>
               <div className="feastCard__imgWrap">
+                {soldOut.has(sideKey(it.name)) && <span className="soldout-badge">Sold Out</span>}
                 <img className="feastCard__img" src={it.img} alt={it.name} loading="lazy" />
               </div>
 

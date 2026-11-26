@@ -221,7 +221,7 @@ export default function StatsPage() {
   }, [isStaff, firstDay]);
 
   const s = useMemo(() => {
-    const list = orders.filter((o) => o.createdAt?.toDate);
+    const list = orders.filter((o) => o.createdAt?.toDate && !o.cancelled); // cancelled orders don't count
     const total = list.reduce((n, o) => n + (o.totalCents || 0), 0);
     const food = list.reduce((n, o) => n + (o.subtotalCents || 0), 0);
     const discount = list.reduce((n, o) => n + (o.discountCents || 0), 0);

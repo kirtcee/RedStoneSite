@@ -2,6 +2,7 @@
 import { installBackToClose } from "../hooks/useBackToClose";
 import { initAnalytics } from "../utils/analytics";
 import OrderingNotice from "../components/OrderingNotice";
+import SoldOutNotice from "../components/SoldOutNotice";
 import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Script from "next/script";
@@ -14,6 +15,9 @@ import CartEditOverlay from "../components/CartEditOverlay";
 import ServiceGateOverlay from "../components/ServiceGateOverlay";
 import DeliveryMinimumOverlay from "../components/DeliveryMinimumOverlay";
 import DealBuilder from "../components/DealBuilder";
+
+// The live address, used for link previews (they need full addresses).
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://redstonepizza.net").replace(/\/+$/, "");
 
 function RootApp({ Component, pageProps }) {
   const router = useRouter();
@@ -45,6 +49,23 @@ function RootApp({ Component, pageProps }) {
         content="Order pizza, wings, sides, and drinks online from Red Stone Pizza for carryout or delivery."
       />
       <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+      {/* Home-screen icons and link previews (scripts/share-images.py) */}
+      <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+      <link rel="manifest" href="/site.webmanifest" />
+      <meta name="theme-color" content="#000000" />
+      <meta key="og:type" property="og:type" content="website" />
+      <meta key="og:site_name" property="og:site_name" content="Red Stone Pizza" />
+      <meta key="og:title" property="og:title" content="Red Stone Pizza | Order Online" />
+      <meta
+        key="og:description"
+        property="og:description"
+        content="Pizza, wings, sides and drinks from Red Stone Pizza in Hamilton. Order online for carryout or delivery."
+      />
+      <meta key="og:image" property="og:image" content={`${SITE_URL}/images/share/og.jpg`} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta key="og:url" property="og:url" content={`${SITE_URL}${router.asPath === "/" ? "" : router.pathname}`} />
+      <meta name="twitter:card" content="summary_large_image" />
       {/* Start downloading the two Red Stone Face files right away so text
           doesn't visibly swap from the fallback font. The ?v= must match
           styles/globals.css exactly or the browser downloads them twice. */}
@@ -107,6 +128,7 @@ function RootApp({ Component, pageProps }) {
         <CartEditOverlay editingItem={editingItem} onClose={() => setEditingItem(null)} />
         <ServiceGateOverlay />
         <DeliveryMinimumOverlay />
+        <SoldOutNotice />
         {/* The coupon builder — driven by CartProvider's openDealId, so a code
             redeemed anywhere (/cart, checkout), a card clicked on /coupons, or
             "Add another item to this coupon" all open this same builder. */}

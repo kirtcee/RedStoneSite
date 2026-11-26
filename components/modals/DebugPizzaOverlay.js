@@ -1,6 +1,7 @@
 // components/modals/DebugPizzaOverlay.js
 'use client';
 
+import { STORE_PHONE } from "../../utils/orderRules";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import useBodyLock from "../../hooks/useBodyLock";
@@ -28,6 +29,7 @@ export default function DebugPizzaOverlay({
   showTopbar = true,
   freezeChild = true,
   noTopbarBorder = false,
+  allergenNote = true, // the allergy line under the content (builders); off for non-food popups
 }) {
   // the phone's Back button closes this popup instead of leaving the page
   useBackToClose(!!open, onClose);
@@ -114,7 +116,10 @@ export default function DebugPizzaOverlay({
           )}
 
           <div style={bodyPlain}>
-            <div style={contentStyle}>{children}</div>
+            <div style={contentStyle}>
+              {children}
+              {allergenNote && <AllergenNote />}
+            </div>
           </div>
         </div>
       </div>
@@ -129,6 +134,7 @@ export default function DebugPizzaOverlay({
       showTopbar={showTopbar}
       freezeChild={freezeChild}
       noTopbarBorder={noTopbarBorder}
+      allergenNote={allergenNote}
     >
       {children}
     </PortalMode>
@@ -136,7 +142,7 @@ export default function DebugPizzaOverlay({
 }
 
 /* ================== Portal mode ================== */
-function PortalMode({ open, onClose, children, title = "Build Your Pizza", showTopbar = true, freezeChild = true, noTopbarBorder = false }) {
+function PortalMode({ open, onClose, children, title = "Build Your Pizza", showTopbar = true, freezeChild = true, noTopbarBorder = false, allergenNote = true }) {
   const [root, setRoot] = useState(null);
   const scrollerRef = useRef(null);
 
@@ -307,6 +313,7 @@ function PortalMode({ open, onClose, children, title = "Build Your Pizza", showT
               {freezeChild
                 ? (frozenChildRef.current || null)
                 : children}
+              {allergenNote && <AllergenNote />}
             </div>
           </div>
         </div>
@@ -412,3 +419,25 @@ const panelStyle = {
   boxShadow: "0 10px 24px rgba(0,0,0,0.16)",
 };
 const panelBodyStyle = { padding: "8px 16px 16px" };
+
+// One quiet line under every food builder (see the Allergens section of
+// pages/terms.js).
+function AllergenNote() {
+  return (
+    <p className="rs-allergen-note">
+      Allergies? Our kitchen handles wheat (gluten), milk, eggs, soy and other allergens, so we can't guarantee any
+      item is allergen free. Please call us at {STORE_PHONE} before ordering.
+      <style jsx>{`
+        .rs-allergen-note {
+          margin: 18px 0 4px;
+          padding-top: 12px;
+          border-top: 1px solid var(--menu-box-border);
+          font-size: var(--fs-min);
+          line-height: 1.45;
+          color: var(--text-brown);
+          opacity: 0.85;
+        }
+      `}</style>
+    </p>
+  );
+}

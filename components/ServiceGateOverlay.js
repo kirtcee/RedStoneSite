@@ -19,6 +19,7 @@ export default function ServiceGateOverlay() {
       mode="portal"
       blockRogue
       title="Choose Carryout or Delivery"
+      allergenNote={false}
     >
       {serviceGateOpen && <ServiceSelector onConfirmed={handleGateConfirmed} />}
     </DebugPizzaOverlay>

@@ -20,6 +20,8 @@ import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { STAFF_EMAIL } from "../utils/kitchenAuth";
 import KitchenHealth from "../components/KitchenHealth";
 import KitchenPastOrders from "../components/KitchenPastOrders";
+import KitchenCancelOrder from "../components/KitchenCancelOrder";
+import KitchenSoldOut from "../components/KitchenSoldOut";
 import { MIN_WAIT, MAX_WAIT, WAIT_STEP, readWaitTimes } from "../utils/waitTimes";
 
 const UNDO_MS = 8000; // how long "Undo" shows after Mark Completed
@@ -436,6 +438,7 @@ export default function KitchenDashboard() {
                   <button className="complete-btn" onClick={() => startComplete(order)}>
                     Mark Completed
                   </button>
+                  <KitchenCancelOrder order={order} />
                 </div>
               </div>
             </article>
@@ -485,6 +488,8 @@ export default function KitchenDashboard() {
       <main className="kitchen-body">
         {/* Online ordering on/off (pause) and closed days */}
         <KitchenOrderingControl />
+        {/* Sold-out items */}
+        <KitchenSoldOut />
         {/* Wait times customers see; can only go up from 20 / 45 min */}
         <div className="wait-panel">
           <span className="wait-panel__title">Wait times customers see:</span>
@@ -1015,6 +1020,8 @@ export default function KitchenDashboard() {
         }
         .order-card__footer {
           display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
           align-items: center;
           justify-content: space-between;
           border-top: 1px solid #eee;
@@ -1049,6 +1056,9 @@ export default function KitchenDashboard() {
         }
         .order-card__actions {
           display: flex;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+          flex: 1 1 auto;
           gap: 8px;
         }
         .print-btn {

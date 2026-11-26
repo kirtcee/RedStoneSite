@@ -48,6 +48,17 @@ service cloud.firestore {
         && request.resource.data.closedDates.size() <= 60;
     }
 
+    match /settings/menu {
+      // Sold-out items (utils/availability.js). Everyone can read it (the
+      // menu greys them out); only the kitchen can change it.
+      allow get: if true;
+      allow write: if request.auth != null
+        && request.auth.token.email == "kitchen@redstonepizza.local"
+        && request.resource.data.keys().hasOnly(["soldOut", "updatedAt"])
+        && request.resource.data.soldOut is list
+        && request.resource.data.soldOut.size() <= 100;
+    }
+
     match /settings/waitTimes {
       // The current carryout / delivery wait times (utils/waitTimes.js).
       // Everyone can read them (the menu shows them); only the kitchen can

@@ -103,14 +103,18 @@ Accounts (owner does these):
 Code (Claude builds):
 - [x] Kitchen "stop taking orders" switch + holiday closed dates (publish the new
       `settings/ordering` rule from firestore.rules in the Firebase console)
-- [ ] Missed-order alert: email the owner if an order isn't accepted in 3 to 5 min
-- [ ] Cancel order button (reason, auto refund for card, email the customer)
+- [x] Missed-order alert (`pages/api/cron/missedOrders.js`, runs every minute on
+      Production only): add in Vercel (Production) `CRON_SECRET` (long random
+      text, Sensitive) and `ALERT_EMAILS` (owner's email, commas for more).
+- [x] Cancel order button (reason, auto refund for card, email the customer)
 - [x] Tips at checkout (delivery + Pay Now only: 10/15/20%, Other, No Tip)
 - [x] Pay at Door: cash or card, "paying with $__" for change
-- [ ] Sold-out toggles per item from the kitchen
-- [ ] Link previews (Open Graph image), iPhone home-screen icon, robots.txt, sitemap
-- [ ] Branded 404 page
-- [ ] Allergen note on builders
+- [x] Sold-out toggles per item from the kitchen (publish the new `settings/menu`
+      rule from firestore.rules)
+- [x] Link previews (Open Graph image), iPhone home-screen icon, robots.txt, sitemap
+      (previews point at redstonepizza.net, so they work once the domain is switched)
+- [x] Branded 404 page
+- [x] Allergen note on builders
 - [ ] Google Business Profile: add order + menu links (owner)
 
 ## Prank / fake order protection (pick which to build)

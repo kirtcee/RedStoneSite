@@ -1,0 +1,10 @@
+# Staff pages, checkout steps and the order APIs stay out of search results.
+User-agent: *
+Disallow: /kitchen
+Disallow: /kitchen-login
+Disallow: /stats
+Disallow: /checkout
+Disallow: /order-confirmation
+Disallow: /api/
+
+Sitemap: https://redstonepizza.net/sitemap.xml
