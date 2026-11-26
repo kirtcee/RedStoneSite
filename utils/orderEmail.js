@@ -267,30 +267,26 @@ export function buildOrderEmail(order, id) {
   return { subject, html, text };
 }
 
-// Sends the email. Resolves { status: "sent" | "off" | "no_email" | "failed", error? }.
-// The Idempotency-Key makes Resend ignore a repeat for the same order.
-export async function sendOrderEmail(order, id) {
+// Sends any email through Resend. Resolves { status: "sent" | "off" | "failed", error? }.
+// idempotencyKey makes Resend ignore a repeat of the same email.
+export async function sendEmail({ to, subject, html, text, idempotencyKey, replyTo }) {
   try {
     if (!emailConfigured()) return { status: "off" };
-    const to = String(order?.contact?.email || "").trim();
-    if (!to) return { status: "no_email" };
-    const { subject, html, text } = buildOrderEmail(order, id);
-    const body = { from: process.env.ORDER_EMAIL_FROM, to: [to], subject, html, text };
-    if (process.env.ORDER_EMAIL_REPLY_TO) body.reply_to = process.env.ORDER_EMAIL_REPLY_TO;
+    const list = (Array.isArray(to) ? to : String(to || "").split(",")).map((x) => String(x).trim()).filter(Boolean);
+    if (!list.length) return { status: "no_email" };
+    const body = { from: process.env.ORDER_EMAIL_FROM, to: list, subject, html, text };
+    const reply = replyTo || process.env.ORDER_EMAIL_REPLY_TO;
+    if (reply) body.reply_to = reply;
 
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), SEND_TIMEOUT_MS);
     try {
-      const res = await fetch(RESEND_URL, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.RESEND_API_KEY.trim()}`,
-          "Content-Type": "application/json",
-          "Idempotency-Key": `order-${id}`,
-        },
-        body: JSON.stringify(body),
-        signal: ctrl.signal,
-      });
+      const headers = {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY.trim()}`,
+        "Content-Type": "application/json",
+      };
+      if (idempotencyKey) headers["Idempotency-Key"] = idempotencyKey;
+      const res = await fetch(RESEND_URL, { method: "POST", headers, body: JSON.stringify(body), signal: ctrl.signal });
       if (res.ok) return { status: "sent" };
       const detail = await res.text().catch(() => "");
       console.warn("orderEmail: Resend refused the email", res.status, detail.slice(0, 300));
@@ -302,6 +298,15 @@ export async function sendOrderEmail(order, id) {
     console.warn("orderEmail: sending failed", e);
     return { status: "failed", error: String(e?.message || e).slice(0, 200) };
   }
+}
+
+// The confirmation email for one order. Resolves { status: "sent" | "off" | "no_email" | "failed", error? }.
+export async function sendOrderEmail(order, id) {
+  const to = String(order?.contact?.email || "").trim();
+  if (!emailConfigured()) return { status: "off" };
+  if (!to) return { status: "no_email" };
+  const { subject, html, text } = buildOrderEmail(order, id);
+  return sendEmail({ to, subject, html, text, idempotencyKey: `order-${id}` });
 }
 
 // Sends the email and notes the outcome on the order document.
