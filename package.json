@@ -10,6 +10,7 @@
     "node": "22.x"
   },
   "dependencies": {
+    "@sentry/nextjs": "^11.18.0",
     "@stripe/react-stripe-js": "^7.1.0",
     "@stripe/stripe-js": "^10.3.0",
     "firebase": "^11.8.1",

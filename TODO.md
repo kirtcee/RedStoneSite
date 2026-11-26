@@ -97,7 +97,9 @@ Accounts (owner does these):
       bank account + identity verification, Radar rules, dispute email alerts.
 - [ ] **Google Cloud / Firebase**: restrict Maps keys to the site's domains
       (add redstonepizza.net), billing budget alerts, Firestore backups.
-- [ ] **Error + uptime alerts**: Sentry (free) and UptimeRobot (free).
+- [ ] **Error + uptime alerts**: Sentry (code done, `utils/errorReporting.js`):
+      add `NEXT_PUBLIC_SENTRY_DSN` in Vercel (Production + Preview), redeploy.
+      UptimeRobot: monitor https://redstonepizza.net every 5 min (after launch).
 Code (Claude builds):
 - [ ] Kitchen "stop taking orders" switch + holiday closed dates
 - [ ] Missed-order alert: email the owner if an order isn't accepted in 3 to 5 min
