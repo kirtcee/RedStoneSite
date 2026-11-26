@@ -47,6 +47,11 @@ export const DRINK_CATEGORIES = {
       { label: "Yellow Gatorade", img: "/images/drinks/gatorade-yellow.webp", mm: 215, cents: 250 },
       { label: "Orange Gatorade", img: "/images/drinks/gatorade-orange.webp", mm: 215, cents: 250 },
       { label: "Blue Gatorade", img: "/images/drinks/gatorade-blue.webp", mm: 215, cents: 250 },
+      // Gatorade Zero (scripts/gatorade-zero-images.py), same price as Gatorade
+      { label: "Purple Gatorade Zero", img: "/images/drinks/gatorade-zero-grape.webp", mm: 215, cents: 250 },
+      { label: "Pink Gatorade Zero", img: "/images/drinks/gatorade-zero-berry.webp", mm: 215, cents: 250 },
+      { label: "White Gatorade Zero", img: "/images/drinks/gatorade-zero-glacier-cherry.webp", mm: 215, cents: 250 },
+      { label: "Yellow Gatorade Zero", img: "/images/drinks/gatorade-zero-lemon-lime.webp", mm: 215, cents: 250 },
       { label: "Red Bull", img: "/images/drinks/red-bull.webp", mm: 134, cents: 350 },
       { label: "Apple Juice", img: "/images/drinks/apple-juice.webp", mm: 170, cents: 175 },
       { label: "Water", img: "/images/drinks/water.webp", mm: 205, cents: 150 },
