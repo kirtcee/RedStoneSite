@@ -113,7 +113,7 @@ Code (Claude builds):
       rule from firestore.rules)
 - [x] Link previews (Open Graph image), iPhone home-screen icon, robots.txt, sitemap
       (previews point at redstonepizza.net, so they work once the domain is switched)
-- [ ] Branded 404 page
+- [x] Branded 404 page
 - [ ] Allergen note on builders
 - [ ] Google Business Profile: add order + menu links (owner)
 
