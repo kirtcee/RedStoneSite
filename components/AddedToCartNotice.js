@@ -5,12 +5,13 @@
 // until the customer does something: Keep Shopping, a tap or click anywhere
 // else, scrolling, or Escape all close it. Not shown on the cart, checkout
 // or confirmation pages.
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { useCart } from "./CartSystem";
 import { formatMoney } from "./Pricing";
 import { getNameAndSubtitle } from "../utils/orderText";
 
+const LEAVE_MS = 200;
 const HIDDEN_ON = ["/cart", "/checkout", "/order-confirmation", "/kitchen", "/kitchen-login", "/stats"];
 
 export default function AddedToCartNotice() {
@@ -18,13 +19,30 @@ export default function AddedToCartNotice() {
   const router = useRouter();
   const boxRef = useRef(null);
   const added = cart?.lastAdded || null;
-  const close = cart?.clearLastAdded;
+  const clear = cart?.clearLastAdded;
   const hidden = HIDDEN_ON.some((p) => router.pathname.startsWith(p));
+
+  // Closing plays a short fade-and-slide-down first (LEAVE_MS), then the
+  // card is removed. Skipped for people with "Reduce Motion" turned on.
+  const [leaving, setLeaving] = useState(false);
+  const leaveTimer = useRef(null);
+  useEffect(() => {
+    setLeaving(false); // a new item was added: show the card fresh
+    clearTimeout(leaveTimer.current);
+  }, [added?.at]);
+  useEffect(() => () => clearTimeout(leaveTimer.current), []);
+  const close = useCallback(() => {
+    const reduce = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return clear?.();
+    setLeaving(true);
+    clearTimeout(leaveTimer.current);
+    leaveTimer.current = setTimeout(() => clear?.(), LEAVE_MS);
+  }, [clear]);
 
   // close on any tap/click outside, scrolling, or Escape. Starts a moment
   // after it appears so the tap that added the item doesn't close it.
   useEffect(() => {
-    if (!added || hidden) return;
+    if (!added || hidden || leaving) return;
     const outside = (e) => {
       if (boxRef.current && !boxRef.current.contains(e.target)) close?.();
     };
@@ -43,14 +61,14 @@ export default function AddedToCartNotice() {
       window.removeEventListener("touchmove", onScroll);
       window.removeEventListener("keydown", onKey);
     };
-  }, [added, hidden, close]);
+  }, [added, hidden, leaving, close]);
 
-  // a new page: start fresh
+  // a new page: remove it straight away
   useEffect(() => {
-    const done = () => close?.();
+    const done = () => clear?.();
     router.events.on("routeChangeStart", done);
     return () => router.events.off("routeChangeStart", done);
-  }, [router.events, close]);
+  }, [router.events, clear]);
 
   if (!added || hidden) return null;
 
@@ -59,12 +77,12 @@ export default function AddedToCartNotice() {
   const count = items.reduce((n, it) => n + (Number(it.qty) || 1), 0);
 
   const checkout = () => {
-    close?.();
+    close();
     cart?.goToCheckout?.();
   };
 
   return (
-    <div className="atc" ref={boxRef} role="status" aria-live="polite" key={added.at}>
+    <div className={`atc${leaving ? " is-leaving" : ""}`} ref={boxRef} role="status" aria-live="polite" key={added.at}>
       <div className="atc-top">
         <span className="atc-check" aria-hidden="true">✓</span>
         <div className="atc-text">
@@ -76,7 +94,7 @@ export default function AddedToCartNotice() {
         </div>
       </div>
       <div className="atc-btns">
-        <button type="button" className="atc-keep" onClick={() => close?.()}>
+        <button type="button" className="atc-keep" onClick={close}>
           Keep Shopping
         </button>
         <button type="button" className="rs-pill-btn atc-go" onClick={checkout}>
@@ -109,8 +127,24 @@ export default function AddedToCartNotice() {
             transform: translate(-50%, 0);
           }
         }
+        /* closing: the reverse of opening */
+        .atc.is-leaving {
+          pointer-events: none;
+          animation: atc-out ${LEAVE_MS}ms ease-in forwards;
+        }
+        @keyframes atc-out {
+          from {
+            opacity: 1;
+            transform: translate(-50%, 0);
+          }
+          to {
+            opacity: 0;
+            transform: translate(-50%, 12px);
+          }
+        }
         @media (prefers-reduced-motion: reduce) {
-          .atc {
+          .atc,
+          .atc.is-leaving {
             animation: none;
           }
         }
