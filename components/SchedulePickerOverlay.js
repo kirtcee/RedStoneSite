@@ -11,10 +11,12 @@ import { DateDropdown, TimeDropdown } from "./OrderSettingsAside";
 import { useCart } from "./CartSystem";
 import { firstOpenSlot, timeSlotsFor, scheduleProblem, hoursFor, formatClock, torontoParts } from "../utils/storeHours";
 import { track } from "../utils/analytics";
+import { STORE_PHONE } from "../utils/orderRules";
+import useOrderingStatus from "../hooks/useOrderingStatus";
 
-// reason: "closed" (closed right now) or "badTime" (their scheduled time no
-// longer works). opens: when the store next opens, e.g. "tomorrow at 11:00 AM".
-export default function SchedulePickerOverlay({ open, onClose, reason = "closed", opens = null }) {
+// reason: "closed" (can't order right now) or "badTime" (their scheduled
+// time no longer works). text: why ordering is closed now (closedNowText()).
+export default function SchedulePickerOverlay({ open, onClose, reason = "closed", text = "" }) {
   const cart = useCart();
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -31,7 +33,11 @@ export default function SchedulePickerOverlay({ open, onClose, reason = "closed"
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const timeOptions = useMemo(() => (date ? timeSlotsFor(date) : []), [date]);
+  const ordering = useOrderingStatus(); // kitchen pause / closed days, live
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const timeOptions = useMemo(() => (date ? timeSlotsFor(date) : []), [date, ordering.rev]);
+  // paused until the kitchen turns it back on: no time can be offered
+  const noTimesAtAll = !firstOpenSlot();
   // keep the time one that's offered on the chosen day
   useEffect(() => {
     if (!date) return;
@@ -59,9 +65,16 @@ export default function SchedulePickerOverlay({ open, onClose, reason = "closed"
           <p className="sp-lead">
             {reason === "badTime"
               ? "We're not open at the time you picked, or it's too soon. Choose another time for your order."
-              : `We're closed for online orders right now${opens ? ` (we open ${opens})` : ""}. Choose a time and we'll have your order ready then.`}
+              : `${text || "We're closed for online orders right now."} Choose a time and we'll have your order ready then.`}
           </p>
 
+          {noTimesAtAll ? (
+            <div className="sp-box">
+              <div className="sp-warn">
+                Online ordering is paused, so we can't take scheduled orders right now. Please call us at {STORE_PHONE}.
+              </div>
+            </div>
+          ) : (
           <div className="sp-box">
             <div className="sp-label">Day</div>
             <DateDropdown value={date} onChange={setDate} />
@@ -79,6 +92,7 @@ export default function SchedulePickerOverlay({ open, onClose, reason = "closed"
               </div>
             )}
           </div>
+          )}
 
           <div className="sp-actions">
             <button type="button" className="rs-pill-btn sp-actions__main" onClick={confirm} disabled={!ok}>

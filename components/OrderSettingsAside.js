@@ -4,6 +4,7 @@
 // in pages/menu.js, now shared by every page that needs it (pages/menu.js,
 // pages/coupons.js, ...). Self-contained: reads everything it needs from
 // useCart()/useRouter() directly, no required props.
+import useOrderingStatus from "../hooks/useOrderingStatus";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { useCart } from "./CartSystem";
@@ -20,6 +21,8 @@ import {
   hoursSummary,
   canOrderNow,
   nextOpening,
+  closedNowText,
+  isClosedDate,
   MAX_SCHEDULE_DAYS,
   LAST_ORDER_BEFORE_CLOSE,
 } from "../utils/storeHours";
@@ -219,7 +222,8 @@ export function DateDropdown({ value, onChange }) {
   // only today (Toronto) up to MAX_SCHEDULE_DAYS ahead can be picked
   const firstDay = torontoParts().date;
   const lastDay = addDays(firstDay, MAX_SCHEDULE_DAYS);
-  const dayOff = (day) => dayValue(day) < firstDay || dayValue(day) > lastDay;
+  // closed days set on the kitchen screen can't be picked either
+  const dayOff = (day) => dayValue(day) < firstDay || dayValue(day) > lastDay || isClosedDate(dayValue(day));
   const pickDay = (day) => {
     if (dayOff(day)) return;
     onChange(dayValue(day));
@@ -406,7 +410,12 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
   const [showHours, setShowHours] = useState(false);
   // Scheduled times offered for the chosen day (Toronto time, store hours,
   // nothing too soon); see utils/storeHours.js
-  const timeOptions = useMemo(() => timeSlotsFor(scheduleDate || torontoParts().date), [scheduleDate]);
+  const ordering = useOrderingStatus(); // kitchen pause / closed days, live
+  const timeOptions = useMemo(
+    () => timeSlotsFor(scheduleDate || torontoParts().date),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [scheduleDate, ordering.rev]
+  );
   const dayHours = scheduleDate ? hoursFor(scheduleDate) : null;
   const openNow = canOrderNow();
 
@@ -600,8 +609,7 @@ export default function OrderSettingsAside({ variant = "aside", hideMobileBar = 
             </button>
             {orderTiming === "now" && !openNow && (
               <div className="os-small os-small--warn">
-                We're closed for online orders right now{nextOpening() ? ` (we open ${nextOpening()})` : ""}. Choose
-                Later to schedule your order.
+                {closedNowText()} Choose Later to schedule your order.
               </div>
             )}
             {showHours && (

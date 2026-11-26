@@ -25,7 +25,9 @@ import {
   nextOpening,
   scheduleProblem,
   formatClock,
+  closedNowText,
 } from "../utils/storeHours";
+import useOrderingStatus from "../hooks/useOrderingStatus";
 
 
 // Shown under the page title (same numbers as the menu page estimate)
@@ -196,18 +198,20 @@ export default function CheckoutPage() {
 
   // Store hours (utils/storeHours.js). Worked out after the page loads so
   // the server render and the browser agree.
-  const [hoursCheck, setHoursCheck] = useState({ closedNow: false, badSchedule: false, opens: null });
+  const ordering = useOrderingStatus(); // kitchen pause / closed days, live
+  const [hoursCheck, setHoursCheck] = useState({ closedNow: false, badSchedule: false, opens: null, text: "" });
   useEffect(() => {
     const check = () =>
       setHoursCheck({
         closedNow: orderTiming !== "later" && !canOrderNow(),
         badSchedule: orderTiming === "later" && !!scheduleProblem(scheduleDate, scheduleTime),
         opens: nextOpening(),
+        text: closedNowText(),
       });
     check();
     const id = setInterval(check, 30000);
     return () => clearInterval(id);
-  }, [orderTiming, scheduleDate, scheduleTime]);
+  }, [orderTiming, scheduleDate, scheduleTime, ordering.rev]);
   // what an order looked like, for analytics (no personal details)
   const orderStats = (payment) => ({
     payment,
@@ -591,8 +595,7 @@ export default function CheckoutPage() {
 
             {hoursCheck.closedNow && (
               <div className="co-minNote">
-                We're closed for online orders right now{hoursCheck.opens ? ` (we open ${hoursCheck.opens})` : ""}. You
-                can schedule your order for later.{" "}
+                {hoursCheck.text} You can schedule your order for later.{" "}
                 <button type="button" className="co-minNote__btn" onClick={scheduleNext}>
                   Schedule for Later
                 </button>
@@ -1156,7 +1159,7 @@ export default function CheckoutPage() {
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
         reason={hoursCheck.badSchedule ? "badTime" : "closed"}
-        opens={hoursCheck.opens}
+        text={hoursCheck.text}
       />
     </main>
   );

@@ -93,12 +93,37 @@ export function torontoToDate(date, time) {
   return new Date(guess);
 }
 
+// ---- Kitchen overrides (settings/ordering in Firestore, see
+// utils/orderingStatus.js): days the store is closed (holidays) and a pause
+// on online orders. Set with applyOrderingStatus(): in the browser by
+// hooks/useOrderingStatus.js (live), on the server before checking an order.
+let CLOSED_DATES = new Set(); // "YYYY-MM-DD" (Toronto)
+let PAUSE_UNTIL = 0; // ms; 0 = not paused, Infinity = until turned back on
+
+export function applyOrderingStatus(status) {
+  CLOSED_DATES = new Set(Array.isArray(status?.closedDates) ? status.closedDates : []);
+  PAUSE_UNTIL = !status?.paused ? 0 : status.pausedUntilMs == null ? Infinity : Number(status.pausedUntilMs) || 0;
+}
+// Online ordering is paused at this moment
+export function isPausedNow(ms = Date.now()) {
+  return PAUSE_UNTIL > ms;
+}
+// When the pause ends (ms), Infinity if until turned back on, 0 if not paused
+export function pauseEndsAt(ms = Date.now()) {
+  return PAUSE_UNTIL > ms ? PAUSE_UNTIL : 0;
+}
+export function isClosedDate(date) {
+  return CLOSED_DATES.has(date);
+}
+
 export function hoursFor(date) {
+  if (CLOSED_DATES.has(date)) return null;
   return HOURS[weekdayOf(date)] || null;
 }
 
 // Can a customer place an "order now" right now?
 export function canOrderNow(ms = Date.now()) {
+  if (isPausedNow(ms)) return false;
   const { date, minutes } = torontoParts(ms);
   const h = hoursFor(date);
   return !!h && minutes >= h.open && minutes < h.close - LAST_ORDER_BEFORE_CLOSE;
@@ -111,7 +136,15 @@ export function timeSlotsFor(date, ms = Date.now()) {
   if (!h) return [];
   const now = torontoParts(ms);
   if (date < now.date) return [];
-  const earliest = date === now.date ? now.minutes + MIN_SCHEDULE_AHEAD : -1;
+  let earliest = date === now.date ? now.minutes + MIN_SCHEDULE_AHEAD : -1;
+  // paused: nothing before the pause ends
+  const pauseEnd = pauseEndsAt(ms);
+  if (pauseEnd === Infinity) return [];
+  if (pauseEnd) {
+    const p = torontoParts(pauseEnd);
+    if (date < p.date) return [];
+    if (date === p.date) earliest = Math.max(earliest, p.minutes);
+  }
   const out = [];
   for (let m = h.open; m <= h.close - LAST_ORDER_BEFORE_CLOSE; m += SLOT_STEP) {
     if (m >= earliest) out.push({ value: toHHMM(m), label: formatClock(m) });
@@ -128,15 +161,25 @@ export function scheduleProblem(date, time, ms = Date.now()) {
 }
 
 // When "order now" opens next, e.g. "today at 11:00 AM" / "tomorrow at 12:00 PM"
+// (or when a pause ends, "today at 7:30 PM"). null if not known (paused
+// until turned back on).
 export function nextOpening(ms = Date.now()) {
+  const pauseEnd = pauseEndsAt(ms);
+  if (pauseEnd === Infinity) return null;
   const now = torontoParts(ms);
-  for (let i = 0; i < 8; i++) {
-    const date = addDays(now.date, i);
+  const from = torontoParts(pauseEnd || ms);
+  for (let i = 0; i < 15; i++) {
+    const date = addDays(from.date, i);
     const h = hoursFor(date);
     if (!h) continue;
-    if (i === 0 && now.minutes >= h.open) continue;
-    const when = i === 0 ? "today" : i === 1 ? "tomorrow" : DAY_NAMES[weekdayOf(date)];
-    return `${when} at ${formatClock(h.open)}`;
+    let at = h.open;
+    if (i === 0 && from.minutes >= h.open) {
+      // the pause ends during opening hours: open again right then
+      if (!pauseEnd || from.minutes >= h.close - LAST_ORDER_BEFORE_CLOSE) continue;
+      at = Math.ceil(from.minutes / 5) * 5;
+    }
+    const when = date === now.date ? "today" : date === addDays(now.date, 1) ? "tomorrow" : DAY_NAMES[weekdayOf(date)];
+    return `${when} at ${formatClock(at)}`;
   }
   return null;
 }
@@ -165,4 +208,19 @@ export function firstOpenSlot(ms = Date.now()) {
     if (slots.length) return { date, time: slots[0].value };
   }
   return null;
+}
+
+// Customer-facing sentence for why "order now" isn't available, covering a
+// kitchen pause, a closed day (holiday) and normal closing time.
+export function closedNowText(ms = Date.now()) {
+  const at = nextOpening(ms);
+  if (isPausedNow(ms)) {
+    return at
+      ? `We've paused online orders for a little while. We'll be taking orders again ${at}.`
+      : "We've paused online orders for now.";
+  }
+  if (isClosedDate(torontoParts(ms).date)) {
+    return `We're closed today${at ? `. We open again ${at}` : ""}.`;
+  }
+  return `We're closed for online orders right now${at ? ` (we open ${at})` : ""}.`;
 }

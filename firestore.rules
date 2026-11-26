@@ -34,6 +34,20 @@ service cloud.firestore {
         && request.auth.token.email == "kitchen@redstonepizza.local";
     }
 
+    match /settings/ordering {
+      // The kitchen's Online Ordering switch (utils/orderingStatus.js):
+      // paused / pausedUntil and the closed days. Everyone can read it (the
+      // site follows it); only the kitchen can change it.
+      allow get: if true;
+      allow write: if request.auth != null
+        && request.auth.token.email == "kitchen@redstonepizza.local"
+        && request.resource.data.keys().hasOnly(["paused", "pausedUntil", "closedDates", "updatedAt"])
+        && request.resource.data.paused is bool
+        && (request.resource.data.pausedUntil == null || request.resource.data.pausedUntil is timestamp)
+        && request.resource.data.closedDates is list
+        && request.resource.data.closedDates.size() <= 60;
+    }
+
     match /settings/waitTimes {
       // The current carryout / delivery wait times (utils/waitTimes.js).
       // Everyone can read them (the menu shows them); only the kitchen can

@@ -11,6 +11,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { buildOrder, isRateLimited, verifyUser } from "../../utils/orderBuilder";
 import { quoteDelivery } from "../../utils/deliveryQuote";
 import { getWaitTimes } from "../../utils/waitTimesServer";
+import { getOrderingStatus } from "../../utils/orderingStatusServer";
 import { getStripe } from "../../utils/stripeServer";
 
 function reject(res, status, reason) {
@@ -32,6 +33,7 @@ async function handle(req, res) {
   const deliveryQuote = body.serviceMethod === "Delivery" ? await quoteDelivery(body.deliveryAddress) : null;
 
   const waitTimes = await getWaitTimes();
+  await getOrderingStatus(); // kitchen pause / closed days, applied to the store hours
 
   let built;
   try {

@@ -1,6 +1,7 @@
 // pages/_app.js
 import { installBackToClose } from "../hooks/useBackToClose";
 import { initAnalytics } from "../utils/analytics";
+import OrderingNotice from "../components/OrderingNotice";
 import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Script from "next/script";
@@ -98,6 +99,7 @@ function RootApp({ Component, pageProps }) {
 
       <CartProvider onEditItem={setEditingItem}>
         <Header />
+        <OrderingNotice />
         {/* Content always starts below the header (and subheader when present). */}
         <main id="page" className={`page-shell${hasOrderSettingsAside ? " page-shell--compact" : ""}`}>
           <Component {...pageProps} />

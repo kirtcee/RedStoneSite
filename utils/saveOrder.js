@@ -78,10 +78,12 @@ export function friendlyOrderError(code, { card = false } = {}) {
   else if (c === "delivery_quote_failed")
     msg = "We couldn't work out the delivery fee for this address. Please check the address, or call us at 905-385-9888.";
   else if (c === "delivery_minimum") msg = "Delivery orders need at least $20.00 of food and drinks. Please add more items or switch to carryout.";
+  else if (c === "ordering_paused")
+    msg = "We've paused online orders for a little while. Please schedule your order for later, or call us at 905-385-9888.";
   else if (c === "store_closed")
-    msg = "We're closed for online orders right now. Choose Later in Order Settings to schedule your order.";
+    msg = "We're closed for online orders right now. Please schedule your order for later.";
   else if (c === "schedule_closed")
-    msg = "We're not open at the time you picked (or it's too soon). Please choose another time in Order Settings.";
+    msg = "We're not open at the time you picked, or it's too soon. Please choose another time.";
   else if (c === "schedule_too_far") msg = "Orders can be scheduled up to 2 weeks ahead. Please choose an earlier date.";
   else if (card) msg = "We couldn't connect to the payment system. Your card has not been charged. Please try again.";
   else msg = "We couldn't place your order. Please try again.";

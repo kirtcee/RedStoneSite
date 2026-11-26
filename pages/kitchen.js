@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import KitchenOrderingControl from "../components/KitchenOrderingControl";
 import { useRouter } from "next/router";
 import { db, auth } from "../utils/firebaseConfig";
 import { onAuthStateChanged, signOut } from "firebase/auth";
@@ -469,6 +470,8 @@ export default function KitchenDashboard() {
       </header>
 
       <main className="kitchen-body">
+        {/* Online ordering on/off (pause) and closed days */}
+        <KitchenOrderingControl />
         {/* Wait times customers see; can only go up from 20 / 45 min */}
         <div className="wait-panel">
           <span className="wait-panel__title">Wait times customers see:</span>

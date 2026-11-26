@@ -16,7 +16,7 @@ import { Timestamp } from "firebase-admin/firestore";
 
 import { TAX_RATE, DELIVERY_FEE_CENTS, DELIVERY_MINIMUM_CENTS, taxOn } from "./orderRules";
 import { MIN_WAIT, clampWait, waitKey } from "./waitTimes";
-import { torontoToDate, canOrderNow, scheduleProblem } from "./storeHours";
+import { torontoToDate, canOrderNow, scheduleProblem, isPausedNow } from "./storeHours";
 export { TAX_RATE, DELIVERY_FEE_CENTS };
 const MAX_ITEMS = 100;
 const MAX_QTY_PER_ITEM = 50;
@@ -141,6 +141,8 @@ export function buildOrder(body, { uid, paymentMethod, deliveryQuote = null, wai
   if (orderTiming === "later") {
     const problem = scheduleProblem(schedule?.date, schedule?.time);
     if (problem) return fail(400, problem === "too_far" ? "schedule_too_far" : "schedule_closed");
+  } else if (isPausedNow()) {
+    return fail(400, "ordering_paused"); // the kitchen paused online orders
   } else if (!canOrderNow()) {
     return fail(400, "store_closed");
   }

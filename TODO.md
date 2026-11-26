@@ -101,7 +101,8 @@ Accounts (owner does these):
       add `NEXT_PUBLIC_SENTRY_DSN` in Vercel (Production + Preview), redeploy.
       UptimeRobot: monitor https://redstonepizza.net every 5 min (after launch).
 Code (Claude builds):
-- [ ] Kitchen "stop taking orders" switch + holiday closed dates
+- [x] Kitchen "stop taking orders" switch + holiday closed dates (publish the new
+      `settings/ordering` rule from firestore.rules in the Firebase console)
 - [ ] Missed-order alert: email the owner if an order isn't accepted in 3 to 5 min
 - [ ] Cancel order button (reason, auto refund for card, email the customer)
 - [ ] Tips at checkout (owner to decide: delivery only or both, % or $)
