@@ -118,6 +118,26 @@ tile(["2l-coke", "2l-canada-dry", "2l-pepsi"], "tile-2l", overlap=0.12)
 tile(["can-coke", "can-sprite", "can-crush-orange", "can-pepsi"], "tile-cans", overlap=0.06)
 tile(["gatorade-red", "red-bull", "apple-juice", "water", "gatorade-blue"], "tile-other", overlap=0.15)
 # Dips tile and the Drinks & Dips cover on the menu's front page (3:2)
-tile(["dips/blue-cheese-cut", "dips/garlic-cut", "dips/ranch-cut"], "dips/dips-tile", overlap=0.10, fill=0.6)
+# Dips tile: all four cups in a 2x2 group (the menu card crops its picture
+# to a square, so a single row of four got cut off at the sides)
+def dips_grid(names, name, size=(900, 600), cup_w=250, gap=-14):
+    TW, TH = size
+    c = Image.new("RGBA", (TW, TH), (255, 255, 255, 255))
+    cups = [Image.open(f"public/images/{n}.webp").convert("RGBA") for n in names]
+    cups = [i.resize((cup_w, round(i.height * cup_w / i.width)), Image.LANCZOS) for i in cups]
+    ch = max(i.height for i in cups)
+    step_x, step_y = cup_w + gap, ch + gap - 30   # rows overlap a little (front row lower)
+    x0 = (TW - (cup_w * 2 + gap)) // 2
+    y0 = (TH - (ch + step_y)) // 2
+    spots = [(x0 - 26, y0), (x0 + step_x - 26, y0), (x0 + 26, y0 + step_y), (x0 + step_x + 26, y0 + step_y)]
+    for i, (x, y) in zip(cups, spots):     # back row first, so the front row sits on top
+        sh = Image.new("RGBA", c.size, (0, 0, 0, 0))
+        blk = Image.new("RGBA", i.size, (0, 0, 0, 255)); blk.putalpha(i.getchannel("A").point(lambda v: int(v * 0.35)))
+        sh.alpha_composite(blk, (x + 8, y + 10)); c.alpha_composite(sh.filter(ImageFilter.GaussianBlur(9)))
+        c.alpha_composite(i, (x, y))
+    c.convert("RGB").save(f"public/images/{name}.jpg", "JPEG", quality=85, optimize=True)
+    print("tile", name)
+
+dips_grid(["dips/blue-cheese-cut", "dips/garlic-cut", "dips/ranch-cut", "dips/marinara-cut"], "dips/dips-tile")
 tile(["2l-coke", "gatorade-orange", "can-pepsi", "dips/garlic-cut"], "drinks/cover-drinks-dips", overlap=0.10, size=(1350, 900),
      fill=0.94, scales=[1, 1, 1, 1.7])

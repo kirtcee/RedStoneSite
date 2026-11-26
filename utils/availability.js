@@ -10,7 +10,7 @@ import { DRINK_CATEGORIES } from "./drinkCatalog";
 
 const SIDES = ["French Fries", "Poutine", "Shawarma Poutine", "Onion Rings", "Cheesy Garlic Bread", "Garlic Bread"];
 const SPECIALS = ["Panzerotti", "Pizza Sub", "Meatball Sub"];
-const EXTRA_DIPS = ["Marinara"]; // dips sold with pizzas, not in the drinks list
+const EXTRA_DIPS = []; // dips sold with pizzas that aren't in the drinks list (none now)
 
 const norm = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
 
