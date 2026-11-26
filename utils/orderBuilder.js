@@ -14,7 +14,7 @@ import { findDealById } from "./dealCatalog";
 import { adminAuth } from "./firebaseAdmin";
 import { Timestamp } from "firebase-admin/firestore";
 
-import { TAX_RATE, DELIVERY_FEE_CENTS, DELIVERY_MINIMUM_CENTS, taxOn } from "./orderRules";
+import { TAX_RATE, DELIVERY_FEE_CENTS, DELIVERY_MINIMUM_CENTS, taxOn, tipAllowed, MAX_TIP_CENTS, DOOR_METHODS, MAX_CASH_GIVEN_CENTS } from "./orderRules";
 import { MIN_WAIT, clampWait, waitKey } from "./waitTimes";
 import { torontoToDate, canOrderNow, scheduleProblem, isPausedNow } from "./storeHours";
 export { TAX_RATE, DELIVERY_FEE_CENTS };
@@ -109,6 +109,8 @@ export function buildOrder(body, { uid, paymentMethod, deliveryQuote = null, wai
     location,
     contact,
     deliveryAddress,
+    tipCents: rawTip,
+    doorPayment: rawDoor,
   } = body || {};
 
   if (!Array.isArray(rawItems) || rawItems.length === 0) return fail(400, "empty_cart");
@@ -198,7 +200,28 @@ export function buildOrder(body, { uid, paymentMethod, deliveryQuote = null, wai
     deliveryInfo = { minutes: deliveryQuote.minutes, km: deliveryQuote.km };
   }
   const taxCents = taxOn(subtotalCents + deliveryCents); // tax on food, drinks and delivery
-  const totalCents = subtotalCents + deliveryCents + taxCents;
+
+  // Driver tip: delivery + Pay Now only (utils/orderRules.js). Not taxed.
+  let tipCents = 0;
+  if (rawTip != null && rawTip !== 0) {
+    if (!tipAllowed(serviceMethod, paymentMethod)) return fail(400, "tip_not_allowed");
+    if (!Number.isInteger(rawTip) || rawTip < 0 || rawTip > MAX_TIP_CENTS) return fail(400, "bad_tip");
+    tipCents = rawTip;
+  }
+  const totalCents = subtotalCents + deliveryCents + taxCents + tipCents;
+
+  // Pay at Door: cash or card, and what cash they're paying with.
+  let doorPayment = null;
+  if (serviceMethod === "Delivery" && paymentMethod === "store" && rawDoor && typeof rawDoor === "object") {
+    if (!DOOR_METHODS.includes(rawDoor.method)) return fail(400, "bad_door_payment");
+    let cashGivenCents = null;
+    if (rawDoor.method === "cash" && rawDoor.cashGivenCents != null) {
+      const g = rawDoor.cashGivenCents;
+      if (!Number.isInteger(g) || g < totalCents || g > MAX_CASH_GIVEN_CENTS) return fail(400, "bad_cash_amount");
+      cashGivenCents = g;
+    }
+    doorPayment = { method: rawDoor.method, cashGivenCents };
+  }
 
   const isLater = orderTiming === "later";
   const { date, time } = schedule || {};
@@ -217,7 +240,8 @@ export function buildOrder(body, { uid, paymentMethod, deliveryQuote = null, wai
       contact: { name, firstName, lastName, phone, email },
       paymentMethod,
       paid: false,
-      fees: { deliveryCents, taxCents },
+      fees: { deliveryCents, taxCents, tipCents },
+      doorPayment,
       subtotalCents,
       discountCents,
       totalCents,

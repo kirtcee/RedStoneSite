@@ -226,6 +226,7 @@ export default function StatsPage() {
     const food = list.reduce((n, o) => n + (o.subtotalCents || 0), 0);
     const discount = list.reduce((n, o) => n + (o.discountCents || 0), 0);
     const tax = list.reduce((n, o) => n + (o.fees?.taxCents || 0), 0);
+    const tips = list.reduce((n, o) => n + (o.fees?.tipCents || 0), 0);
 
     // by day
     const days = [];
@@ -310,6 +311,7 @@ export default function StatsPage() {
       food,
       discount,
       tax,
+      tips,
       avg: list.length ? Math.round(total / list.length) : 0,
       dayRows: days.map((d) => {
         const [, m, dd] = d.split("-");
@@ -453,6 +455,7 @@ export default function StatsPage() {
               <tr><td>Delivery fees ({s.delCount} deliveries)</td><td>{money(s.delFees)}</td></tr>
               <tr><td>Average delivery fee</td><td>{money(s.delAvgFee)}{s.delAvgMin != null ? `, ${s.delAvgMin} min drive` : ""}</td></tr>
               <tr><td>HST collected</td><td>{money(s.tax)}</td></tr>
+              <tr><td>Driver tips (paid online, owed to drivers)</td><td>{money(s.tips)}</td></tr>
               <tr className="st-money__total"><td>Total</td><td>{money(s.total)}</td></tr>
             </tbody>
           </table>

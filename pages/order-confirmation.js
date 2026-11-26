@@ -281,6 +281,12 @@ export default function OrderConfirmation() {
                 <div>Taxes:</div>
                 <div style={{ fontWeight: 700 }}>{formatMoney(fees.taxCents || 0)}</div>
               </div>
+              {fees.tipCents > 0 && (
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                  <div>Driver Tip:</div>
+                  <div style={{ fontWeight: 700 }}>{formatMoney(fees.tipCents)}</div>
+                </div>
+              )}
               <div
                 style={{
                   display: "flex",

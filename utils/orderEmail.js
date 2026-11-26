@@ -103,12 +103,25 @@ function emailFacts(order, id) {
     place: isDelivery ? addressText(order.deliveryAddress) || "Not provided" : STORE_ADDRESS,
     payNote: paidOnline
       ? `Paid on ${today}${brand && last4 ? ` with ${brand} ending ${last4}` : " by card"}`
-      : `Ordered on ${today}. ${isDelivery ? "Pay at the door." : "Pay at the store."}`,
+      : `Ordered on ${today}. ${
+          !isDelivery
+            ? "Pay at the store."
+            : order.doorPayment?.method === "cash"
+            ? `Pay the driver in cash${
+                order.doorPayment.cashGivenCents > (order.totalCents || 0)
+                  ? ` (paying with ${formatMoney(order.doorPayment.cashGivenCents)}, change ${formatMoney(order.doorPayment.cashGivenCents - order.totalCents)})`
+                  : ""
+              }.`
+            : order.doorPayment?.method === "card"
+            ? "Pay the driver by debit or credit."
+            : "Pay at the door."
+        }`,
     lines,
     subtotal: order.subtotalCents || 0,
     savings: order.discountCents || 0,
     delivery: isDelivery ? fees.deliveryCents || 0 : null,
     tax: fees.taxCents || 0,
+    tip: fees.tipCents || 0,
     total: order.totalCents || 0,
     paidOnline,
     hst: String(process.env.HST_NUMBER || "").trim(),
@@ -202,6 +215,7 @@ export function buildOrderEmail(order, id) {
                 ${divider}
                 ${f.delivery != null ? money("Delivery", formatMoney(f.delivery), { pad: "14px 0 0" }) : ""}
                 ${money(taxLabel, formatMoney(f.tax), { color: FAINT, weight: 400 })}
+                ${f.tip > 0 ? money("Driver tip", formatMoney(f.tip), { pad: "0 0 14px" }) : ""}
                 ${divider}
                 ${money("Total", formatMoney(f.total))}
                 ${divider}
@@ -241,6 +255,7 @@ export function buildOrderEmail(order, id) {
     ...(f.savings > 0 ? [`Coupon savings (included): ${formatMoney(f.savings)}`] : []),
     ...(f.delivery != null ? [`Delivery: ${formatMoney(f.delivery)}`] : []),
     `${taxLabel}: ${formatMoney(f.tax)}`,
+    ...(f.tip > 0 ? [`Driver tip: ${formatMoney(f.tip)}`] : []),
     `Total: ${formatMoney(f.total)}`,
     `${finalLabel}: ${formatMoney(f.total)}`,
     "",

@@ -32,8 +32,10 @@ export function useOrderTotals() {
   };
 }
 
-export default function OrderTotals({ className = "" }) {
-  const { subtotal, delivery, isDelivery, deliveryKnown, deliveryTooFar, tax, total, isLoaded } = useOrderTotals();
+// tipCents: the driver tip chosen at checkout (shown as its own row, not taxed)
+export default function OrderTotals({ className = "", tipCents = 0 }) {
+  const { subtotal, delivery, isDelivery, deliveryKnown, deliveryTooFar, tax, total: baseTotal, isLoaded } = useOrderTotals();
+  const total = baseTotal + (tipCents || 0);
   const show = (c) => (isLoaded ? formatMoney(c) : "···");
   return (
     <div className={`order-totals ${className}`}>
@@ -47,10 +49,16 @@ export default function OrderTotals({ className = "" }) {
           <span>{deliveryTooFar ? "Call store" : deliveryKnown ? show(delivery) : "···"}</span>
         </div>
       )}
-      <div className="order-totals__row order-totals__row--beforeTotal">
+      <div className={`order-totals__row${tipCents ? "" : " order-totals__row--beforeTotal"}`}>
         <span>Taxes:</span>
         <span>{show(tax)}</span>
       </div>
+      {tipCents > 0 && (
+        <div className="order-totals__row order-totals__row--beforeTotal">
+          <span>Driver Tip:</span>
+          <span>{show(tipCents)}</span>
+        </div>
+      )}
       <div className="order-totals__row order-totals__row--total">
         <span>Order Total:</span>
         <span>{show(total)}</span>

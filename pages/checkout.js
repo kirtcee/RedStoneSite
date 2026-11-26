@@ -6,7 +6,7 @@ import React, { useEffect, useRef, useState } from "react";
 // erase them. sessionStorage is only for this browser tab and is cleared
 // when the tab is closed. Card numbers are never stored (Stripe holds them).
 const SAVED_FORM_KEY = "rs_checkout_form";
-const EMPTY_FORM = { firstName: "", lastName: "", email: "", phone: "", payment: "" };
+const EMPTY_FORM = { firstName: "", lastName: "", email: "", phone: "", payment: "", doorPay: "", cashGiven: "" };
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useCart } from "../components/CartSystem";
@@ -17,7 +17,7 @@ import { findDealById } from "../utils/dealCatalog";
 import { saveOrder, startCardPayment, finalizeCardPayment, friendlyOrderError } from "../utils/saveOrder";
 import StripeCardPayment from "../components/StripeCardPayment";
 import SchedulePickerOverlay from "../components/SchedulePickerOverlay";
-import { DELIVERY_MINIMUM_CENTS } from "../utils/orderRules";
+import { DELIVERY_MINIMUM_CENTS, TIP_PERCENTS, tipAllowed, tipCentsFor } from "../utils/orderRules";
 import useWaitTimes from "../hooks/useWaitTimes";
 import { track } from "../utils/analytics";
 import {
@@ -143,7 +143,15 @@ function formatPhone(input) {
   return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
 }
 
-function validate(form) {
+// "$50", "50.00" -> cents (null if it isn't a usable amount)
+function dollarsToCents(s) {
+  const t = String(s || "").replace(/[$,\s]/g, "");
+  if (!/^\d+(\.\d{0,2})?$/.test(t)) return null;
+  return Math.round(Number(t) * 100);
+}
+
+// ctx: { doorPayOn, totalCents } for the Pay at Door questions
+function validate(form, ctx = {}) {
   const errors = {};
   for (const f of FIELDS) {
     if (!String(form[f.key] || "").trim()) errors[f.key] = "This field is required.";
@@ -155,6 +163,14 @@ function validate(form) {
     errors.phone = "Please enter a 10-digit phone number.";
   }
   if (!form.payment) errors.payment = "This field is required.";
+  if (ctx.doorPayOn) {
+    if (!form.doorPay) errors.doorPay = "Please choose cash or card.";
+    else if (form.doorPay === "cash" && String(form.cashGiven || "").trim()) {
+      const c = dollarsToCents(form.cashGiven);
+      if (c == null) errors.cashGiven = "Please enter an amount, like 50 or 60.00.";
+      else if (c < ctx.totalCents) errors.cashGiven = `That's less than the total (${formatMoney(ctx.totalCents)}).`;
+    }
+  }
   return errors;
 }
 
@@ -280,6 +296,19 @@ export default function CheckoutPage() {
 
   const scheduleText = orderTiming === "later" ? formatSchedule(scheduleDate, scheduleTime) : null;
 
+  // ---- Driver tip (delivery + Pay Now only, utils/orderRules.js) ----
+  const tipOn = tipAllowed(isDelivery ? "Delivery" : "Carryout", form.payment);
+  const [tipChoice, setTipChoice] = useState({ kind: "none" });
+  const [customTip, setCustomTip] = useState("");
+  const tipCents = !tipOn
+    ? 0
+    : tipChoice.kind === "custom"
+    ? tipCentsFor({ kind: "custom", cents: dollarsToCents(customTip) || 0 }, totals.subtotal)
+    : tipCentsFor(tipChoice, totals.subtotal);
+  const grandTotal = totals.total + tipCents;
+  // ---- Pay at Door: cash or card ----
+  const doorPayOn = isDelivery && form.payment === "store";
+
   const handlePlaceOrder = async () => {
     if (placing) return;
     setSubmitError(null);
@@ -299,9 +328,9 @@ export default function CheckoutPage() {
       cart.openMinGate?.();
       return;
     }
-    const found = validate(form);
+    const found = validate(form, { doorPayOn, totalCents: grandTotal });
     setErrors(found);
-    const firstBad = [...FIELDS.map((f) => f.key), "payment"].find((k) => found[k]);
+    const firstBad = [...FIELDS.map((f) => f.key), "payment", "doorPay", "cashGiven"].find((k) => found[k]);
     if (firstBad) {
       const el = fieldRefs.current[firstBad];
       el?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -329,6 +358,15 @@ export default function CheckoutPage() {
         phone: form.phone.trim(),
       },
       paymentMethod: form.payment,
+      ...(tipOn && tipCents > 0 ? { tipCents } : {}),
+      ...(doorPayOn
+        ? {
+            doorPayment: {
+              method: form.doorPay,
+              cashGivenCents: form.doorPay === "cash" ? dollarsToCents(form.cashGiven) : null,
+            },
+          }
+        : {}),
     };
 
     // ---- Pay Now: card through Stripe ----
@@ -444,7 +482,7 @@ export default function CheckoutPage() {
                 aria-expanded={summaryOpen}
                 aria-controls="co-summary-panel"
               >
-                <span className="co-summary__total">Total: {formatMoney(totals.total)}</span>
+                <span className="co-summary__total">Total: {formatMoney(grandTotal)}</span>
                 <span className="co-summary__toggle">
                   <span>
                     {summaryOpen ? "Hide" : "Show"} Order
@@ -494,7 +532,7 @@ export default function CheckoutPage() {
                     <Link href="/cart" className="rs-pill-btn co-change">
                       Change Your Order
                     </Link>
-                    <OrderTotals />
+                    <OrderTotals tipCents={tipCents} />
                   </div>
                 </div>
               )}
@@ -539,7 +577,7 @@ export default function CheckoutPage() {
               <div className="co-section__body">
                 <div className="co-balance">
                   <div className="co-balance__label">Payment Information</div>
-                  <div className="co-balance__due">Balance Due: {formatMoney(totals.total)}</div>
+                  <div className="co-balance__due">Balance Due: {formatMoney(grandTotal)}</div>
                 </div>
 
                 <div
@@ -572,15 +610,113 @@ export default function CheckoutPage() {
                       <span>{o.label}</span>
                     </label>
                   ))}
-                  {form.payment === "store" && (
+                  {form.payment === "store" && !isDelivery && (
                     <p className="co-hint co-hint--note">
-                      <strong>Note:</strong>{" "}
-                      {isDelivery
-                        ? "When your order arrives you can pay with cash, credit card or debit card."
-                        : "At the store you can pay with cash, credit card, debit card or gift card."}
+                      <strong>Note:</strong> At the store you can pay with cash, credit card, debit card or gift card.
                     </p>
                   )}
-                  {form.payment === "card" && <StripeCardPayment ref={cardRef} amountCents={totals.total} />}
+                  {doorPayOn && (
+                    <div
+                      className={`co-sub${errors.doorPay || errors.cashGiven ? " has-error" : ""}`}
+                      ref={(el) => (fieldRefs.current.doorPay = el)}
+                      tabIndex={-1}
+                    >
+                      <div className="co-sub__label">How will you pay at the door?</div>
+                      <div className="co-choices" role="radiogroup" aria-label="How will you pay at the door?">
+                        {[
+                          ["cash", "Cash"],
+                          ["card", "Debit or Credit"],
+                        ].map(([v, label]) => (
+                          <button
+                            key={v}
+                            type="button"
+                            role="radio"
+                            aria-checked={form.doorPay === v}
+                            className={`co-choice${form.doorPay === v ? " is-on" : ""}`}
+                            onClick={() => update("doorPay", v)}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                      {errors.doorPay && <div className="co-error">{errors.doorPay}</div>}
+                      {form.doorPay === "cash" && (
+                        <div className="co-cash" ref={(el) => (fieldRefs.current.cashGiven = el)}>
+                          <label htmlFor="co-cashGiven" className="co-sub__small">
+                            Paying with a bigger bill? Tell us so the driver brings change (optional).
+                          </label>
+                          <div className="co-money">
+                            <span aria-hidden="true">$</span>
+                            <input
+                              id="co-cashGiven"
+                              className="co-input"
+                              inputMode="decimal"
+                              placeholder={String(Math.ceil(grandTotal / 1000) * 10)}
+                              value={form.cashGiven}
+                              onChange={(e) => update("cashGiven", e.target.value.replace(/[^\d.]/g, "").slice(0, 8))}
+                            />
+                          </div>
+                          {errors.cashGiven && <div className="co-error">{errors.cashGiven}</div>}
+                        </div>
+                      )}
+                      {form.doorPay === "card" && (
+                        <p className="co-sub__small">The driver will bring a card machine for debit or credit.</p>
+                      )}
+                    </div>
+                  )}
+                  {tipOn && (
+                    <div className="co-sub">
+                      <div className="co-sub__label">Tip your driver</div>
+                      <div className="co-choices co-choices--tip" role="radiogroup" aria-label="Tip your driver">
+                        {TIP_PERCENTS.map((pct) => (
+                          <button
+                            key={pct}
+                            type="button"
+                            role="radio"
+                            aria-checked={tipChoice.kind === "pct" && tipChoice.pct === pct}
+                            className={`co-choice${tipChoice.kind === "pct" && tipChoice.pct === pct ? " is-on" : ""}`}
+                            onClick={() => setTipChoice({ kind: "pct", pct })}
+                          >
+                            {pct}%
+                            <span className="co-choice__sub">{formatMoney(tipCentsFor({ kind: "pct", pct }, totals.subtotal))}</span>
+                          </button>
+                        ))}
+                        <button
+                          type="button"
+                          role="radio"
+                          aria-checked={tipChoice.kind === "custom"}
+                          className={`co-choice${tipChoice.kind === "custom" ? " is-on" : ""}`}
+                          onClick={() => setTipChoice({ kind: "custom" })}
+                        >
+                          Other
+                        </button>
+                        <button
+                          type="button"
+                          role="radio"
+                          aria-checked={tipChoice.kind === "none"}
+                          className={`co-choice${tipChoice.kind === "none" ? " is-on" : ""}`}
+                          onClick={() => setTipChoice({ kind: "none" })}
+                        >
+                          No Tip
+                        </button>
+                      </div>
+                      {tipChoice.kind === "custom" && (
+                        <div className="co-money">
+                          <span aria-hidden="true">$</span>
+                          <input
+                            className="co-input"
+                            inputMode="decimal"
+                            placeholder="5.00"
+                            aria-label="Tip amount in dollars"
+                            value={customTip}
+                            onChange={(e) => setCustomTip(e.target.value.replace(/[^\d.]/g, "").slice(0, 6))}
+                          />
+                        </div>
+                      )}
+                      <p className="co-sub__small">100% of your tip goes to your driver.</p>
+                    </div>
+                  )}
+                  {form.payment === "card" && <StripeCardPayment ref={cardRef} amountCents={grandTotal} />}
                   {errors.payment && (
                     <div id="co-pay-err" className="co-error">
                       {errors.payment}
@@ -997,6 +1133,72 @@ export default function CheckoutPage() {
           border: 1px solid #d0021b;
           border-radius: 0.1875rem;
           box-shadow: inset 5px 0 0 #d0021b;
+        }
+        /* Pay at Door choice and driver tip */
+        .co-sub {
+          margin: 10px 0 4px;
+          padding: 12px 14px;
+          border: 1px solid var(--menu-box-border);
+          border-radius: 0.1875rem;
+          background: #fff;
+        }
+        .co-sub.has-error {
+          border-color: #d0021b;
+          box-shadow: inset 5px 0 0 #d0021b;
+        }
+        .co-sub__label {
+          margin-bottom: 8px;
+          font-family: var(--font-display);
+          font-size: var(--fs-md);
+          text-transform: uppercase;
+          color: #000;
+        }
+        .co-sub__small {
+          display: block;
+          margin: 8px 0 0;
+          font-size: var(--fs-min);
+          color: var(--text-brown);
+        }
+        .co-choices {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .co-choice {
+          flex: 1 1 0;
+          min-width: 84px;
+          padding: 10px 8px;
+          border: 2px solid var(--menu-box-border);
+          border-radius: 0.375rem;
+          background: #fff;
+          color: #000;
+          font-family: var(--font-display);
+          font-size: var(--fs-md);
+          line-height: 1.1;
+          text-transform: uppercase;
+          cursor: pointer;
+        }
+        .co-choice.is-on {
+          border-color: #000;
+          background: #000;
+          color: #fff;
+        }
+        .co-choice__sub {
+          display: block;
+          margin-top: 3px;
+          font-family: var(--font-body);
+          font-size: var(--fs-min);
+          font-weight: var(--w-semibold);
+          text-transform: none;
+        }
+        .co-money {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          max-width: 200px;
+          margin-top: 10px;
+          font-size: var(--fs-input);
+          font-weight: var(--w-input);
         }
         .co-radio {
           display: flex;

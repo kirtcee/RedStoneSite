@@ -41,3 +41,40 @@ export const DELIVERY_MINIMUM_CENTS = 2000;
 export function deliveryShortfallCents(subtotalCents) {
   return Math.max(0, DELIVERY_MINIMUM_CENTS - (Number(subtotalCents) || 0));
 }
+
+// ---- Driver tips: delivery orders paid online (Pay Now) only. A percent of
+// the food & drink total (after coupons), or a dollar amount. Not taxed.
+export const TIP_PERCENTS = [10, 15, 20];
+export const MAX_TIP_CENTS = 10000; // $100
+export function tipAllowed(serviceMethod, paymentMethod) {
+  return String(serviceMethod).toLowerCase() === "delivery" && paymentMethod === "card";
+}
+// choice: { kind: "none" } | { kind: "pct", pct: 15 } | { kind: "custom", cents: 500 }
+export function tipCentsFor(choice, foodCents) {
+  if (!choice || choice.kind === "none") return 0;
+  const cents =
+    choice.kind === "pct" ? Math.round(((Number(foodCents) || 0) * Number(choice.pct || 0)) / 100) : Math.round(Number(choice.cents) || 0);
+  return Math.max(0, Math.min(MAX_TIP_CENTS, cents));
+}
+
+// ---- Pay at Door: cash or card, and for cash what they're paying with so
+// the driver brings change.
+export const DOOR_METHODS = ["cash", "card"];
+export const MAX_CASH_GIVEN_CENTS = 100000; // $1,000
+
+// One line for staff and receipts about how an order is being paid.
+export function paymentLineFor(order, formatMoney) {
+  const tip = order?.fees?.tipCents || 0;
+  if (order?.paid) return `Paid online${tip ? ` (includes ${formatMoney(tip)} tip)` : ""}`;
+  if (order?.serviceMethod !== "Delivery") return "Pay at store";
+  const door = order?.doorPayment;
+  if (door?.method === "card") return "Pay at door: card (bring the card machine)";
+  if (door?.method === "cash") {
+    const given = door.cashGivenCents;
+    if (given && given > (order.totalCents || 0)) {
+      return `Pay at door: cash, paying with ${formatMoney(given)} (bring ${formatMoney(given - order.totalCents)} change)`;
+    }
+    return "Pay at door: cash";
+  }
+  return "Pay at door";
+}

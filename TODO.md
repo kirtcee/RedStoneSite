@@ -105,8 +105,8 @@ Code (Claude builds):
       `settings/ordering` rule from firestore.rules in the Firebase console)
 - [ ] Missed-order alert: email the owner if an order isn't accepted in 3 to 5 min
 - [ ] Cancel order button (reason, auto refund for card, email the customer)
-- [ ] Tips at checkout (owner to decide: delivery only or both, % or $)
-- [ ] Pay at Door: cash or card, "paying with $__" for change
+- [x] Tips at checkout (delivery + Pay Now only: 10/15/20%, Other, No Tip)
+- [x] Pay at Door: cash or card, "paying with $__" for change
 - [ ] Sold-out toggles per item from the kitchen
 - [ ] Link previews (Open Graph image), iPhone home-screen icon, robots.txt, sitemap
 - [ ] Branded 404 page

@@ -15,6 +15,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { formatMoney, describePizzaFull } from "../components/Pricing";
+import { paymentLineFor } from "../utils/orderRules";
 import { comboNameFor, comboItemLabel } from "../utils/comboCatalog";
 import { STAFF_EMAIL } from "../utils/kitchenAuth";
 import KitchenHealth from "../components/KitchenHealth";
@@ -363,7 +364,15 @@ export default function KitchenDashboard() {
                   <span className="order-service">{order.serviceMethod || "N/A"}</span>
                   {/* So staff never charge a customer who already paid online */}
                   <span className={`order-pay${order.paid ? " order-pay--paid" : ""}`}>
-                    {order.paid ? "Paid Online" : order.serviceMethod === "Delivery" ? "Pay at Door" : "Pay at Store"}
+                    {order.paid
+                      ? "Paid Online"
+                      : order.serviceMethod === "Delivery"
+                      ? order.doorPayment?.method === "cash"
+                        ? "Pay at Door: CASH"
+                        : order.doorPayment?.method === "card"
+                        ? "Pay at Door: CARD"
+                        : "Pay at Door"
+                      : "Pay at Store"}
                   </span>
                   {order.delivery?.minutes != null && (
                     <span className="order-drive">
@@ -415,6 +424,10 @@ export default function KitchenDashboard() {
               <div className="order-card__footer">
                 <div className="order-total">
                   {order.totalCents != null ? formatMoney(order.totalCents) : "N/A"}
+                  {/* tip / change for the driver */}
+                  {(order.fees?.tipCents > 0 || order.doorPayment) && (
+                    <div className="order-total__note">{paymentLineFor(order, formatMoney)}</div>
+                  )}
                 </div>
                 <div className="order-card__actions">
                   <button className="print-btn" onClick={() => setPrintingOrder(order)}>
@@ -638,13 +651,7 @@ export default function KitchenDashboard() {
           <p className="print-receipt__total">
             Total: {printingOrder.totalCents != null ? formatMoney(printingOrder.totalCents) : "N/A"}
           </p>
-          <p className="print-receipt__total">
-            {printingOrder.paid
-              ? "PAID ONLINE"
-              : printingOrder.serviceMethod === "Delivery"
-              ? "PAY AT DOOR"
-              : "PAY AT STORE"}
-          </p>
+          <p className="print-receipt__total">{paymentLineFor(printingOrder, formatMoney).toUpperCase()}</p>
         </div>
       )}
 
@@ -948,6 +955,12 @@ export default function KitchenDashboard() {
           font-size: 0.8rem;
           font-weight: 700;
           color: #333;
+        }
+        .order-total__note {
+          margin-top: 2px;
+          font-size: 15px;
+          font-weight: 700;
+          color: #8a5a00;
         }
         .order-pay--paid {
           background: #2e7d32;
