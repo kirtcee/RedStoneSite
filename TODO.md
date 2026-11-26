@@ -111,7 +111,8 @@ Code (Claude builds):
 - [x] Pay at Door: cash or card, "paying with $__" for change
 - [x] Sold-out toggles per item from the kitchen (publish the new `settings/menu`
       rule from firestore.rules)
-- [ ] Link previews (Open Graph image), iPhone home-screen icon, robots.txt, sitemap
+- [x] Link previews (Open Graph image), iPhone home-screen icon, robots.txt, sitemap
+      (previews point at redstonepizza.net, so they work once the domain is switched)
 - [ ] Branded 404 page
 - [ ] Allergen note on builders
 - [ ] Google Business Profile: add order + menu links (owner)
