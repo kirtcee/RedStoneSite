@@ -291,9 +291,15 @@ export function CartProvider({ children, onEditItem }) {
     return true;
   };
 
+  // What was just added, for the "Added to your order" notice
+  // (components/AddedToCartNotice.js). { item } or { name }, plus a time.
+  const [lastAdded, setLastAdded] = useState(null);
+  const clearLastAdded = useCallback(() => setLastAdded(null), []);
+
   const reallyAddItem = useCallback((raw) => {
     if (blockIfSoldOut(raw)) return;
     setItems((prev) => mergeIntoItems(prev, raw));
+    setLastAdded({ item: raw, at: Date.now() });
     try {
       track("add_to_cart", {
         type: raw?.type,
@@ -319,6 +325,7 @@ export function CartProvider({ children, onEditItem }) {
     setItems((prev) =>
       units.reduce((acc, { slot, unit }) => mergeIntoItems(acc, dealUnitToCartItem(deal, slot, unit, dealRef)), prev)
     );
+    setLastAdded({ name: deal.name, at: Date.now() });
   }, []);
 
   const applyDealItems = useCallback(
@@ -497,6 +504,8 @@ export function CartProvider({ children, onEditItem }) {
       soldOut,
       soldOutNotice,
       closeSoldOutNotice,
+      lastAdded,
+      clearLastAdded,
       addItem,
       updateQty,
       updateItem,
@@ -545,6 +554,8 @@ export function CartProvider({ children, onEditItem }) {
       soldOut,
       soldOutNotice,
       closeSoldOutNotice,
+      lastAdded,
+      clearLastAdded,
       addItem,
       updateQty,
       updateItem,

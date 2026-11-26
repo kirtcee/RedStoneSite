@@ -257,8 +257,8 @@ h3 { font-size: 1.25rem; }
    Edit these variables in Inspect (select .cart-toggle__badge, Styles panel)
    to try sizes/colors/the pop live. */
 .cart-toggle__badge {
-  --badge-size: 18px;          /* circle diameter */
-  --badge-font-size: 11px;     /* number size */
+  --badge-size: 24px;          /* circle diameter (bigger so it's easy to read) */
+  --badge-font-size: 15px;     /* number size */
   --badge-bg: #e31837;         /* circle color */
   --badge-color: #fefaf6;      /* number color */
   --badge-top: -4px;           /* position: up/down (more negative = higher) */

@@ -385,7 +385,7 @@ function Step({ title, children, columns }) {
 function SidesStep({ addItem }) {
   const picks = useRandomPicks(SIDE_POOL);
   return (
-    <Step title="Step 2: Choose your sides">
+    <Step title="Add a side? (optional)">
       <div className="cart-tiles">
         {picks.map((side) => (
           <QuickAddTile
@@ -532,11 +532,18 @@ export default function CartPage() {
               </div>
 
               <div className="cart-box__intro">
-                <p className="cart-box__lead">Review and modify your items here.</p>
+                <p className="cart-box__lead">Check your order, then tap Checkout.</p>
                 <Link href="/menu" className="rs-pill-btn cart-box__more">
                   Add More Items
                 </Link>
               </div>
+              {cart?.isLoaded && items.length > 0 && (
+                <div className="cart-box__checkout cart-box__checkout--top">
+                  <button type="button" className="rs-pill-btn cart-box__checkoutBtn" onClick={() => cart.goToCheckout()}>
+                    Checkout
+                  </button>
+                </div>
+              )}
               <p className="cart-box__note">
                 <strong>Note:</strong> Some crust types, toppings, sauces, and premium items may
                 come with an additional charge.
@@ -544,7 +551,7 @@ export default function CartPage() {
 
               <AppliedCoupons cart={cart} />
 
-              <Step title="Step 1: Confirm your selections" columns={["Quantity", "Price"]}>
+              <Step title="Your order" columns={["Quantity", "Price"]}>
                 {!cart?.isLoaded ? (
                   <div className="cart-empty">Loading your cart…</div>
                 ) : items.length === 0 ? (
@@ -571,13 +578,13 @@ export default function CartPage() {
                 <>
                   <SidesStep addItem={cart.addItem} />
                   <DrinksDipsStep
-                    title="Step 3: Choose your drinks"
+                    title="Add a drink? (optional)"
                     pool={DRINK_POOL}
                     fallbackImg="/images/menu_drinks.png"
                     addItem={cart.addItem}
                   />
                   <DrinksDipsStep
-                    title="Step 4: Add some flavour"
+                    title="Add a dip? (optional)"
                     pool={DIP_POOL}
                     fallbackImg={null /* no photo -> plain cream square */}
                     addItem={cart.addItem}
@@ -598,7 +605,7 @@ export default function CartPage() {
                       className="rs-pill-btn cart-box__checkoutBtn"
                       onClick={() => cart.goToCheckout()}
                     >
-                      Continue Checkout
+                      Checkout
                     </button>
                   </div>
                 </>
@@ -785,6 +792,9 @@ export default function CartPage() {
         }
         .cart-box__checkout {
           padding: 0 14px 18px;
+        }
+        .cart-box__checkout--top {
+          padding: 12px 14px 4px;
         }
         .cart-box :global(.cart-box__checkoutBtn) {
           display: block;
