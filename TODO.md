@@ -114,7 +114,7 @@ Code (Claude builds):
 - [x] Link previews (Open Graph image), iPhone home-screen icon, robots.txt, sitemap
       (previews point at redstonepizza.net, so they work once the domain is switched)
 - [x] Branded 404 page
-- [ ] Allergen note on builders
+- [x] Allergen note on builders
 - [ ] Google Business Profile: add order + menu links (owner)
 
 ## Prank / fake order protection (pick which to build)

@@ -59,7 +59,7 @@ export default function SchedulePickerOverlay({ open, onClose, reason = "closed"
   };
 
   return (
-    <DebugPizzaOverlay open={!!open} onClose={onClose} mode="portal" blockRogue freezeChild={false} title="Schedule Your Order">
+    <DebugPizzaOverlay open={!!open} onClose={onClose} mode="portal" blockRogue freezeChild={false} allergenNote={false} title="Schedule Your Order">
       {open && (
         <div className="sp">
           <p className="sp-lead">

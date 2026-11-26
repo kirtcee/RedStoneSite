@@ -13,7 +13,7 @@ export default function SoldOutNotice() {
   const notice = cart?.soldOutNotice || null;
   const names = notice?.names || null;
   return (
-    <DebugPizzaOverlay open={!!names} onClose={cart?.closeSoldOutNotice} mode="portal" blockRogue freezeChild={false} title="Sold Out">
+    <DebugPizzaOverlay open={!!names} onClose={cart?.closeSoldOutNotice} mode="portal" blockRogue freezeChild={false} allergenNote={false} title="Sold Out">
       {names && (
         <div className="so">
           <p className="so-lead">
