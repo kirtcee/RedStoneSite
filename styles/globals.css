@@ -663,8 +663,8 @@ a.header-seg--cart { text-decoration: none; color: #fff; }
 
 /* BYO image — back to the larger look */
 .cta-byo__img {
-  width: 110%;         /* big, like before */
-  max-width: 152px;
+  width: 117%;         /* big, like before */
+  max-width: 170px;
   height: 100px;
   object-fit: fill;    /* same visual feel as your original */
   border: none;
