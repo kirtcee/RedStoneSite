@@ -23,7 +23,7 @@ Running list of things to finish before `mac-handoff` is merged into `main`
       optional `ORDER_EMAIL_REPLY_TO` (the store's inbox) and `HST_NUMBER`.
       Redeploy, place a test order with your own email. When it's on,
       Stripe's own receipt is skipped automatically.
-- [ ] **PostHog analytics** (`utils/analytics.js`): add `NEXT_PUBLIC_POSTHOG_KEY`
+- [x] **PostHog analytics** (key added, events showing) (`utils/analytics.js`): add `NEXT_PUBLIC_POSTHOG_KEY`
       = the Project token (starts `phc_`, PostHog → Settings → Project →
       General; NEVER the `phs_` key) in Vercel (Production and Preview) and
       `.env.local`, then redeploy. If PostHog's address bar says
@@ -34,7 +34,7 @@ Running list of things to finish before `mac-handoff` is merged into `main`
 - [ ] **Vercel Deployment Protection** was turned off for previews so Stripe
       can reach them. Decide whether to turn it back on after launch (preview
       links are then public to anyone who has the address).
-- [ ] **Google server key for delivery fees**: create a key with the
+- [x] **Google server key for delivery fees**: create a key with the
       **Routes API**, save it in Vercel (Production + Preview) and `.env.local`
       as `GOOGLE_MAPS_SERVER_KEY`. Without it delivery orders can't be priced.
 - [ ] **Publish the updated Firestore rules**: copy all of `firestore.rules` into
@@ -90,14 +90,14 @@ Running list of things to finish before `mac-handoff` is merged into `main`
 
 ## Overlooked launch items (Nov 25)
 Accounts (owner does these):
-- [ ] **Vercel Pro** ($20/mo): Hobby is non-commercial only. Then set Spend
+- [x] **Vercel Pro** ($20/mo): Hobby is non-commercial only. Then set Spend
       Management limits. Check the preview/production URLs and Stripe webhook
       URL still match if the team name changes.
-- [ ] **Stripe settings**: statement descriptor "RED STONE PIZZA", payout
+- [x] **Stripe settings**: statement descriptor "RED STONE PIZZA", payout
       bank account + identity verification, Radar rules, dispute email alerts.
-- [ ] **Google Cloud / Firebase**: restrict Maps keys to the site's domains
+- [x] **Google Cloud / Firebase** (keys locked, budget, Blaze + daily backups): restrict Maps keys to the site's domains
       (add redstonepizza.net), billing budget alerts, Firestore backups.
-- [ ] **Error + uptime alerts**: Sentry (code done, `utils/errorReporting.js`):
+- [ ] **Error + uptime alerts** (Sentry done; UptimeRobot left, at launch): Sentry (code done, `utils/errorReporting.js`):
       add `NEXT_PUBLIC_SENTRY_DSN` in Vercel (Production + Preview), redeploy.
       UptimeRobot: monitor https://redstonepizza.net every 5 min (after launch).
 Code (Claude builds):
@@ -138,17 +138,17 @@ Card orders are already safe; these are for Pay at Store / Pay at Door.
 - [ ] Desktop home page DELIVERY / CARRYOUT buttons: their page-specific
       styles never apply (same `<Link>` scoping issue fixed on the mobile
       Order Online button).
-- [ ] **Order confirmation by email or text** for Pay at Store / Pay at Door
+- [x] **Order confirmation by email or text** (email done, utils/orderEmail.js) for Pay at Store / Pay at Door
       orders (card orders get Stripe's receipt email).
-- [ ] **A proper "page not found" page** (it's Next.js's plain default now).
-- [ ] **Social sharing preview**: an image and title for when the link is
+- [x] **A proper "page not found" page** (it's Next.js's plain default now).
+- [x] **Social sharing preview**: an image and title for when the link is
       shared in texts or social media (`og:image` in `pages/_app.js`).
 - [ ] Review the 7 remaining `npm audit` warnings (don't use `--force`).
 - [ ] Clean out unused old images in `public/images` (old placeholders like
       `home/deal-*.jpg`, `menu_*.png`, `deal_title.jpg`).
 
 ## Hardware
-- [ ] Kitchen tablet (Android, e.g. Galaxy Tab A9+, with Chrome), stand,
+- [ ] Kitchen tablet (iPad A16 11" 128GB recommended, or Galaxy Tab A11+), stand,
       always plugged in; UPS battery backup for modem, router and printer.
 - [ ] Star TSP143IV UEWB for website orders; test whether Uber / DoorDash /
       Skip can print to it before buying used Bluetooth printers for them.
