@@ -2,8 +2,8 @@
 //
 // Home page promo banner for the Take Care Combo. Elegant, late-night look:
 // all black, one gold (#c48c56), a brush-script "Take Care" title, thin
-// gold frame lines, candlelight glow, and the food photos toned down with a
-// warm sepia filter so they look moody and bespoke instead of bright.
+// gold frame lines and a candlelight glow around the food photos (shown in
+// their real colours).
 //
 // Two layouts from one card (container queries on the card's own shape):
 //   - phones (16:9): text on the left, food on the right
@@ -127,8 +127,8 @@ export default function TakeCareCard() {
         .tc-img {
           position: absolute;
           height: auto;
-          filter: sepia(0.45) saturate(0.85) contrast(1.12) brightness(0.82)
-            drop-shadow(0 0 0.8cqw rgba(196, 140, 86, 0.35)) drop-shadow(0.6cqw 1cqw 1.2cqw rgba(0, 0, 0, 0.9));
+          /* photos shown in their real colours; only the glow and shadow */
+          filter: drop-shadow(0 0 0.8cqw rgba(196, 140, 86, 0.35)) drop-shadow(0.6cqw 1cqw 1.2cqw rgba(0, 0, 0, 0.9));
           user-select: none;
         }
         /* 4 flat cans fanned out behind the pizzas: they all pivot from

@@ -28,6 +28,13 @@ export default function Home() {
         </div>
 
         <div className="mobile-start-row">
+          {/* tells first-time visitors where to begin */}
+          <p className="mobile-start-cue">
+            Tap here to start your order
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path d="M12 4v14M5 11l7 7 7-7" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </p>
           <Link href="/order" className="button mobile-start-btn">Order Online</Link>
         </div>
 
@@ -126,6 +133,22 @@ export default function Home() {
           display: none;
           margin: 28px 0 24px;
           text-align: center;
+        }
+        .mobile-start-cue {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          margin: 0 0 10px;
+          font-family: var(--font-display);
+          font-size: var(--fs-md);
+          line-height: 1.1;
+          text-transform: uppercase;
+          color: #000;
+        }
+        .mobile-start-cue svg {
+          flex: 0 0 auto;
+          color: #ff0000;
         }
         /* Mobile "Order Online": long red pill with heavy condensed text */
         .mobile-start-row :global(.mobile-start-btn) {

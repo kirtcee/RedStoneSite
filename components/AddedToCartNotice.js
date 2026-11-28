@@ -2,8 +2,8 @@
 //
 // Small "Added to your order" card at the bottom of the screen after
 // something goes into the cart, with View Cart and Keep Shopping. It stays
-// until the customer does something: Keep Shopping, a tap or click anywhere
-// else, scrolling, or Escape all close it. Not shown on the cart, checkout
+// until the customer does something: Keep Shopping or Escape close it at
+// once; scrolling or tapping elsewhere closes it 3 seconds later. Not shown on the cart, checkout
 // or confirmation pages.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
@@ -12,6 +12,7 @@ import { formatMoney } from "./Pricing";
 import { getNameAndSubtitle } from "../utils/orderText";
 
 const LEAVE_MS = 200;
+const LINGER_MS = 3000; // stays this long after they scroll or tap elsewhere
 const HIDDEN_ON = ["/cart", "/checkout", "/order-confirmation", "/kitchen", "/kitchen-login", "/stats"];
 
 export default function AddedToCartNotice() {
@@ -39,15 +40,23 @@ export default function AddedToCartNotice() {
     leaveTimer.current = setTimeout(() => clear?.(), LEAVE_MS);
   }, [clear]);
 
-  // close on any tap/click outside, scrolling, or Escape. Starts a moment
-  // after it appears so the tap that added the item doesn't close it.
+  // Scrolling or tapping elsewhere closes it LINGER_MS later (so someone who
+  // added something by accident still gets to see it); Keep Shopping and
+  // Escape close it straight away. Starts listening a moment after it
+  // appears so the tap that added the item doesn't count.
+  const lingerTimer = useRef(null);
   useEffect(() => {
     if (!added || hidden || leaving) return;
+    clearTimeout(lingerTimer.current);
+    lingerTimer.current = null;
+    const closeSoon = () => {
+      if (!lingerTimer.current) lingerTimer.current = setTimeout(() => close?.(), LINGER_MS);
+    };
     const outside = (e) => {
-      if (boxRef.current && !boxRef.current.contains(e.target)) close?.();
+      if (boxRef.current && !boxRef.current.contains(e.target)) closeSoon();
     };
     const onKey = (e) => e.key === "Escape" && close?.();
-    const onScroll = () => close?.();
+    const onScroll = () => closeSoon();
     const t = setTimeout(() => {
       document.addEventListener("pointerdown", outside, true);
       window.addEventListener("wheel", onScroll, { passive: true });
@@ -56,6 +65,8 @@ export default function AddedToCartNotice() {
     }, 400);
     return () => {
       clearTimeout(t);
+      clearTimeout(lingerTimer.current);
+      lingerTimer.current = null;
       document.removeEventListener("pointerdown", outside, true);
       window.removeEventListener("wheel", onScroll);
       window.removeEventListener("touchmove", onScroll);
