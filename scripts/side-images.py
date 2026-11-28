@@ -44,8 +44,11 @@ for n in ["poutine", "shawarma-poutine"]:
 fries = Image.open(f"{SRC}/fries.png").convert("RGB")
 fries.resize((900, 675), Image.LANCZOS).save(f"{OUT}/fries.jpg", "JPEG", quality=85, optimize=True)
 print("saved fries")
-# Sides cover: 3:2, fries photo with white added at the sides (nothing cropped)
-cover = Image.new("RGB", (1629, 1086), "white")
-cover.paste(fries, ((1629 - fries.width) // 2, 0))
+# Sides cover: 3:2. The fries photo is 4:3, so trim white off the top and
+# bottom (the food isn't touched) rather than adding white at the sides,
+# which left a gap on the left next to the Wings card.
+ch = round(fries.width / 1.5)
+top = (fries.height - ch) // 2
+cover = fries.crop((0, top, fries.width, top + ch))
 cover.resize((1350, 900), Image.LANCZOS).save(f"{OUT}/sides-cover.jpg", "JPEG", quality=85, optimize=True)
 print("saved sides-cover")
