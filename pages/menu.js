@@ -123,9 +123,6 @@ function EntreesView({
                     >
                       {combo.name}
                     </button>
-                    {/* the combo's starting price (upgrades and extra toppings cost more) */}
-                    <div className="feastCard__price">{formatMoney(priceCombo(combo.id))}</div>
-
                     <button
                       type="button"
                       className="btn btn-add"
@@ -133,6 +130,8 @@ function EntreesView({
                     >
                       CHOOSE OPTIONS
                     </button>
+                    {/* the combo's starting price (upgrades and extra toppings cost more) */}
+                    <div className="feastCard__price">{formatMoney(priceCombo(combo.id))}</div>
 
                     <p className="feastCard__desc">{combo.subtitle}</p>
                   </article>
