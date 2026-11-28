@@ -117,7 +117,7 @@ export function withNote(item, note) {
 // "Remove note" under a note box: small grey link on the right, away from
 // the main buttons. If there's text it asks first ("Remove this note?"), so
 // a stray tap never wipes a note; an empty box just closes.
-export function NoteRemove({ hasText, onRemove }) {
+export function NoteRemove({ hasText, onRemove, chargeNote = true }) {
   const [asking, setAsking] = useState(false);
   useEffect(() => {
     if (!hasText) setAsking(false);
@@ -125,6 +125,7 @@ export function NoteRemove({ hasText, onRemove }) {
   const stop = (e) => e.stopPropagation();
   return (
     <div className="note-remove" onClick={stop}>
+      {chargeNote && <span className="note-remove__charge">*Certain requests may be subject to additional charges.</span>}
       {!asking ? (
         <button type="button" className="note-remove__link" onClick={() => (hasText ? setAsking(true) : onRemove())}>
           Remove note
@@ -150,10 +151,22 @@ export function NoteRemove({ hasText, onRemove }) {
       <style jsx>{`
         .note-remove {
           display: flex;
+          flex-wrap: wrap;
+          align-items: flex-start;
           justify-content: flex-end;
+          gap: 4px 16px;
           margin-top: 6px;
         }
+        .note-remove__charge {
+          flex: 1 1 180px;
+          padding: 4px 0;
+          font-size: var(--fs-min);
+          font-style: italic;
+          line-height: 1.3;
+          color: #777;
+        }
         .note-remove__ask {
+          margin-left: auto;
           display: flex;
           flex-wrap: wrap;
           align-items: center;

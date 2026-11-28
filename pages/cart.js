@@ -647,10 +647,19 @@ export default function CartPage() {
                     <DealCodeEntry variant="reveal" />
                   </div>
                   {cart.deliveryShortCents > 0 && (
-                    <p className="cart-box__minNote">
-                      Delivery minimum is {formatMoney(DELIVERY_MINIMUM_CENTS)}. Add{" "}
-                      <strong>{formatMoney(cart.deliveryShortCents)}</strong> more for delivery.
-                    </p>
+                    <div className="cart-box__minNote">
+                      <p>
+                        Delivery minimum is {formatMoney(DELIVERY_MINIMUM_CENTS)}. Add{" "}
+                        <strong>{formatMoney(cart.deliveryShortCents)}</strong> more for delivery.
+                      </p>
+                      {/* so the minimum doesn't put people off: carryout has none */}
+                      <p className="cart-box__pickup">
+                        Picking it up instead? Carryout is free with no minimum.{" "}
+                        <button type="button" className="cart-box__pickupBtn" onClick={() => cart.confirmCarryout?.()}>
+                          Switch to Carryout
+                        </button>
+                      </p>
+                    </div>
                   )}
                   <div className="cart-box__checkout">
                     <button
@@ -838,6 +847,24 @@ export default function CartPage() {
           margin: 0 14px 10px;
           font-size: var(--fs-base);
           color: var(--text-brown);
+        }
+        .cart-box__minNote p {
+          margin: 0 0 6px;
+        }
+        .cart-box__pickup {
+          font-size: var(--fs-min);
+        }
+        .cart-box__pickupBtn {
+          padding: 0;
+          border: 0;
+          background: none;
+          font-family: var(--font-display);
+          font-size: var(--fs-min);
+          text-transform: uppercase;
+          text-decoration: underline;
+          text-underline-offset: 3px;
+          color: #000;
+          cursor: pointer;
         }
         .cart-box__minNote strong {
           font-weight: var(--w-bold);
