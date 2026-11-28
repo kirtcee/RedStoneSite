@@ -26,7 +26,9 @@ export default function handler(req, res) {
     return;
   }
 
-  if (!dealAllowsService(deal, service)) {
+  // Carryout/Delivery not chosen yet (a new visitor on the deals page): allow
+  // it; the cart applies the deal's service rule once they choose.
+  if (service && !dealAllowsService(deal, service)) {
     res.status(200).json({ ok: false, reason: "service_mismatch" });
     return;
   }

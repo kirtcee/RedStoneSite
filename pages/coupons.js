@@ -8,36 +8,7 @@ import { formatMoney } from "../components/Pricing";
 import { dealSections, dealThumbFor, dealAllowsService } from "../utils/dealCatalog";
 import OrderSettingsAside from "../components/OrderSettingsAside";
 
-const MAROON = "#8b1a1a";
 
-function ServiceGatePrompt() {
-  const { openServiceGate } = useCart();
-  return (
-    <div className="aside-card" style={{ marginBottom: 20 }}>
-      <div
-        style={{
-          background: MAROON,
-          color: "#fff",
-          padding: "1.1rem",
-          textAlign: "center",
-          fontFamily: "var(--heading, Oswald, sans-serif)", textTransform: "uppercase",
-        }}
-      >
-        <div style={{ fontWeight: 900, fontSize: "1.15rem", textTransform: "uppercase" }}>
-          Start Your Order
-        </div>
-        <div style={{ marginTop: 4, fontSize: "var(--fs-min)", fontFamily: "var(--font-body, Inter, system-ui, sans-serif)" }}>
-          Choose carryout or delivery to see the coupons available to you.
-        </div>
-      </div>
-      <div style={{ padding: "1.25rem", textAlign: "center" }}>
-        <button type="button" className="btn btn-add" style={{ width: "auto", padding: "0.85rem 1.5rem" }} onClick={() => openServiceGate()}>
-          See Coupons
-        </button>
-      </div>
-    </div>
-  );
-}
 
 // Real photo background with the price/CTA laid on top as live HTML/CSS
 // (not baked into the image) — placeholder art borrowed from the homepage
@@ -157,14 +128,14 @@ export default function CouponsPage() {
     else openDeal(id);
   };
 
-  // /coupons?deal=<id> (e.g. a home page promo card's "Order Now"): once
-  // Carryout or Delivery is chosen, open that deal's builder straight away
-  // (if it's valid for that service), then tidy the address.
+  // /coupons?deal=<id> (e.g. a home page promo card's "Order Now"): open
+  // that deal's builder straight away, then tidy the address. Carryout or
+  // Delivery is only asked for when they add it to the cart.
   useEffect(() => {
     const id = String(router.query.deal || "");
-    if (!id || !isServiceConfirmed) return;
+    if (!id) return;
     const deal = dealSections.flatMap((sec) => sec.deals).find((d) => d.id === id);
-    if (deal && !deal.comingSoon && dealAllowsService(deal, service)) {
+    if (deal && !deal.comingSoon && (!isServiceConfirmed || dealAllowsService(deal, service))) {
       if (deal.comboId) setComboToOpen(deal.comboId);
       else openDeal(id);
     }
@@ -184,10 +155,9 @@ export default function CouponsPage() {
               Note: Some crust types, toppings, sauces, and premium items may come with an additional charge.
             </div>
 
-            {!isServiceConfirmed ? (
-              <ServiceGatePrompt />
-            ) : (
-              <>
+            {/* Everyone can see and open the deals; Carryout or Delivery is
+                asked for when a deal is added to the cart. */}
+            <>
                 <DealCodeEntry variant="card" />
 
                 {/* same deal banner as the Menu page (components/promos/MenuDealBanner.js) */}
@@ -198,7 +168,10 @@ export default function CouponsPage() {
                 </div>
 
                 {dealSections.map((sec, i) => {
-                  const visible = sec.deals.filter((d) => d.comingSoon || dealAllowsService(d, service));
+                  // before Carryout/Delivery is chosen, show every deal
+                  const visible = sec.deals.filter(
+                    (d) => d.comingSoon || !isServiceConfirmed || dealAllowsService(d, service)
+                  );
                   if (!visible.length) return null;
                   return (
                     <div key={sec.type} id={`deal-section-${i}`} style={{ marginBottom: "1.5rem", scrollMarginTop: "var(--header-offset, 74.75px)" }}>
@@ -210,8 +183,7 @@ export default function CouponsPage() {
                     </div>
                   );
                 })}
-              </>
-            )}
+            </>
           </section>
 
           <OrderSettingsAside />
