@@ -36,18 +36,27 @@ export default function ItemNote({ value, onChange }) {
           + Add a note for the kitchen
         </button>
       ) : (
-        <label className="item-note__field">
-          <span className="item-note__label">Note for the kitchen (optional)</span>
-          <textarea
-            ref={boxRef}
-            className="item-note__box"
-            rows={2}
-            maxLength={NOTE_MAX}
-            value={value || ""}
-            onChange={(e) => onChange(e.target.value)}
-            onClick={(e) => e.stopPropagation()}
+        <>
+          <label className="item-note__field">
+            <span className="item-note__label">Note for the kitchen (optional)</span>
+            <textarea
+              ref={boxRef}
+              className="item-note__box"
+              rows={2}
+              maxLength={NOTE_MAX}
+              value={value || ""}
+              onChange={(e) => onChange(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </label>
+          <NoteRemove
+            hasText={!!String(value || "").trim()}
+            onRemove={() => {
+              onChange("");
+              setOpen(false);
+            }}
           />
-        </label>
+        </>
       )}
       <style jsx>{`
         .item-note {
@@ -103,4 +112,73 @@ export default function ItemNote({ value, onChange }) {
 export function withNote(item, note) {
   const t = String(note || "").trim();
   return t ? { ...item, note: t } : item;
+}
+
+// "Remove note" under a note box: small grey link on the right, away from
+// the main buttons. If there's text it asks first ("Remove this note?"), so
+// a stray tap never wipes a note; an empty box just closes.
+export function NoteRemove({ hasText, onRemove }) {
+  const [asking, setAsking] = useState(false);
+  useEffect(() => {
+    if (!hasText) setAsking(false);
+  }, [hasText]);
+  const stop = (e) => e.stopPropagation();
+  return (
+    <div className="note-remove" onClick={stop}>
+      {!asking ? (
+        <button type="button" className="note-remove__link" onClick={() => (hasText ? setAsking(true) : onRemove())}>
+          Remove note
+        </button>
+      ) : (
+        <span className="note-remove__ask">
+          Remove this note?
+          <button type="button" className="note-remove__link" onClick={() => setAsking(false)}>
+            Keep
+          </button>
+          <button
+            type="button"
+            className="note-remove__link note-remove__link--yes"
+            onClick={() => {
+              setAsking(false);
+              onRemove();
+            }}
+          >
+            Yes, remove
+          </button>
+        </span>
+      )}
+      <style jsx>{`
+        .note-remove {
+          display: flex;
+          justify-content: flex-end;
+          margin-top: 6px;
+        }
+        .note-remove__ask {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 4px 16px;
+          font-size: var(--fs-min);
+          color: var(--text-brown);
+        }
+        .note-remove__link {
+          padding: 4px 0;
+          border: 0;
+          background: none;
+          font-family: var(--font-body);
+          font-size: var(--fs-min);
+          font-weight: var(--w-medium);
+          text-decoration: underline;
+          text-underline-offset: 3px;
+          color: #777;
+          cursor: pointer;
+        }
+        .note-remove__link--yes {
+          color: #b00020;
+          font-weight: var(--w-semibold);
+        }
+      `}</style>
+    </div>
+  );
 }

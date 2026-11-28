@@ -1,4 +1,5 @@
 // pages/cart.js
+import { NoteRemove } from "../components/ItemNote";
 import { ORDER_NOTE_MAX } from "../utils/orderRules";
 import { soldOutIn } from "../utils/availability";
 import { DRINK_CATEGORIES, THUMB_MAX, drinkImage, findDrink } from "../utils/drinkCatalog";
@@ -274,17 +275,26 @@ function OrderNote({ cart }) {
     );
   }
   return (
-    <label className="cart-orderNote">
-      <span className="cart-orderNote__label">Note for your whole order (optional)</span>
-      <textarea
-        ref={boxRef}
-        className="cart-orderNote__box"
-        rows={2}
-        maxLength={ORDER_NOTE_MAX}
-        value={value}
-        onChange={(e) => cart.setOrderNote?.(e.target.value)}
+    <div className="cart-orderNote">
+      <label>
+        <span className="cart-orderNote__label">Note for your whole order (optional)</span>
+        <textarea
+          ref={boxRef}
+          className="cart-orderNote__box"
+          rows={2}
+          maxLength={ORDER_NOTE_MAX}
+          value={value}
+          onChange={(e) => cart.setOrderNote?.(e.target.value)}
+        />
+      </label>
+      <NoteRemove
+        hasText={!!value.trim()}
+        onRemove={() => {
+          cart.setOrderNote?.("");
+          setOpen(false);
+        }}
       />
-    </label>
+    </div>
   );
 }
 
