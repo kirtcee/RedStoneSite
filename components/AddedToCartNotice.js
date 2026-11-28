@@ -1,7 +1,7 @@
 // components/AddedToCartNotice.js
 //
 // Small "Added to your order" card at the bottom of the screen after
-// something goes into the cart, with Checkout and Keep Shopping. It stays
+// something goes into the cart, with View Cart and Keep Shopping. It stays
 // until the customer does something: Keep Shopping, a tap or click anywhere
 // else, scrolling, or Escape all close it. Not shown on the cart, checkout
 // or confirmation pages.
@@ -76,9 +76,9 @@ export default function AddedToCartNotice() {
   const items = cart?.items || [];
   const count = items.reduce((n, it) => n + (Number(it.qty) || 1), 0);
 
-  const checkout = () => {
+  const viewCart = () => {
     close();
-    cart?.goToCheckout?.();
+    router.push("/cart");
   };
 
   return (
@@ -97,8 +97,8 @@ export default function AddedToCartNotice() {
         <button type="button" className="atc-keep" onClick={close}>
           Keep Shopping
         </button>
-        <button type="button" className="rs-pill-btn atc-go" onClick={checkout}>
-          Checkout
+        <button type="button" className="rs-pill-btn atc-go" onClick={viewCart}>
+          View Cart
         </button>
       </div>
       <style jsx>{`

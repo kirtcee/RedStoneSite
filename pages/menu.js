@@ -19,7 +19,7 @@ import { DRINK_CATEGORIES } from "../utils/drinkCatalog";
 import MenuDealBanner from "../components/promos/MenuDealBanner";
 import useWaitTimes from "../hooks/useWaitTimes";
 import { useCart } from "../components/CartSystem";
-import { priceLineItem } from "../components/Pricing";
+import { priceLineItem, priceCombo, formatMoney } from "../components/Pricing";
 
 // Hardened portal overlay (stable nested scroller)
 import DebugPizzaOverlay from "../components/modals/DebugPizzaOverlay";
@@ -123,6 +123,8 @@ function EntreesView({
                     >
                       {combo.name}
                     </button>
+                    {/* the combo's starting price (upgrades and extra toppings cost more) */}
+                    <div className="feastCard__price">{formatMoney(priceCombo(combo.id))}</div>
 
                     <button
                       type="button"
