@@ -419,7 +419,7 @@ export default function SpecialMenuBuilder({
           </div>
         </SectionBox>
 
-        <ItemNote value={note} onChange={setNote} placeholder="e.g. cut in half" />
+        <ItemNote value={note} onChange={setNote} />
 
         {/* Footer actions */}
         <div className="rs-pill-row">

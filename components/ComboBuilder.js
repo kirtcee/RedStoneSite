@@ -392,7 +392,7 @@ export default function ComboBuilder({
                 })}
               </Section>
 
-              <ItemNote value={note} onChange={setNote} placeholder="e.g. cut both pizzas in squares" />
+              <ItemNote value={note} onChange={setNote} />
 
               {/* ===== Quantity & Total ===== */}
               <Section title="Quantity & Total">

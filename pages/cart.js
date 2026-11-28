@@ -2,7 +2,7 @@
 import { ORDER_NOTE_MAX } from "../utils/orderRules";
 import { soldOutIn } from "../utils/availability";
 import { DRINK_CATEGORIES, THUMB_MAX, drinkImage, findDrink } from "../utils/drinkCatalog";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useCart, DealCodeEntry } from "../components/CartSystem";
 import { priceLineItem, formatMoney, describePizzaFull, describeByoPizzaHeading, describeByoPizzaSections } from "../components/Pricing";
@@ -245,6 +245,46 @@ function ItemOptions({ item }) {
         </div>
       ))}
     </div>
+  );
+}
+
+// "+ Add a note to your order" link that opens a box for a note about the
+// whole order (sent with the order, shown to the kitchen).
+function OrderNote({ cart }) {
+  const value = cart?.orderNote || "";
+  const [open, setOpen] = useState(!!value.trim());
+  const boxRef = useRef(null);
+  useEffect(() => {
+    if (value.trim()) setOpen(true); // a saved note loads after the page opens
+  }, [value]);
+  if (!open) {
+    return (
+      <div className="cart-orderNote">
+        <button
+          type="button"
+          className="cart-orderNote__open"
+          onClick={() => {
+            setOpen(true);
+            setTimeout(() => boxRef.current?.focus({ preventScroll: true }), 0);
+          }}
+        >
+          + Add a note to your order
+        </button>
+      </div>
+    );
+  }
+  return (
+    <label className="cart-orderNote">
+      <span className="cart-orderNote__label">Note for your whole order (optional)</span>
+      <textarea
+        ref={boxRef}
+        className="cart-orderNote__box"
+        rows={2}
+        maxLength={ORDER_NOTE_MAX}
+        value={value}
+        onChange={(e) => cart.setOrderNote?.(e.target.value)}
+      />
+    </label>
   );
 }
 
@@ -591,17 +631,7 @@ export default function CartPage() {
                     fallbackImg={null /* no photo -> plain cream square */}
                     addItem={cart.addItem}
                   />
-                  <label className="cart-orderNote">
-                    <span className="cart-orderNote__label">Note for your whole order (optional)</span>
-                    <textarea
-                      className="cart-orderNote__box"
-                      rows={2}
-                      maxLength={ORDER_NOTE_MAX}
-                      value={cart.orderNote || ""}
-                      placeholder="e.g. please knock, the doorbell doesn't work"
-                      onChange={(e) => cart.setOrderNote?.(e.target.value)}
-                    />
-                  </label>
+                  <OrderNote cart={cart} />
                   <OrderTotals className="cart-totals" />
                   <div className="cart-box__deal">
                     <DealCodeEntry variant="reveal" />
@@ -941,11 +971,23 @@ export default function CartPage() {
           color: var(--text-brown);
           overflow-wrap: anywhere;
         }
-        .cart-orderNote {
+        .cart-box :global(.cart-orderNote) {
           display: block;
           margin: 4px 14px 14px;
         }
-        .cart-orderNote__label {
+        .cart-box :global(.cart-orderNote__open) {
+          padding: 0;
+          border: 0;
+          background: none;
+          font-family: var(--font-display);
+          font-size: var(--fs-min);
+          text-transform: uppercase;
+          text-decoration: underline;
+          text-underline-offset: 3px;
+          color: var(--text-brown);
+          cursor: pointer;
+        }
+        .cart-box :global(.cart-orderNote__label) {
           display: block;
           margin-bottom: 6px;
           font-family: var(--font-display);
@@ -953,7 +995,7 @@ export default function CartPage() {
           text-transform: uppercase;
           color: #000;
         }
-        .cart-orderNote__box {
+        .cart-box :global(.cart-orderNote__box) {
           display: block;
           width: 100%;
           box-sizing: border-box;

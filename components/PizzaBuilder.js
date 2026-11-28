@@ -1507,7 +1507,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
               <Divider />
 
               {allowNote && (
-                <ItemNote value={note} onChange={setNote} placeholder="e.g. well done, cut in squares" />
+                <ItemNote value={note} onChange={setNote} />
               )}
               <div
                 style={{

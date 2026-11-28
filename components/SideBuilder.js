@@ -374,7 +374,7 @@ export default function SideBuilder({
         </div>
       </SectionBox>
 
-      {allowNote && <ItemNote value={note} onChange={setNote} placeholder="e.g. no salt" />}
+      {allowNote && <ItemNote value={note} onChange={setNote} />}
 
       {/* Footer actions */}
       <div className="rs-pill-row rs-pill-row--compact">

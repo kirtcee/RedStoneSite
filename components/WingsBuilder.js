@@ -529,7 +529,7 @@ export default function WingsBuilder({
         </div>
       </Section>
 
-      {allowNote && <ItemNote value={note} onChange={setNote} placeholder="e.g. extra crispy" />}
+      {allowNote && <ItemNote value={note} onChange={setNote} />}
 
       {/* Footer actions */}
       <div className="rs-pill-row">
