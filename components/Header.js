@@ -73,6 +73,7 @@ export default function Header() {
       label: "HOME",
       onClick: () => router.push("/"),
     },
+    { key: "deals", label: "DEALS", onClick: () => router.push("/coupons") },
     {
       key: "entrees",
       label: "ENTRÉES",
@@ -433,7 +434,11 @@ export default function Header() {
             <button
               key={item.key}
               className={`mobile-drawer__link ${activeTopKey === item.key ? "is-active" : ""}`}
-              onClick={item.onClick}
+              onClick={() => {
+                // always close the menu, even when tapping the page you're already on
+                setMobileNavOpen(false);
+                item.onClick();
+              }}
               aria-current={activeTopKey === item.key ? "page" : undefined}
               tabIndex={mobileNavOpen ? 0 : -1}
             >

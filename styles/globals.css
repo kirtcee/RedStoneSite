@@ -1377,9 +1377,11 @@ body::before {
     color: #222;
     cursor: pointer;
   }
+  /* the page you're on: darker background and a red bar on the left */
   .mobile-drawer__link.is-active {
     color: var(--color-primary);
-    background: #f7f7f7;
+    background: #e6e6e6;
+    box-shadow: inset 5px 0 0 var(--color-primary);
   }
   .mobile-drawer__service {
     border: none;

@@ -19,7 +19,7 @@
 
 export const dealSections = [
   {
-    type: "Coupons & Deals",
+    type: "Deals",
     deals: [
       {
         id: "large2topping",

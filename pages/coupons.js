@@ -149,7 +149,7 @@ export default function CouponsPage() {
         <div className="menu-layout">
           <section className="menu-main">
             <h1 className="menu-title" style={{ margin: "0 0 4px" }}>
-              Coupons
+              Deals
             </h1>
             <div style={{ marginBottom: 16, color: "#666", fontStyle: "italic", fontSize: "var(--fs-min)" }}>
               Note: Some crust types, toppings, sauces, and premium items may come with an additional charge.
