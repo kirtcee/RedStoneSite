@@ -395,6 +395,7 @@ export default function KitchenDashboard() {
                 </div>
               )}
 
+              {order.orderNote && <div className="order-note">ORDER NOTE: {order.orderNote}</div>}
               <ul className="order-items">
                 {(order.items || []).map((it, i) => (
                   <li key={i}>
@@ -410,6 +411,7 @@ export default function KitchenDashboard() {
                         ))}
                       </ul>
                     )}
+                    {it.note && <div className="order-items__note">Note: {it.note}</div>}
                   </li>
                 ))}
               </ul>
@@ -640,6 +642,7 @@ export default function KitchenDashboard() {
             {(printingOrder.items || []).map((it, i) => (
               <li key={i}>
                 {it.qty || 1}× {describeItem(it)}
+                {it.note && <div>NOTE: {it.note}</div>}
                 {it.type === "combo" && it.meta?.items && (
                   <ul>
                     {Object.entries(it.meta.items).map(([key, child]) => (
@@ -652,6 +655,12 @@ export default function KitchenDashboard() {
               </li>
             ))}
           </ul>
+          {printingOrder.orderNote && (
+            <>
+              <hr />
+              <p>ORDER NOTE: {printingOrder.orderNote}</p>
+            </>
+          )}
           <hr />
           <p className="print-receipt__total">
             Total: {printingOrder.totalCents != null ? formatMoney(printingOrder.totalCents) : "N/A"}
@@ -1001,6 +1010,24 @@ export default function KitchenDashboard() {
           font-weight: 700;
           color: #000000;
           margin-right: 6px;
+        }
+        .order-note {
+          margin: 6px 0 8px;
+          padding: 8px 10px;
+          border-left: 5px solid #e0a000;
+          border-radius: 4px;
+          background: #fff8e1;
+          font-weight: 800;
+          font-size: 16px;
+          overflow-wrap: anywhere;
+        }
+        .order-items__note {
+          margin-top: 2px;
+          padding-left: 2px;
+          font-weight: 700;
+          font-style: italic;
+          color: #8a5a00;
+          overflow-wrap: anywhere;
         }
         .order-items__combo-children {
           list-style: none;

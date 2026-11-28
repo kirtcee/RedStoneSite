@@ -364,6 +364,7 @@ export default function CheckoutPage() {
         phone: form.phone.trim(),
       },
       paymentMethod: form.payment,
+      ...(String(cart?.orderNote || "").trim() ? { orderNote: cart.orderNote.trim() } : {}),
       ...(tipOn && tipCents > 0 ? { tipCents } : {}),
       ...(doorPayOn
         ? {
@@ -522,6 +523,7 @@ export default function CheckoutPage() {
                                 </div>
                               )
                             )}
+                            {it.note && <div className="co-items__opt co-items__note">Note: {it.note}</div>}
                             {couponNameFor(cart, it) && (
                               <div className="co-items__opt co-items__coupon">Coupon: {couponNameFor(cart, it)}</div>
                             )}
@@ -533,6 +535,11 @@ export default function CheckoutPage() {
                         </div>
                       ))}
                     </div>
+                    {String(cart?.orderNote || "").trim() && (
+                      <div className="co-items__orderNote">
+                        <strong>Order note:</strong> {cart.orderNote.trim()}
+                      </div>
+                    )}
                   </div>
                   <div className="co-summary__foot">
                     <Link href="/cart" className="rs-pill-btn co-change">
@@ -1139,6 +1146,20 @@ export default function CheckoutPage() {
           border: 1px solid #d0021b;
           border-radius: 0.1875rem;
           box-shadow: inset 5px 0 0 #d0021b;
+        }
+        .co-wrap :global(.co-items__note) {
+          font-style: italic;
+          overflow-wrap: anywhere;
+        }
+        .co-items__orderNote {
+          padding: 10px 12px;
+          border-top: 1px solid var(--menu-box-border);
+          font-size: var(--fs-min);
+          color: var(--text-brown);
+          overflow-wrap: anywhere;
+        }
+        .co-items__orderNote strong {
+          color: #000;
         }
         /* Pay at Door choice and driver tip */
         .co-sub {

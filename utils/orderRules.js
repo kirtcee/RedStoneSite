@@ -78,3 +78,14 @@ export function paymentLineFor(order, formatMoney) {
   }
   return "Pay at door";
 }
+
+// ---- Notes: one per food item (components/ItemNote.js) and one for the
+// whole order (cart page). Kept short; the server trims anything longer.
+export const NOTE_MAX = 140;
+export const ORDER_NOTE_MAX = 300;
+export function cleanNote(text, max = NOTE_MAX) {
+  return String(text || "")
+    .replace(/[\u0000-\u0008\u000B-\u001F\u007F]/g, "")
+    .trim()
+    .slice(0, max);
+}

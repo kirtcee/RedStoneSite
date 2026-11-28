@@ -1,4 +1,6 @@
 // components/SpecialMenuBuilder.js
+import ItemNote from "./ItemNote";
+import { cleanNote } from "../utils/orderRules";
 import React, { useMemo, useState } from "react";
 import { priceLineItem, formatMoney, weightedToppingCount, PRICES } from "./Pricing";
 import { useCart } from "./CartSystem";
@@ -105,6 +107,7 @@ export default function SpecialMenuBuilder({
   const DIPS = ["Blue Cheese","Garlic","Ranch"];
 
   const [qty, setQty] = useState(initialData.qty || 1);
+  const [note, setNote] = useState(initialData.note || "");
   const [selVeg, setSelVeg] = useState(initialData.toppings?.veggies || []);
   const [selMeat, setSelMeat] = useState(initialData.toppings?.meats || []);
   const [selCheese, setSelCheese] = useState(initialData.toppings?.cheeses || []);
@@ -194,6 +197,7 @@ export default function SpecialMenuBuilder({
           },
       dips: showsDips ? { ...dipQty } : undefined,
       summary: buildSummary(),
+      ...(note.trim() ? { note: cleanNote(note) } : {}),
     };
     if (editingId) {
       updateItem(editingId, payload);
@@ -414,6 +418,8 @@ export default function SpecialMenuBuilder({
               ))}
           </div>
         </SectionBox>
+
+        <ItemNote value={note} onChange={setNote} placeholder="e.g. cut in half" />
 
         {/* Footer actions */}
         <div className="rs-pill-row">

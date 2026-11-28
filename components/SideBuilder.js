@@ -1,10 +1,13 @@
 // components/SideBuilder.js
+import ItemNote from "./ItemNote";
+import { cleanNote } from "../utils/orderRules";
 import React, { useState, useMemo, useEffect } from "react";
 import { priceLineItem, formatMoney } from "./Pricing";
 import { useCart } from "./CartSystem";
 import ItemCheck from "./ItemCheck";
 
 export default function SideBuilder({
+  allowNote = true, // the "Note for the kitchen" box (off inside combos)
   side,
   onClose,
   onAdd = () => {},
@@ -109,6 +112,7 @@ export default function SideBuilder({
     if (lockedSize) setSelectedSize(lockedSize);
   }, [lockedSize]);
   const [quantity, setQuantity] = useState(initialData.qty || 1);
+  const [note, setNote] = useState(initialData.note || "");
   const [gravyQty, setGravyQty] = useState(initialData.gravy || 0);
   const [dipQty, setDipQty] = useState({
     Garlic: initialData.dips?.Garlic || 0,
@@ -370,6 +374,8 @@ export default function SideBuilder({
         </div>
       </SectionBox>
 
+      {allowNote && <ItemNote value={note} onChange={setNote} placeholder="e.g. no salt" />}
+
       {/* Footer actions */}
       <div className="rs-pill-row rs-pill-row--compact">
         <button
@@ -392,6 +398,7 @@ export default function SideBuilder({
               dips: dipQty,
               hotSauce,
               summary: buildSummary(),
+              ...(allowNote && note.trim() ? { note: cleanNote(note) } : {}),
             };
             if (addToCartDirect) addItem(payload);
             onAdd(payload); // parent closes the modal (and/or handles the payload itself)

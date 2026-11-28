@@ -84,7 +84,7 @@ function emailFacts(order, id) {
         : subtitle;
     return {
       name,
-      details: details || "",
+      details: [details, it.note ? `Note: ${it.note}` : ""].filter(Boolean).join("\n"),
       qty: Number(it.qty) || 1,
       cents: Number.isFinite(it.lineCents) ? it.lineCents : priceLineItem(it),
     };
@@ -101,6 +101,7 @@ function emailFacts(order, id) {
     when: when ? (isLater ? when : `Today at ${when}`) : "As soon as possible",
     placeLabel: isDelivery ? "Delivering to" : "Pick up at",
     place: isDelivery ? addressText(order.deliveryAddress) || "Not provided" : STORE_ADDRESS,
+    orderNote: order.orderNote || "",
     payNote: paidOnline
       ? `Paid on ${today}${brand && last4 ? ` with ${brand} ending ${last4}` : " by card"}`
       : `Ordered on ${today}. ${
@@ -205,6 +206,7 @@ export function buildOrderEmail(order, id) {
                 ${detail("Service", f.service)}
                 ${detail(f.whenLabel, f.when)}
                 ${detail(f.placeLabel, f.place)}
+                ${f.orderNote ? detail("Your note", f.orderNote) : ""}
               </table>
               <div style="height:1px;line-height:1px;font-size:1px;background:${LINE};margin:16px 0 4px;">&nbsp;</div>
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -246,6 +248,7 @@ export function buildOrderEmail(order, id) {
     `Service: ${f.service}`,
     `${f.whenLabel}: ${f.when}`,
     `${f.placeLabel}: ${f.place}`,
+    ...(f.orderNote ? [`Your note: ${f.orderNote}`] : []),
     "",
     ...f.lines.map(
       (l) => `${l.name}, Qty ${l.qty}: ${formatMoney(l.cents)}${l.details ? `\n  ${l.details.replace(/\n/g, "\n  ")}` : ""}`

@@ -139,10 +139,12 @@ export default function KitchenPastOrders({ open, onClose, describeItem, onPrint
                           .join(", ") || "N/A"}
                       </div>
                     )}
+                    {o.orderNote && <div className="po-row__addr">Order note: {o.orderNote}</div>}
                     <ul>
                       {(o.items || []).map((it, i) => (
                         <li key={i}>
                           <strong>{it.qty || 1}×</strong> {describeItem(it)}
+                          {it.note && <em> (Note: {it.note})</em>}
                         </li>
                       ))}
                     </ul>

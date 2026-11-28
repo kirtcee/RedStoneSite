@@ -1,4 +1,5 @@
 // components/CartSystem.js
+import { ORDER_NOTE_MAX } from "../utils/orderRules";
 import useSoldOut, { currentSoldOut } from "../hooks/useSoldOut";
 import { soldOutIn } from "../utils/availability";
 import { track } from "../utils/analytics";
@@ -294,6 +295,23 @@ export function CartProvider({ children, onEditItem }) {
   // What was just added, for the "Added to your order" notice
   // (components/AddedToCartNotice.js). { item } or { name }, plus a time.
   const [lastAdded, setLastAdded] = useState(null);
+
+  // Note for the whole order (cart page). Kept in this browser so it
+  // survives going back to the menu; cleared with the cart.
+  const [orderNote, setOrderNoteState] = useState("");
+  useEffect(() => {
+    try {
+      setOrderNoteState(localStorage.getItem("rs_order_note") || "");
+    } catch {}
+  }, []);
+  const setOrderNote = useCallback((text) => {
+    const t = String(text || "").slice(0, ORDER_NOTE_MAX);
+    setOrderNoteState(t);
+    try {
+      if (t) localStorage.setItem("rs_order_note", t);
+      else localStorage.removeItem("rs_order_note");
+    } catch {}
+  }, []);
   const clearLastAdded = useCallback(() => setLastAdded(null), []);
 
   const reallyAddItem = useCallback((raw) => {
@@ -396,7 +414,8 @@ export function CartProvider({ children, onEditItem }) {
   const clearCart = useCallback(() => {
     setItems([]);
     setAppliedDeals([]);
-  }, []);
+    setOrderNote("");
+  }, [setOrderNote]);
 
   // ---- Prices: every line's real price (coupons applied), the subtotal,
   // and how much the coupons save (see priceCart in Pricing.js) ----
@@ -506,6 +525,8 @@ export function CartProvider({ children, onEditItem }) {
       closeSoldOutNotice,
       lastAdded,
       clearLastAdded,
+      orderNote,
+      setOrderNote,
       addItem,
       updateQty,
       updateItem,
@@ -556,6 +577,8 @@ export function CartProvider({ children, onEditItem }) {
       closeSoldOutNotice,
       lastAdded,
       clearLastAdded,
+      orderNote,
+      setOrderNote,
       addItem,
       updateQty,
       updateItem,

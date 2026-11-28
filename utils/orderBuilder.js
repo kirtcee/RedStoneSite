@@ -15,7 +15,7 @@ import { findDealById } from "./dealCatalog";
 import { adminAuth } from "./firebaseAdmin";
 import { Timestamp } from "firebase-admin/firestore";
 
-import { TAX_RATE, DELIVERY_FEE_CENTS, DELIVERY_MINIMUM_CENTS, taxOn, tipAllowed, MAX_TIP_CENTS, DOOR_METHODS, MAX_CASH_GIVEN_CENTS } from "./orderRules";
+import { TAX_RATE, DELIVERY_FEE_CENTS, DELIVERY_MINIMUM_CENTS, taxOn, tipAllowed, MAX_TIP_CENTS, DOOR_METHODS, MAX_CASH_GIVEN_CENTS, cleanNote, NOTE_MAX, ORDER_NOTE_MAX } from "./orderRules";
 import { MIN_WAIT, clampWait, waitKey } from "./waitTimes";
 import { torontoToDate, canOrderNow, scheduleProblem, isPausedNow } from "./storeHours";
 export { TAX_RATE, DELIVERY_FEE_CENTS };
@@ -112,14 +112,23 @@ export function buildOrder(body, { uid, paymentMethod, deliveryQuote = null, wai
     deliveryAddress,
     tipCents: rawTip,
     doorPayment: rawDoor,
+    orderNote: rawOrderNote,
   } = body || {};
 
   if (!Array.isArray(rawItems) || rawItems.length === 0) return fail(400, "empty_cart");
   if (rawItems.length > MAX_ITEMS) return fail(400, "too_many_items");
   // Every line needs its own id so coupon pricing can tell them apart.
-  const items = rawItems.map((it, i) =>
-    it && typeof it === "object" ? { ...it, id: typeof it.id === "string" && it.id ? it.id : `line-${i}` } : it
-  );
+  const items = rawItems.map((it, i) => {
+    if (!it || typeof it !== "object") return it;
+    const out = { ...it, id: typeof it.id === "string" && it.id ? it.id : `line-${i}` };
+    // "Note for the kitchen" (components/ItemNote.js): plain text, kept short
+    if (out.note != null) {
+      const n = cleanNote(out.note, NOTE_MAX);
+      if (n) out.note = n;
+      else delete out.note;
+    }
+    return out;
+  });
   const seenIds = new Set();
   for (const it of items) {
     if (it && seenIds.has(it.id)) return fail(400, "bad_item");
@@ -250,6 +259,7 @@ export function buildOrder(body, { uid, paymentMethod, deliveryQuote = null, wai
       paid: false,
       fees: { deliveryCents, taxCents, tipCents },
       doorPayment,
+      orderNote: cleanNote(rawOrderNote, ORDER_NOTE_MAX) || null, // note for the whole order (cart page)
       subtotalCents,
       discountCents,
       totalCents,

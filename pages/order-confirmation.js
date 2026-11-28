@@ -268,12 +268,22 @@ export default function OrderConfirmation() {
                     ) : (
                       <div style={{ fontSize: "var(--fs-sm)", color: "#555", whiteSpace: "pre-line" }}>{subtitle}</div>
                     )}
+                    {it.note && (
+                      <div style={{ fontSize: "var(--fs-sm)", color: "#555", fontStyle: "italic", overflowWrap: "anywhere" }}>
+                        Note: {it.note}
+                      </div>
+                    )}
                   </div>
                   <div style={{ fontWeight: 700, whiteSpace: "nowrap" }}>{formatMoney(lineCents)}</div>
                 </div>
               );
             })}
 
+            {order.orderNote && (
+              <div style={{ marginTop: 10, fontSize: "var(--fs-sm)", color: "#555", overflowWrap: "anywhere" }}>
+                <strong style={{ color: "#000" }}>Order note:</strong> {order.orderNote}
+              </div>
+            )}
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--menu-box-border)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                 <div>Food &amp; Beverage:</div>

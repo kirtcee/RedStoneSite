@@ -1,4 +1,5 @@
 // pages/cart.js
+import { ORDER_NOTE_MAX } from "../utils/orderRules";
 import { soldOutIn } from "../utils/availability";
 import { DRINK_CATEGORIES, THUMB_MAX, drinkImage, findDrink } from "../utils/drinkCatalog";
 import React, { useEffect, useState } from "react";
@@ -264,6 +265,7 @@ function ItemRow({ item, priceCents, couponName, onQty, onRemove, onEdit }) {
             {title}
           </button>
           <ItemOptions item={item} />
+          {item?.note && <div className="cart-line__note">Note: {item.note}</div>}
           {couponName && <div className="cart-line__coupon">Coupon: {couponName}</div>}
           {soldOutNames.length > 0 && (
             <div className="cart-line__soldout">Sold out: {soldOutNames.join(", ")}. Please remove it to continue.</div>
@@ -589,6 +591,17 @@ export default function CartPage() {
                     fallbackImg={null /* no photo -> plain cream square */}
                     addItem={cart.addItem}
                   />
+                  <label className="cart-orderNote">
+                    <span className="cart-orderNote__label">Note for your whole order (optional)</span>
+                    <textarea
+                      className="cart-orderNote__box"
+                      rows={2}
+                      maxLength={ORDER_NOTE_MAX}
+                      value={cart.orderNote || ""}
+                      placeholder="e.g. please knock, the doorbell doesn't work"
+                      onChange={(e) => cart.setOrderNote?.(e.target.value)}
+                    />
+                  </label>
                   <OrderTotals className="cart-totals" />
                   <div className="cart-box__deal">
                     <DealCodeEntry variant="reveal" />
@@ -920,6 +933,38 @@ export default function CartPage() {
         }
         .cart-box :global(.cart-line__text) {
           min-width: 0;
+        }
+        .cart-box :global(.cart-line__note) {
+          margin-top: 4px;
+          font-size: var(--fs-min);
+          font-style: italic;
+          color: var(--text-brown);
+          overflow-wrap: anywhere;
+        }
+        .cart-orderNote {
+          display: block;
+          margin: 4px 14px 14px;
+        }
+        .cart-orderNote__label {
+          display: block;
+          margin-bottom: 6px;
+          font-family: var(--font-display);
+          font-size: var(--fs-min);
+          text-transform: uppercase;
+          color: #000;
+        }
+        .cart-orderNote__box {
+          display: block;
+          width: 100%;
+          box-sizing: border-box;
+          padding: 8px 10px;
+          border: 1px solid var(--menu-box-border);
+          border-radius: 0.375rem;
+          background: #fff;
+          color: #000;
+          font-family: var(--font-body);
+          line-height: 1.3;
+          resize: vertical;
         }
         .cart-box :global(.cart-line__soldout) {
           margin-top: 4px;

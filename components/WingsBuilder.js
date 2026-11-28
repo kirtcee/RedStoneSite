@@ -1,4 +1,6 @@
 // components/WingsBuilder.js
+import ItemNote from "./ItemNote";
+import { cleanNote } from "../utils/orderRules";
 import React, { useState, useEffect, useMemo, useLayoutEffect, useRef } from "react";
 import { priceLineItem, formatMoney } from "./Pricing";
 import { useCart } from "./CartSystem";
@@ -14,6 +16,7 @@ const DEFAULT_DIPS_OPTIONS  = ["Blue Cheese", "Garlic", "Ranch"];
 const DEFAULT_INCLUDED_DIPS_MAP = { 6: 1, 12: 2, 20: 3, 30: 4 };
 
 export default function WingsBuilder({
+  allowNote = true, // the "Note for the kitchen" box (off inside combos)
   onClose = () => {},
   onAdd = () => {},
   initialData = {},
@@ -114,6 +117,7 @@ export default function WingsBuilder({
   const [wingsQty, setWingsQty] = useState(
     Number(initialData.qty) > 0 ? Number(initialData.qty) : 1
   );
+  const [note, setNote] = useState(initialData.note || "");
 
   const seededDips = useMemo(() => {
     const out = {};
@@ -525,6 +529,8 @@ export default function WingsBuilder({
         </div>
       </Section>
 
+      {allowNote && <ItemNote value={note} onChange={setNote} placeholder="e.g. extra crispy" />}
+
       {/* Footer actions */}
       <div className="rs-pill-row">
         <button
@@ -546,6 +552,7 @@ export default function WingsBuilder({
               count: selectedCount,
               qty: wingsQty,
               dips: dipQty,
+              ...(allowNote && note.trim() ? { note: cleanNote(note) } : {}),
             };
 
             // 👇 ONLY add to cart if we want standalone behavior

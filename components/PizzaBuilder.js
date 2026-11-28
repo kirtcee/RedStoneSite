@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import ItemNote from "./ItemNote";
+import { cleanNote } from "../utils/orderRules";
 import { priceLineItem, formatMoney, weightedToppingCount, PRICES, sizeMapUIToPrice, PREMIUM_TOPPINGS, describePizzaFull } from "./Pricing";
 import { useCart } from "./CartSystem";
 import { getToppingArt } from "../utils/pizzaToppingArt";
@@ -33,6 +35,7 @@ function loadPizzaLayer(src) {
 }
 
 export default function PizzaBuilder({
+  allowNote = true, // the "Note for the kitchen" box (off inside combos)
   presetToppings = [],
   allowedToppings = null,
   initialData = {},
@@ -147,6 +150,7 @@ const LEFT_COL  = PB_TOTAL - PB_GAP - RIGHT_COL;               // ≈ 475
   const [coriander, setCoriander] = useState(initialData.coriander || "without");
   const [ginger, setGinger] = useState(initialData.ginger || "without");
   const [qty, setQty] = useState(initialData.qty || 1);
+  const [note, setNote] = useState(initialData.note || "");
 
   // Dips (with images)
   const DIP_DEFS = [
@@ -564,6 +568,7 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
       coriander,
       ginger,
       qty,
+      ...(allowNote && note.trim() ? { note: cleanNote(note) } : {}),
       summary: describePizzaFull({
         size: selectedSize,
         crust: selectedCrust,
@@ -1501,6 +1506,9 @@ const VRule = () => <div style={{ width: 1, alignSelf: "stretch", background: LI
 
               <Divider />
 
+              {allowNote && (
+                <ItemNote value={note} onChange={setNote} placeholder="e.g. well done, cut in squares" />
+              )}
               <div
                 style={{
                   display: "flex",

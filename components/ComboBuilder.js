@@ -1,4 +1,6 @@
 // components/ComboBuilder.js
+import ItemNote from "./ItemNote";
+import { cleanNote } from "../utils/orderRules";
 import React, { useState, useMemo, useEffect } from "react";
 import PizzaBuilder from "./PizzaBuilder";
 import WingsBuilder from "./WingsBuilder";
@@ -45,6 +47,7 @@ export default function ComboBuilder({
   const [savedItems, setSavedItems] = useState({});
   const [comboSize, setComboSize] = useState(null);
   const [qty, setQty] = useState(1);
+  const [note, setNote] = useState(""); // "Note for the kitchen" for the whole combo
   const [upgrade, setUpgrade] = useState(null);
   const [isDirty, setIsDirty] = useState(false);
   const [pendingClose, setPendingClose] = useState(null); // fn to run after confirm
@@ -117,11 +120,13 @@ export default function ComboBuilder({
     if (editingItem) {
       const combo = findComboById(editingItem.comboId);
       if (combo) startComboFromEdit(combo, editingItem);
+      setNote(editingItem.note || "");
       return;
     }
     if (openComboId) {
       const combo = findComboById(openComboId);
       if (combo) startCombo(combo);
+      setNote("");
     }
   }, [openComboId, editingItem]);
 
@@ -193,6 +198,7 @@ export default function ComboBuilder({
       upgrade: upgrade || null,
       qty: Math.max(1, Number(qty) || 1),
       summary: buildComboSummary(selectedCombo, comboSize, savedItems, upgrade),
+      ...(note.trim() ? { note: cleanNote(note) } : {}),
       meta: {
         sizeLocked: comboSize,
         items: selectedCombo.items.reduce((acc, key) => { acc[key] = savedItems[key]; return acc; }, {}),
@@ -386,6 +392,8 @@ export default function ComboBuilder({
                 })}
               </Section>
 
+              <ItemNote value={note} onChange={setNote} placeholder="e.g. cut both pizzas in squares" />
+
               {/* ===== Quantity & Total ===== */}
               <Section title="Quantity & Total">
                 <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
@@ -471,6 +479,7 @@ export default function ComboBuilder({
       >
         {customizingItem?.type === "pizza" && (
           <PizzaBuilder
+            allowNote={false}
             initialData={savedItems[customizingItem.id] || {}}
             includedToppings={comboIncludedToppings(selectedCombo?.id)}
             lockedSize={pizzaSize}
@@ -507,6 +516,7 @@ export default function ComboBuilder({
         {customizingItem?.type === "wings" && (
           <div style={{ padding: "1rem" }}>
             <WingsBuilder
+            allowNote={false}
               initialData={savedItems[customizingItem.id] || {}}
               lockedCount={getLockedWingsCount(selectedCombo?.id)}
               allowCountChoice={false}
@@ -540,6 +550,7 @@ export default function ComboBuilder({
       >
         {customizingItem?.type === "side" && selectedCombo?.id !== "takecare" && (
           <SideBuilder
+            allowNote={false}
             side="Garlic Bread"
             initialData={savedItems[customizingItem.id] || {}}
             onClose={() => setCustomizingItem(null)}
